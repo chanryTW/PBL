@@ -1287,51 +1287,79 @@ function ($scope, $stateParams, $ionicPopup) {
     var pwdL = document.getElementById("page4-input2");
     var loginSmtBtn = document.getElementById("page4-button1");
     loginSmtBtn.addEventListener("click",function(){
-        console.log(accountL.value);
-        firebase.auth().signInWithEmailAndPassword(accountL.value, pwdL.value).then(function(){
-            console.log("登入成功");
-            localStorage.setItem("LoginWay", "Signin"); // 登入方式標記為 首頁登入
-            accountL.value="";
-            pwdL.value="";
-            open("/#/menu/Derine",'_self');
-            // window.location.reload();
-        }).catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log(errorCode);
-            console.log(errorMessage);
-            switch(errorCode){
-                case 'auth/user-not-found':
-                    var alertPopup = $ionicPopup.alert({
-                        title: '發生錯誤',
-                        template: '查無此帳號。'
-                    });
-                        alertPopup.then(function(res) {
-                        accountL.value="";
-                        pwdL.value="";
-                    });
-                    break;
-                case 'auth/invalid-email':
-                    var alertPopup = $ionicPopup.alert({
-                        title: '發生錯誤',
-                        template: '電子信箱的格式有誤。'
-                    });
-                        alertPopup.then(function(res) {
-                        accountL.value="";
-                    });
-                    break;
-                case 'auth/wrong-password':
-                    var alertPopup = $ionicPopup.alert({
-                        title: '發生錯誤',
-                        template: '密碼錯誤，如忘記密碼請點選下方忘記密碼。'
-                    });
-                        alertPopup.then(function(res) {
-                        pwdL.value="";
-                    });
-                    break;
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
+            "method": "POST",
+            "headers": {
+              "content-type": "application/x-www-form-urlencoded",
+              "cache-control": "no-cache",
+              "postman-token": "c7ef6a24-8c83-6a4f-78c3-e2d9da388f0c"
+            },
+            "data": {
+              "course": "c2",
+              "sid": "1061241101",
+              "pwd": "1011421601"
             }
-        })
+        }
+          
+        $.ajax(settings).done(function (response) {
+        console.log(response);
+        });
     },false);
+
+    
+
+    // var accountL = document.getElementById("page4-input1");
+    // var pwdL = document.getElementById("page4-input2");
+    // var loginSmtBtn = document.getElementById("page4-button1");
+    // loginSmtBtn.addEventListener("click",function(){
+    //     console.log(accountL.value);
+    //     firebase.auth().signInWithEmailAndPassword(accountL.value, pwdL.value).then(function(){
+    //         console.log("登入成功");
+    //         localStorage.setItem("LoginWay", "Signin"); // 登入方式標記為 首頁登入
+    //         accountL.value="";
+    //         pwdL.value="";
+    //         open("/#/menu/Derine",'_self');
+    //         // window.location.reload();
+    //     }).catch(function(error) {
+    //         var errorCode = error.code;
+    //         var errorMessage = error.message;
+    //         console.log(errorCode);
+    //         console.log(errorMessage);
+    //         switch(errorCode){
+    //             case 'auth/user-not-found':
+    //                 var alertPopup = $ionicPopup.alert({
+    //                     title: '發生錯誤',
+    //                     template: '查無此帳號。'
+    //                 });
+    //                     alertPopup.then(function(res) {
+    //                     accountL.value="";
+    //                     pwdL.value="";
+    //                 });
+    //                 break;
+    //             case 'auth/invalid-email':
+    //                 var alertPopup = $ionicPopup.alert({
+    //                     title: '發生錯誤',
+    //                     template: '電子信箱的格式有誤。'
+    //                 });
+    //                     alertPopup.then(function(res) {
+    //                     accountL.value="";
+    //                 });
+    //                 break;
+    //             case 'auth/wrong-password':
+    //                 var alertPopup = $ionicPopup.alert({
+    //                     title: '發生錯誤',
+    //                     template: '密碼錯誤，如忘記密碼請點選下方忘記密碼。'
+    //                 });
+    //                     alertPopup.then(function(res) {
+    //                     pwdL.value="";
+    //                 });
+    //                 break;
+    //         }
+    //     })
+    // },false);
     
 
 }])
