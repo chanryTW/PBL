@@ -19,13 +19,13 @@ html,body{
 }
 
 /* -----------------------------------------------登入頁面----------------------------------------------- */
-#page4-label1,#page4-label2{
+.page4-label{
     background-color: rgba(0, 0, 0, 0);
     border-top:0px;
     border-left:0px;
     border-right:0px;
 }
-#page4-span1,#page4-span2,#page4-input1,#page4-input2{
+.page4-span,.page4-input{
     color: #fff;
     font-size: 14px;
     padding-bottom: 0px;
