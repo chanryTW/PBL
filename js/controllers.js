@@ -1287,26 +1287,24 @@ function ($scope, $stateParams, $ionicPopup) {
     var pwdL = document.getElementById("page4-input2");
     var loginSmtBtn = document.getElementById("page4-button1");
     loginSmtBtn.addEventListener("click",function(){
-        var settings = {
-            "async": true,
-            "crossDomain": true,
-            "url": "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
-            "method": "POST",
-            "headers": {
-              "content-type": "application/x-www-form-urlencoded",
-              "cache-control": "no-cache",
-              "postman-token": "c7ef6a24-8c83-6a4f-78c3-e2d9da388f0c",
-              "Content-Security-Policy": "upgrade-insecure-requests"
+        $.ajax({
+            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
+            async: false,
+            type: "POST",
+            headers:{
+                "content-type": "application/x-www-form-urlencoded",
+                // "cache-control": "no-cache",
+                // "postman-token": "c7ef6a24-8c83-6a4f-78c3-e2d9da388f0c",
+                // "Content-Security-Policy": "upgrade-insecure-requests"//https?
             },
-            "data": {
-              "course": "c2",
-              "sid": "1061241101",
-              "pwd": "1011421601"
+            data: {
+                "course": "c2",
+                "sid": "1061241101",
+                "pwd": "1011421601"
+            },
+            success: function(resp){
+                console.log(resp);
             }
-        }
-          
-        $.ajax(settings).done(function (response) {
-        console.log(response);
         });
     },false);
 
