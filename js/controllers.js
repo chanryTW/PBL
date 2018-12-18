@@ -1290,12 +1290,13 @@ function ($scope, $stateParams, $ionicPopup) {
         var settings = {
             "async": true,
             "crossDomain": true,
-            "url": "https://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
+            "url": "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
             "method": "POST",
             "headers": {
               "content-type": "application/x-www-form-urlencoded",
               "cache-control": "no-cache",
-              "postman-token": "c7ef6a24-8c83-6a4f-78c3-e2d9da388f0c"
+              "postman-token": "c7ef6a24-8c83-6a4f-78c3-e2d9da388f0c",
+              "Content-Security-Policy": "upgrade-insecure-requests"
             },
             "data": {
               "course": "c2",
