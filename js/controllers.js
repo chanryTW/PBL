@@ -1290,7 +1290,7 @@ function ($scope, $stateParams, $ionicPopup) {
         var settings = {
             "async": true,
             "crossDomain": true,
-            "url": "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
+            "url": "https://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
             "method": "POST",
             "headers": {
               "content-type": "application/x-www-form-urlencoded",
