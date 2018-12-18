@@ -61,19 +61,7 @@ angular.module('app.routes', [])
     controller: 'page4Ctrl'
   })
 
-  .state('page5', {
-    url: '/welcome',
-    templateUrl: 'templates/page5.html',
-    controller: 'page5Ctrl'
-  })
-
-  .state('page6', {
-    url: '/Signup',
-    templateUrl: 'templates/page6.html',
-    controller: 'page6Ctrl'
-  })
-
-$urlRouterProvider.otherwise('/welcome')
+$urlRouterProvider.otherwise('/login')
 
 
 });
