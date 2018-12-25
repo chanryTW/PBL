@@ -1250,6 +1250,7 @@ function ($scope, $stateParams) {
             }
         });
     }
+    var updateBrain_Time = window.setInterval(updateBrain,5000);
 
     // 加入
     var brainstorming_input = document.getElementById("brainstorming_input");
