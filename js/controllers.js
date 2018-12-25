@@ -23,6 +23,8 @@ function ($scope, $stateParams, $ionicPopup) {
             },
             success: function(msg){
                 console.log("登入成功");
+                localStorage.setItem("course", classL.value);
+                localStorage.setItem("sid", accountL.value);
                 localStorage.setItem("sname", msg.sname);
                 accountL.value="";
                 pwdL.value="";
@@ -1221,30 +1223,71 @@ function ($scope, $stateParams) {
 // ----------------------------------------腦力激盪頁面----------------------------------------
 .controller('brainstormingCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
-    // 更新列表
-    $.ajax({
-        url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/getbs",
-        async: false,
-        type: "POST",
-        headers:{
-            "content-type": "application/x-www-form-urlencoded",
-        },
-        data: {
-            "course": "c2",
-            "gno": "1",
-            "from": "1"
-        },
-        success: function(msg){
-            console.log(msg.bs);
-            for (i=0;i<msg.bs.length;i++) {
-                document.getElementById("brainstorming_list").innerHTML = document.getElementById("brainstorming_list").innerHTML+'<div id="brainstorming_item" class="item"><h2>'+msg.bs[i].sname+'</h2><p>'+msg.bs[i].content+'</p></div>';
+    // 更新
+    updateBrain();
+    function updateBrain() {
+        document.getElementById("brainstorming_list").innerHTML = "";
+        $.ajax({
+            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/getbs",
+            async: false,
+            type: "POST",
+            headers:{
+                "content-type": "application/x-www-form-urlencoded",
+            },
+            data: {
+                "course": "c2",
+                "gno": "1",
+                "from": "1"
+            },
+            success: function(msg){
+                // console.log(msg.bs);
+                for (i=0;i<msg.bs.length;i++) {
+                    document.getElementById("brainstorming_list").innerHTML = document.getElementById("brainstorming_list").innerHTML+'<div id="brainstorming_item" class="item"><h2>'+msg.bs[i].sname+'</h2><p>'+msg.bs[i].content+'</p></div>';
+                }
+            },
+            error: function(msg){
+                console.log(msg);
             }
-        },
-        error: function(msg){
-            console.log(msg);
-        }
-    });
-    
+        });
+    }
+
+    // 加入
+    var brainstorming_input = document.getElementById("brainstorming_input");
+    var brainstorming_SmtButton = document.getElementById("brainstorming_SmtButton");
+    brainstorming_SmtButton.addEventListener("click",function(){
+        $.ajax({
+            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/addbs",
+            async: false,
+            type: "POST",
+            headers:{
+                "content-type": "application/x-www-form-urlencoded",
+            },
+            data: {
+                "course": localStorage.getItem("course"),
+                "sid": localStorage.getItem("sid"),
+                "sname": localStorage.getItem("sname"),
+                "gno": "1",
+                "content": brainstorming_input.value
+            },
+            success: function(msg){
+                console.log("新增腦力激盪成功");
+                brainstorming_input.value="";
+                updateBrain();
+            },
+            error: function(msg){
+                console.log(msg.responseJSON.message);
+                // var alertPopup = $ionicPopup.alert({
+                //     title: '同學你打錯了',
+                //     template: msg.responseJSON.message
+                // });
+                // alertPopup.then(function(res) {
+                //     accountL.value="";
+                //     pwdL.value="";
+                // });
+            }
+        });
+    },false);
+
 }])
 
 // ----------------------------------------提案聚焦頁面----------------------------------------
