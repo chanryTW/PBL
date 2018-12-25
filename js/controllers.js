@@ -14,8 +14,7 @@ function ($scope, $stateParams, $ionicPopup) {
             async: false,
             type: "POST",
             headers:{
-                "content-type": "application/x-www-form-urlencoded",
-                "Content-Security-Policy": "upgrade-insecure-requests"
+                "content-type": "application/x-www-form-urlencoded"
             },
             data: {
                 "course": classL.value,
@@ -77,7 +76,7 @@ function ($scope, $stateParams) {
             async: false,
             type: "POST",
             headers:{
-                "content-type": "application/x-www-form-urlencoded",
+                "content-type": "application/x-www-form-urlencoded"
             },
             data: {
                 "course": "c2",
