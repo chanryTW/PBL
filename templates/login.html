@@ -1,4 +1,4 @@
-<ion-view title="登入" hide-nav-bar="true" id="page4">
+<ion-view title="登入" hide-nav-bar="true" id="login">
   <ion-content style="background: url(img/002.jpg) no-repeat center;background-size:cover;padding:60px; " class="manual-ios-statusbar-padding" scroll="false">
     <form id="page4-form1" class="list">
       <div class="spacer" style="height: 30px;"></div>
@@ -9,28 +9,28 @@
       <ion-list id="page4-list2">
 
         <label class="item item-input item-select page4-label">
-          <span class="input-label page4-span">課程:</span>
-          <select>
-            <option selected>選擇課程</option>
-            <option>管理資訊系統甲班</option>
-            <option>管理資訊系統乙班</option>
+          <span class="input-label login_text">課程:</span>
+          <select id="classL">
+            <option value="0" selected>選擇課程</option>
+            <option value="c1">管理資訊系統甲班</option>
+            <option value="c2">管理資訊系統乙班</option>
           </select>
         </label>
 
         <label class="item item-input page4-label" id="page4-label1">
-          <span id="page4-span1" class="input-label page4-span">學號 :</span>
-          <input id="page4-input1" class="page4-input" type="email" placeholder="">
+          <span class="input-label login_text">學號 :</span>
+          <input id="accountL" class="login_text" type="email" placeholder="" value="1061241101">
         </label>
         
         <label class="item item-input page4-label" id="page4-label2">
-          <span id="page4-span2" class="input-label page4-span">密碼 :</span>
-          <input id="page4-input2" class="page4-input" type="password" placeholder="">
+          <span class="input-label login_text">密碼 :</span>
+          <input id="pwdL" class="login_text" type="password" placeholder="" value="1011421601">
         </label>
         
       </ion-list>
       <div class="spacer" style="height: 20px;"></div>
       <!-- <a ui-sref="menu.derine()"  class="button button-stable button-block">登入</a> -->
-      <button id="page4-button1" class="button button-stable button-block">登入</button>
+      <button id="loginSmtBtn" class="button button-stable button-block">登入</button>
       <button id="page4-button2" class="button button-positive button-block button-clear">忘記密碼?</button>
     </form>
   </ion-content>

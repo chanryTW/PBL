@@ -8,10 +8,10 @@ angular.module('app.routes', [])
   // Each state's controller can be found in controllers.js
   $stateProvider
     
-  .state('page4', {
+  .state('login', {
     url: '/login',
-    templateUrl: 'templates/page4.html',
-    controller: 'page4Ctrl'
+    templateUrl: 'templates/login.html',
+    controller: 'loginCtrl'
   })
 
   .state('menu', {

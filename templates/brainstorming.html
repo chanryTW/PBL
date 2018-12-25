@@ -1,6 +1,19 @@
-<ion-view title="腦力激盪" hide-back-button="true" id="brainstorming">
-  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="false">
+<ion-view title="腦力激盪" hide-back-button="true" id="brainstorming" >
+  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
     
- 
+    <!-- main -->
+    <div id="brainstorming_list" class="list list-inset"></div>
+
+    <!-- 空格 -->
+    <div class="spacer" style="height: 15px;"></div>
+
   </ion-content>
+
+  <!-- 文字輸入 -->
+  <div class="bar bar-footer">
+    <label class="item-input-wrapper">
+      <input id="brainstorming_input" type="text" placeholder="輸入提案...">
+    </label>
+    <button class="button button-small">送出</button>
+  </div>
 </ion-view>
