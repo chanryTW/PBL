@@ -1,12 +1,13 @@
 angular.module('app.controllers', [])
 
 // ----------------------------------------登入頁面----------------------------------------
-.controller('page4Ctrl', ['$scope', '$stateParams', '$ionicPopup',
+.controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup',
 function ($scope, $stateParams, $ionicPopup) {
     // 登入
-    var accountL = document.getElementById("page4-input1");
-    var pwdL = document.getElementById("page4-input2");
-    var loginSmtBtn = document.getElementById("page4-button1");
+    var classL = document.getElementById("classL");
+    var accountL = document.getElementById("accountL");
+    var pwdL = document.getElementById("pwdL");
+    var loginSmtBtn = document.getElementById("loginSmtBtn");
     loginSmtBtn.addEventListener("click",function(){
         $.ajax({
             url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
@@ -16,12 +17,13 @@ function ($scope, $stateParams, $ionicPopup) {
                 "content-type": "application/x-www-form-urlencoded",
             },
             data: {
-                "course": "c2",
-                "sid": "1061241101",
-                "pwd": "1011421601"
+                "course": classL.value,
+                "sid": accountL.value,
+                "pwd": pwdL.value
             },
             success: function(msg){
-                console.log(msg);
+                console.log("登入成功");
+                localStorage.setItem("sname", msg.sname);
                 accountL.value="";
                 pwdL.value="";
                 open("/#/menu/pbl",'_self');
@@ -1219,7 +1221,29 @@ function ($scope, $stateParams) {
 // ----------------------------------------腦力激盪頁面----------------------------------------
 .controller('brainstormingCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
-
+    // 更新列表
+    $.ajax({
+        url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/getbs",
+        async: false,
+        type: "POST",
+        headers:{
+            "content-type": "application/x-www-form-urlencoded",
+        },
+        data: {
+            "course": "c2",
+            "gno": "1",
+            "from": "1"
+        },
+        success: function(msg){
+            console.log(msg.bs);
+            for (i=0;i<msg.bs.length;i++) {
+                document.getElementById("brainstorming_list").innerHTML = document.getElementById("brainstorming_list").innerHTML+'<div id="brainstorming_item" class="item"><h2>'+msg.bs[i].sname+'</h2><p>'+msg.bs[i].content+'</p></div>';
+            }
+        },
+        error: function(msg){
+            console.log(msg);
+        }
+    });
 
 }])
 
@@ -1328,18 +1352,26 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
 // ----------------------------------------選單頁面----------------------------------------
 .controller('menuCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
+    // 更新使用者姓名
+    document.getElementById("menu-heading1").innerText = localStorage.getItem("sname");
+
     // 登出
-    var signOutSmtBtn = document.getElementById("menu-list-item5");
+    var signOutSmtBtn = document.getElementById("menu-list-item8");
     signOutSmtBtn.addEventListener("click",function(){
-        firebase.auth().signOut().then(function() {
-            console.log("登出成功");
-            localStorage.clear();
-        }).catch(function(error) {
-            console.log("登出發生錯誤!");
-        });
+        console.log("登出成功");
+        localStorage.clear();
     },false);
+    // var signOutSmtBtn = document.getElementById("menu-list-item5");
+    // signOutSmtBtn.addEventListener("click",function(){
+    //     firebase.auth().signOut().then(function() {
+    //         console.log("登出成功");
+    //         localStorage.clear();
+    //     }).catch(function(error) {
+    //         console.log("登出發生錯誤!");
+    //     });
+    // },false);
     
     // 設定授權文字位置
-    $('#menu-heading2').css('top', window.innerHeight-560+'px');
+    $('#menu-heading2').css('top', window.innerHeight-620+'px');
 }])
 
