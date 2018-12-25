@@ -1241,6 +1241,7 @@ function ($scope, $stateParams) {
             },
             success: function(msg){
                 // console.log(msg.bs);
+                console.log("更新腦力激盪列表");
                 for (i=0;i<msg.bs.length;i++) {
                     document.getElementById("brainstorming_list").innerHTML = document.getElementById("brainstorming_list").innerHTML+'<div id="brainstorming_item" class="item"><h2>'+msg.bs[i].sname+'</h2><p>'+msg.bs[i].content+'</p></div>';
                 }
