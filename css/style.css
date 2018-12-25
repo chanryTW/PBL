@@ -205,7 +205,7 @@ html,body{
     height: 100%;
 }
 /* 列表按鈕 */
-#menu-list-item1 a,#menu-list-item3 a,#menu-list-item4 a,#menu-list-item5 a,#menu-list-item6 a{
+#menu-list-item1 a,#menu-list-item2 a,#menu-list-item3 a,#menu-list-item4 a,#menu-list-item5 a,#menu-list-item6 a,#menu-list-item7 a,#menu-list-item8 a{
     background-color: rgba(255, 255, 255, 0.281);
     font-size: 28px;
     font-family: "微軟正黑體";
@@ -214,14 +214,14 @@ html,body{
     padding: 16px;
     color: #ffffff;
 }
-#menu-list1,#menu-list1 .list,#menu-list-item1,#menu-list-item3,#menu-list-item4,#menu-list-item5,#menu-list-item6{
+.menu-list-item{
     background-color: rgba(255, 255, 255, 0);
 }
 /*  */
 #menu-heading2{
     position: relative;
 }
-/* -----------------------------------------------個人資料頁面----------------------------------------------- */
+/* -----------------------------------------------設定頁面----------------------------------------------- */
 /* 存檔按鈕 */
 #page7_savebtn1,#page7_savebtn2,#page7_savebtn3{
     margin: 10px;

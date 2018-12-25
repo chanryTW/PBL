@@ -8,45 +8,10 @@ angular.module('app.routes', [])
   // Each state's controller can be found in controllers.js
   $stateProvider
     
-
-  .state('menu.derine', {
-    url: '/Derine',
-    views: {
-      'side-menu21': {
-        templateUrl: 'templates/derine.html',
-        controller: 'derineCtrl'
-      }
-    }
-  })
-
-  .state('menu.page7', {
-    url: '/personal',
-    views: {
-      'side-menu21': {
-        templateUrl: 'templates/page7.html',
-        controller: 'page7Ctrl'
-      }
-    }
-  })
-
-  .state('menu.page8', {
-    url: '/Description',
-    views: {
-      'side-menu21': {
-        templateUrl: 'templates/page8.html',
-        controller: 'page8Ctrl'
-      }
-    }
-  })
-
-  .state('menu.page9', {
-    url: '/about',
-    views: {
-      'side-menu21': {
-        templateUrl: 'templates/page9.html',
-        controller: 'page9Ctrl'
-      }
-    }
+  .state('page4', {
+    url: '/login',
+    templateUrl: 'templates/page4.html',
+    controller: 'page4Ctrl'
   })
 
   .state('menu', {
@@ -55,11 +20,76 @@ angular.module('app.routes', [])
     controller: 'menuCtrl'
   })
 
-  .state('page4', {
-    url: '/login',
-    templateUrl: 'templates/page4.html',
-    controller: 'page4Ctrl'
+  .state('menu.pbl', {
+    url: '/pbl',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/pbl.html',
+        controller: 'pblCtrl'
+      }
+    }
   })
+
+  .state('menu.mission', {
+    url: '/mission',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/mission.html',
+        controller: 'missionCtrl'
+      }
+    }
+  })
+
+  .state('menu.group', {
+    url: '/group',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/group.html',
+        controller: 'groupCtrl'
+      }
+    }
+  })
+
+  .state('menu.brainstorming', {
+    url: '/brainstorming',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/brainstorming.html',
+        controller: 'brainstormingCtrl'
+      }
+    }
+  })
+
+  .state('menu.proposal', {
+    url: '/proposal',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/proposal.html',
+        controller: 'proposalCtrl'
+      }
+    }
+  })
+
+  .state('menu.score', {
+    url: '/score',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/score.html',
+        controller: 'scoreCtrl'
+      }
+    }
+  })
+
+  .state('menu.setting', {
+    url: '/setting',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/setting.html',
+        controller: 'settingCtrl'
+      }
+    }
+  })
+
 
 $urlRouterProvider.otherwise('/login')
 
