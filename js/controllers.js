@@ -15,6 +15,7 @@ function ($scope, $stateParams, $ionicPopup) {
             type: "POST",
             headers:{
                 "content-type": "application/x-www-form-urlencoded",
+                "Content-Security-Policy": "upgrade-insecure-requests"
             },
             data: {
                 "course": classL.value,
