@@ -1,7 +1,49 @@
 angular.module('app.controllers', [])
 
+// ----------------------------------------登入頁面----------------------------------------
+.controller('page4Ctrl', ['$scope', '$stateParams', '$ionicPopup',
+function ($scope, $stateParams, $ionicPopup) {
+    // 登入
+    var accountL = document.getElementById("page4-input1");
+    var pwdL = document.getElementById("page4-input2");
+    var loginSmtBtn = document.getElementById("page4-button1");
+    loginSmtBtn.addEventListener("click",function(){
+        $.ajax({
+            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
+            async: false,
+            type: "POST",
+            headers:{
+                "content-type": "application/x-www-form-urlencoded",
+            },
+            data: {
+                "course": "c2",
+                "sid": "1061241101",
+                "pwd": "1011421601"
+            },
+            success: function(msg){
+                console.log(msg);
+                accountL.value="";
+                pwdL.value="";
+                open("/#/menu/pbl",'_self');
+            },
+            error: function(msg){
+                console.log(msg.responseJSON.message);
+                var alertPopup = $ionicPopup.alert({
+                    title: '同學你打錯了',
+                    template: msg.responseJSON.message
+                });
+                alertPopup.then(function(res) {
+                    accountL.value="";
+                    pwdL.value="";
+                });
+            }
+        });
+    },false);
+
+}])
+
 // ----------------------------------------主頁面----------------------------------------
-.controller('derineCtrl', ['$scope', '$stateParams', 
+.controller('pblCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
     // 驗證登入
     
@@ -1160,8 +1202,43 @@ function ($scope, $stateParams) {
 
 }])
 
-// ----------------------------------------個人資料頁面----------------------------------------
-.controller('page7Ctrl', ['$scope', '$stateParams', '$ionicLoading', '$ionicPopup',
+// ----------------------------------------課程任務頁面----------------------------------------
+.controller('missionCtrl', ['$scope', '$stateParams', 
+function ($scope, $stateParams) {
+
+
+}])
+   
+// ----------------------------------------分組頁面----------------------------------------
+.controller('groupCtrl', ['$scope', '$stateParams', 
+function ($scope, $stateParams) {
+
+
+}])
+
+// ----------------------------------------腦力激盪頁面----------------------------------------
+.controller('brainstormingCtrl', ['$scope', '$stateParams', 
+function ($scope, $stateParams) {
+
+
+}])
+
+// ----------------------------------------提案聚焦頁面----------------------------------------
+.controller('proposalCtrl', ['$scope', '$stateParams', 
+function ($scope, $stateParams) {
+
+
+}])
+
+// ----------------------------------------分組評分頁面----------------------------------------
+.controller('scoreCtrl', ['$scope', '$stateParams', 
+function ($scope, $stateParams) {
+
+
+}])
+
+// ----------------------------------------設定頁面----------------------------------------
+.controller('settingCtrl', ['$scope', '$stateParams', '$ionicLoading', '$ionicPopup',
 function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
     // 修改暱稱功能
     var SaveBtn1 = document.getElementById("page7_savebtn1");
@@ -1248,19 +1325,6 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
    
 }])
 
-// ----------------------------------------功能說明頁面----------------------------------------
-.controller('page8Ctrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
-
-
-}])
-   
-.controller('page9Ctrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
-
-
-}])
-
 // ----------------------------------------選單頁面----------------------------------------
 .controller('menuCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
@@ -1279,86 +1343,3 @@ function ($scope, $stateParams) {
     $('#menu-heading2').css('top', window.innerHeight-560+'px');
 }])
 
-// ----------------------------------------登入頁面----------------------------------------
-.controller('page4Ctrl', ['$scope', '$stateParams', '$ionicPopup',
-function ($scope, $stateParams, $ionicPopup) {
-    // 登入
-    var accountL = document.getElementById("page4-input1");
-    var pwdL = document.getElementById("page4-input2");
-    var loginSmtBtn = document.getElementById("page4-button1");
-    loginSmtBtn.addEventListener("click",function(){
-        $.ajax({
-            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
-            async: false,
-            type: "POST",
-            headers:{
-                "content-type": "application/x-www-form-urlencoded",
-                // "cache-control": "no-cache",
-                // "postman-token": "c7ef6a24-8c83-6a4f-78c3-e2d9da388f0c",
-                // "Content-Security-Policy": "upgrade-insecure-requests"//https?
-            },
-            data: {
-                "course": "c2",
-                "sid": "1061241101",
-                "pwd": "1011421601"
-            },
-            success: function(resp){
-                console.log(resp);
-            }
-        });
-    },false);
-
-    
-
-    // var accountL = document.getElementById("page4-input1");
-    // var pwdL = document.getElementById("page4-input2");
-    // var loginSmtBtn = document.getElementById("page4-button1");
-    // loginSmtBtn.addEventListener("click",function(){
-    //     console.log(accountL.value);
-    //     firebase.auth().signInWithEmailAndPassword(accountL.value, pwdL.value).then(function(){
-    //         console.log("登入成功");
-    //         localStorage.setItem("LoginWay", "Signin"); // 登入方式標記為 首頁登入
-    //         accountL.value="";
-    //         pwdL.value="";
-    //         open("/#/menu/Derine",'_self');
-    //         // window.location.reload();
-    //     }).catch(function(error) {
-    //         var errorCode = error.code;
-    //         var errorMessage = error.message;
-    //         console.log(errorCode);
-    //         console.log(errorMessage);
-    //         switch(errorCode){
-    //             case 'auth/user-not-found':
-    //                 var alertPopup = $ionicPopup.alert({
-    //                     title: '發生錯誤',
-    //                     template: '查無此帳號。'
-    //                 });
-    //                     alertPopup.then(function(res) {
-    //                     accountL.value="";
-    //                     pwdL.value="";
-    //                 });
-    //                 break;
-    //             case 'auth/invalid-email':
-    //                 var alertPopup = $ionicPopup.alert({
-    //                     title: '發生錯誤',
-    //                     template: '電子信箱的格式有誤。'
-    //                 });
-    //                     alertPopup.then(function(res) {
-    //                     accountL.value="";
-    //                 });
-    //                 break;
-    //             case 'auth/wrong-password':
-    //                 var alertPopup = $ionicPopup.alert({
-    //                     title: '發生錯誤',
-    //                     template: '密碼錯誤，如忘記密碼請點選下方忘記密碼。'
-    //                 });
-    //                     alertPopup.then(function(res) {
-    //                     pwdL.value="";
-    //                 });
-    //                 break;
-    //         }
-    //     })
-    // },false);
-    
-
-}])
