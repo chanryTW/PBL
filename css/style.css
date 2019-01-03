@@ -41,6 +41,30 @@ html,body{
     width: 100%;
     background-color: rgba(255, 255, 255, 0);
 }
+
+/* -----------------------------------------------提案聚焦頁面----------------------------------------------- */
+.AddBall{
+    text-align: center;
+    line-height: 60px;
+    font-size: 40px;
+    color: #fff;
+
+    position: fixed;
+    background-color: #444444;
+
+    z-index: 30;
+    right: 5px;
+    bottom: 140px;
+
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+}
+.list-footer{
+    position: fixed;
+    bottom: 20px;
+    z-index: 20;
+}
 /* -----------------------------------------------選單頁面----------------------------------------------- */
 /* 大頭照 */
 .menu-img-div{
