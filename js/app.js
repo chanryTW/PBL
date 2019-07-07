@@ -26,6 +26,17 @@ angular.module('app', ['ionic', 'app.controllers', 'app.routes', 'app.directives
       StatusBar.styleDefault();
     }
   });
+
+  // Firebase Key
+  var config = {
+    apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
+    authDomain: "co-writing-test.firebaseapp.com",
+    databaseURL: "https://co-writing-test.firebaseio.com",
+    projectId: "co-writing-test",
+    storageBucket: "co-writing-test.appspot.com",
+    messagingSenderId: "894137377703"
+  };
+  firebase.initializeApp(config);
 })
 
 /*

@@ -4,52 +4,186 @@ angular.module('app.controllers', [])
 .controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup',
 function ($scope, $stateParams, $ionicPopup) {
     // 登入
-    var classL = document.getElementById("classL");
     var accountL = document.getElementById("accountL");
     var pwdL = document.getElementById("pwdL");
     var loginSmtBtn = document.getElementById("loginSmtBtn");
     loginSmtBtn.addEventListener("click",function(){
-        $.ajax({
-            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
-            async: false,
-            type: "POST",
-            headers:{
-                "content-type": "application/x-www-form-urlencoded"
-            },
-            data: {
-                "course": classL.value,
-                "sid": accountL.value,
-                "pwd": pwdL.value
-            },
-            success: function(msg){
-                console.log("登入成功");
-                localStorage.setItem("course", classL.value);
-                localStorage.setItem("sid", accountL.value);
-                localStorage.setItem("sname", msg.sname);
-                accountL.value="";
-                pwdL.value="";
-                open("/#/menu/pbl",'_self');
-            },
-            error: function(msg){
-                console.log(msg.responseJSON.message);
-                var alertPopup = $ionicPopup.alert({
-                    title: '同學你打錯了',
-                    template: msg.responseJSON.message
-                });
-                alertPopup.then(function(res) {
-                    accountL.value="";
-                    pwdL.value="";
-                });
+        // $.ajax({
+        //     url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
+        //     async: false,
+        //     type: "POST",
+        //     headers:{
+        //         "content-type": "application/x-www-form-urlencoded"
+        //     },
+        //     data: {
+        //         "course": classL.value,
+        //         "sid": accountL.value,
+        //         "pwd": pwdL.value
+        //     },
+        //     success: function(msg){
+        //         console.log("登入成功");
+        //         localStorage.setItem("course", classL.value);
+        //         localStorage.setItem("sid", accountL.value);
+        //         localStorage.setItem("sname", msg.sname);
+        //         accountL.value="";
+        //         pwdL.value="";
+        //         open("/#/menu/pbl",'_self');
+        //     },
+        //     error: function(msg){
+        //         console.log(msg.responseJSON.message);
+        //         var alertPopup = $ionicPopup.alert({
+        //             title: '同學你打錯了',
+        //             template: msg.responseJSON.message
+        //         });
+        //         alertPopup.then(function(res) {
+        //             accountL.value="";
+        //             pwdL.value="";
+        //         });
+        //     }
+        // });
+
+        firebase.auth().signInWithEmailAndPassword(accountL.value+"@nkust.edu.tw", pwdL.value).then(function(){
+            console.log("登入成功");
+            localStorage.setItem("LoginWay", "Signin"); // 登入方式標記為 首頁登入
+            accountL.value="";
+            pwdL.value="";
+            open("/#/choose_class",'_self');
+            // open("/#/menu/pbl",'_self');
+        }).catch(function(error) {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            console.log(errorCode);
+            console.log(errorMessage);
+            switch(errorCode){
+                case 'auth/user-not-found':
+                    var alertPopup = $ionicPopup.alert({
+                        title: '疑？',
+                        template: '查無此帳號。'
+                    });
+                        alertPopup.then(function(res) {
+                        accountL.value="";
+                        pwdL.value="";
+                    });
+                    break;
+                case 'auth/invalid-email':
+                    var alertPopup = $ionicPopup.alert({
+                        title: '疑？',
+                        template: '格式有誤。'
+                    });
+                        alertPopup.then(function(res) {
+                        accountL.value="";
+                    });
+                    break;
+                case 'auth/wrong-password':
+                    var alertPopup = $ionicPopup.alert({
+                        title: '疑？',
+                        template: '密碼錯誤。'
+                    });
+                        alertPopup.then(function(res) {
+                        pwdL.value="";
+                    });
+                    break;
             }
         });
     },false);
 
 }])
 
+// ----------------------------------------選擇課程頁面----------------------------------------
+.controller('choose_classCtrl', ['$scope', '$stateParams', '$state',
+function ($scope, $stateParams, $state) {
+    
+    var a = [];
+    var db = firebase.firestore();
+    var query = db.collection("課程").where("學生名單", "array-contains", "1031241104");
+    query.get().then(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+            a.push(doc.data());
+        });
+    });
+
+    
+    $scope.items = a;
+    console.log(a);
+    $state.go($state.current, {}, {reload: true});
+
+}])
+
 // ----------------------------------------主頁面----------------------------------------
 .controller('pblCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            account = user.email.substr(0,user.email.search("@"));
+            // 記錄登入
+                // var db = firebase.database();
+                // var Today=new Date(); 
+                // // 取得 UTC time
+                // utc = Today.getTime() + (Today.getTimezoneOffset() * 60000);
+                // db.ref("/登入記錄/").push({記錄: "用戶 "+user.uid+" 登入於 "+Date(utc + (3600000*8))},
+                // function(error) {
+                //     if (error){
+                //         console.log("記錄登入記錄失敗");
+                //         console.log(error);
+                //     }
+                //     else{
+                //         console.log("記錄登入記錄成功");
+                //     }
+                // });
+            db.collection("帳號").doc(account).get().then(function(doc) {
+                if (doc.exists) {
+                    console.log("成功取得使用者資料");
+                } else {
+                    console.log("首次登入，建立使用者資料中...");
+                    db.collection("member").doc(account).set({
+                        暱稱: account,
+                        照片ID: "1321"
+                    })
+                    .then(function() {
+                        console.log("首次登入，建立使用者資料成功");
+                    })
+                    .catch(function(error) {
+                        console.error("首次登入，建立使用者資料失敗：", error);
+                        open("/#/login",'_self');
+                    });
+                }
+            });
+
+            // 更新menu的大頭照
+            // var storage = firebase.storage();
+            // var storageRef = storage.ref();
+            // storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
+            //     document.getElementById("menu-img").src=url;
+            // })
+            // 更新選單的暱稱
+            // var userId = localStorage.getItem("uid");
+            // return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
+            //     var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
+            // });
+        }else{
+            console.log("尚未登入");
+            open("/#/login",'_self');
+        }
+    });
+    
+    $scope.items = [];
+    // 監聽 - 公告內容
+    db.collection("課程").doc("r1nWWkWlamDzTCkttlGZ")
+    .onSnapshot(function(doc) {
+        // document.getElementById("co-writing_content").textContent = doc.data().ClassContent;
+        $scope.items = [{ClassMessage:doc.data().ClassContent}];
+    });
+    
+    // var textget = window.location.search.substring(0);
+    // console.log(textget.substring(0,textget.search ("&")));
+    // console.log(textget);
+    //  (1);<br>alert(textget.substring(0,textget.search ("&")));<br>alert(textget.substring (textget.search("&")+1,textget.length));
+
 }])
+
 // ----------------------------------------課程任務頁面----------------------------------------
 .controller('missionCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
@@ -79,7 +213,7 @@ function ($scope, $stateParams) {
                 "content-type": "application/x-www-form-urlencoded"
             },
             data: {
-                "course": "c2",
+                "course": "c1",
                 "gno": "1",
                 "from": "1"
             },
@@ -145,6 +279,11 @@ function ($scope, $stateParams) {
 
 // ----------------------------------------分組評分頁面----------------------------------------
 .controller('scoreCtrl', ['$scope', '$stateParams', 
+function ($scope, $stateParams) {
+
+
+}])
+.controller('ingroup_mutualCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
 
 
@@ -247,20 +386,15 @@ function ($scope, $stateParams) {
     // 登出
     var signOutSmtBtn = document.getElementById("menu-list-item8");
     signOutSmtBtn.addEventListener("click",function(){
-        console.log("登出成功");
-        localStorage.clear();
+        firebase.auth().signOut().then(function() {
+            console.log("登出成功");
+            localStorage.clear();
+        }).catch(function(error) {
+            console.log("登出發生錯誤!");
+        });
     },false);
-    // var signOutSmtBtn = document.getElementById("menu-list-item5");
-    // signOutSmtBtn.addEventListener("click",function(){
-    //     firebase.auth().signOut().then(function() {
-    //         console.log("登出成功");
-    //         localStorage.clear();
-    //     }).catch(function(error) {
-    //         console.log("登出發生錯誤!");
-    //     });
-    // },false);
     
     // 設定授權文字位置
     $('#menu-heading2').css('top', window.innerHeight-620+'px');
-}])
+}]);
 
