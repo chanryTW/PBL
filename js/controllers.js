@@ -1,8 +1,8 @@
 angular.module('app.controllers', [])
 
 // ----------------------------------------登入頁面----------------------------------------
-.controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup',
-function ($scope, $stateParams, $ionicPopup) {
+.controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state',
+function ($scope, $stateParams, $ionicPopup, $state) {
     // 登入
     var accountL = document.getElementById("accountL");
     var pwdL = document.getElementById("pwdL");
@@ -47,7 +47,7 @@ function ($scope, $stateParams, $ionicPopup) {
             localStorage.setItem("LoginWay", "Signin"); // 登入方式標記為 首頁登入
             accountL.value="";
             pwdL.value="";
-            open("/#/choose_class",'_self');
+            $state.go("choose_class");
             // open("/#/menu/pbl",'_self');
         }).catch(function(error) {
             var errorCode = error.code;
@@ -92,7 +92,6 @@ function ($scope, $stateParams, $ionicPopup) {
 // ----------------------------------------選擇課程頁面----------------------------------------
 .controller('choose_classCtrl', ['$scope', '$stateParams', '$state',
 function ($scope, $stateParams, $state) {
-    
     var a = [];
     var db = firebase.firestore();
     var query = db.collection("課程").where("學生名單", "array-contains", "1031241104");
@@ -101,17 +100,13 @@ function ($scope, $stateParams, $state) {
             a.push(doc.data());
         });
     });
-
-    
     $scope.items = a;
-    console.log(a);
-    $state.go($state.current, {}, {reload: true});
-
+    $state.go($state.current, {}, {reload: true}); //重新載入view
 }])
 
 // ----------------------------------------主頁面----------------------------------------
-.controller('pblCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
+.controller('pblCtrl', ['$scope', '$stateParams', '$state', 
+function ($scope, $stateParams, $state) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -147,41 +142,46 @@ function ($scope, $stateParams) {
                     })
                     .catch(function(error) {
                         console.error("首次登入，建立使用者資料失敗：", error);
-                        open("/#/login",'_self');
+                        $state.go("login");
                     });
                 }
             });
 
-            // 更新menu的大頭照
-            // var storage = firebase.storage();
-            // var storageRef = storage.ref();
-            // storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
-            //     document.getElementById("menu-img").src=url;
-            // })
-            // 更新選單的暱稱
-            // var userId = localStorage.getItem("uid");
-            // return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
-            //     var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
-            // });
+            // 取得ClassID
+            var ClassID = window.location.hash.substring(window.location.hash.search("ClassID=")+8);
+            if (ClassID.length != 20){
+                console.log("網址錯誤");
+                $state.go("login");
+            }else {
+                // 監聽 - 公告內容
+                db.collection("課程").doc(ClassID)
+                .onSnapshot(function(doc) {
+                    // document.getElementById("co-writing_content").textContent = doc.data().ClassContent;
+                    $scope.items = [{ClassContent:doc.data().ClassContent}];
+                    
+                },function(error) {
+                    console.error("讀取課程發生錯誤：", error);
+                    $state.go("login");
+                });      
+
+                // 更新menu的大頭照
+                // var storage = firebase.storage();
+                // var storageRef = storage.ref();
+                // storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
+                //     document.getElementById("menu-img").src=url;
+                // })
+                // 更新選單的暱稱
+                // var userId = localStorage.getItem("uid");
+                // return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
+                //     var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
+                // });
+            }
         }else{
             console.log("尚未登入");
-            open("/#/login",'_self');
+            $state.go("login");
         }
     });
     
-    $scope.items = [];
-    // 監聽 - 公告內容
-    db.collection("課程").doc("r1nWWkWlamDzTCkttlGZ")
-    .onSnapshot(function(doc) {
-        // document.getElementById("co-writing_content").textContent = doc.data().ClassContent;
-        $scope.items = [{ClassMessage:doc.data().ClassContent}];
-    });
-    
-    // var textget = window.location.search.substring(0);
-    // console.log(textget.substring(0,textget.search ("&")));
-    // console.log(textget);
-    //  (1);<br>alert(textget.substring(0,textget.search ("&")));<br>alert(textget.substring (textget.search("&")+1,textget.length));
-
 }])
 
 // ----------------------------------------課程任務頁面----------------------------------------
