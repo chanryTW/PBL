@@ -1,14 +1,15 @@
-<ion-view title="{課程名稱}" hide-back-button="true" id="pbl">
+<ion-view title="首頁" hide-back-button="true" id="pbl">
   <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="false">
     
      <div ng-repeat="item in items" class="card">
-        <div class="item item-divider" id="co-writing_title">
+        <div class="item item-divider">
           課程公告：
         </div>
         <div class="item item-text-wrap" id="co-writing_content">
-          {{item.ClassMessage}}
+          {{item.ClassContent}}}
         </div>
     </div>
+    
 
   </ion-content>
 </ion-view>
