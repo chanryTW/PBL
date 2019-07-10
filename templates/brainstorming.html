@@ -17,7 +17,7 @@
   <!-- 文字輸入 -->
   <div class="bar bar-footer">
     <label class="item-input-wrapper">
-      <input class="brainstorming_input" ng-model="input" type="text" placeholder="輸入提案...">
+      <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && add()" ng-model="input" type="text" placeholder="輸入提案...">
     </label>
     <button class="button button-small" ng-click="add()">送出</button>
   </div>
