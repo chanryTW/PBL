@@ -1,8 +1,13 @@
 <ion-view title="腦力激盪" hide-back-button="true" id="brainstorming" >
   <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
-    
+
     <!-- main -->
-    <div id="brainstorming_list" class="list list-inset"></div>
+    <div id="brainstorming_list" class="list list-inset" ng-repeat="item in items">
+      <div id="brainstorming_item" class="item">
+        <h2>{{item.name}}</h2>
+        <p>{{item.msg}}<button class="ion-minus-circled" ng-click="Delete(item)"></button></p>
+      </div>
+    </div>
 
     <!-- 空格 -->
     <div class="spacer" style="height: 15px;"></div>
@@ -12,8 +17,8 @@
   <!-- 文字輸入 -->
   <div class="bar bar-footer">
     <label class="item-input-wrapper">
-      <input id="brainstorming_input" type="text" placeholder="輸入提案...">
+      <input class="brainstorming_input" ng-model="input" type="text" placeholder="輸入提案...">
     </label>
-    <button id="brainstorming_SmtButton" class="button button-small">送出</button>
+    <button class="button button-small" ng-click="add()">送出</button>
   </div>
 </ion-view>

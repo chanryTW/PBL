@@ -199,74 +199,143 @@ function ($scope, $stateParams) {
 }])
 
 // ----------------------------------------腦力激盪頁面----------------------------------------
-.controller('brainstormingCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
-    // 更新
-    updateBrain();
-    function updateBrain() {
-        document.getElementById("brainstorming_list").innerHTML = "";
-        $.ajax({
-            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/getbs",
-            async: false,
-            type: "POST",
-            headers:{
-                "content-type": "application/x-www-form-urlencoded"
-            },
-            data: {
-                "course": "c1",
-                "gno": "1",
-                "from": "1"
-            },
-            success: function(msg){
-                // console.log(msg.bs);
-                console.log("更新腦力激盪列表");
-                for (i=0;i<msg.bs.length;i++) {
-                    document.getElementById("brainstorming_list").innerHTML = document.getElementById("brainstorming_list").innerHTML+'<div id="brainstorming_item" class="item"><h2>'+msg.bs[i].sname+'</h2><p>'+msg.bs[i].content+'</p></div>';
+.controller('brainstormingCtrl', ['$scope', '$stateParams', '$state',
+function ($scope, $stateParams, $state) {
+    var db = firebase.firestore();
+    $scope.items = [];
+    // 監聽 - 腦力激盪內容
+    db.collection("腦力激盪").doc("0001").collection("g0001")
+    .onSnapshot({
+        includeMetadataChanges: true
+    }, function(querySnapshot) {
+        querySnapshot.docChanges().forEach(function(change) {
+            if (change.type === "added") {
+                console.log("新增: ", change.doc.data());
+                $scope.items.push(change.doc.data());
+                $state.go($state.current, {}, {reload: true}); //重新載入view
+            }
+            if (change.type === "modified") {
+                console.log("修改: ", change.doc.data());
+            }
+            if (change.type === "removed") {
+                console.log("刪除: ", change.doc.data());
+                // 用findIndex找出要刪除的位置
+                var indexNum = $scope.items.findIndex((element)=>{
+                    console.log(element.time,change.doc.data().time);
+                    return element.time === change.doc.data().time;
+                });
+                if (indexNum!=-1) {
+                    $scope.items.splice(indexNum,1);
+                    console.log("刪除列表成功");
+                }else{
+                    console.log("刪除列表不成功");
                 }
-            },
-            error: function(msg){
-                console.log(msg);
+
+                $state.go($state.current, {}, {reload: true}); //重新載入view
             }
         });
-    }
-    var updateBrain_Time = window.setInterval(updateBrain,5000);
+
+    });
+
+    // 新增腦力激盪
+    $scope.add = function() {
+        if ($scope.input!=undefined) {
+            db.collection("腦力激盪").doc("0001").collection("g0001")
+            .add({
+                name: "廖詮睿",
+                msg: $scope.input,
+                time: new Date()
+            })
+            .then(function(data) {
+                console.log("新增腦力激盪成功");
+            })
+            .catch(function(error) {
+                console.error("新增腦力激盪失敗：", error);
+            });
+        }
+    };
+
+    // 刪除腦力激盪
+    $scope.Delete = function(item) {
+        var query = db.collection("腦力激盪").doc("0001").collection("g0001").where("time", "==", item.time);
+        query.get().then(function (querySnapshot) {
+            querySnapshot.forEach(function (doc) {
+                db.collection("腦力激盪").doc("0001").collection("g0001").doc(doc.id)
+                .delete().then(function () {
+                    console.log("刪除腦力激盪成功");
+                }).catch(function(error) {
+                    console.error("刪除腦力激盪失敗：", error);
+                });
+            });
+        });
+    };
+
+    // 更新
+    // updateBrain();
+    // function updateBrain() {
+    //     document.getElementById("brainstorming_list").innerHTML = "";
+    //     $.ajax({
+    //         url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/getbs",
+    //         async: false,
+    //         type: "POST",
+    //         headers:{
+    //             "content-type": "application/x-www-form-urlencoded"
+    //         },
+    //         data: {
+    //             "course": "c1",
+    //             "gno": "1",
+    //             "from": "1"
+    //         },
+    //         success: function(msg){
+    //             // console.log(msg.bs);
+    //             console.log("更新腦力激盪列表");
+    //             for (i=0;i<msg.bs.length;i++) {
+    //                 document.getElementById("brainstorming_list").innerHTML = document.getElementById("brainstorming_list").innerHTML+'<div id="brainstorming_item" class="item"><h2>'+msg.bs[i].sname+'</h2><p>'+msg.bs[i].content+'</p></div>';
+    //             }
+    //         },
+    //         error: function(msg){
+    //             console.log(msg);
+    //         }
+    //     });
+    // }
+    // var updateBrain_Time = window.setInterval(updateBrain,5000);
 
     // 加入
-    var brainstorming_input = document.getElementById("brainstorming_input");
-    var brainstorming_SmtButton = document.getElementById("brainstorming_SmtButton");
-    brainstorming_SmtButton.addEventListener("click",function(){
-        $.ajax({
-            url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/addbs",
-            async: false,
-            type: "POST",
-            headers:{
-                "content-type": "application/x-www-form-urlencoded",
-            },
-            data: {
-                "course": localStorage.getItem("course"),
-                "sid": localStorage.getItem("sid"),
-                "sname": localStorage.getItem("sname"),
-                "gno": "1",
-                "content": brainstorming_input.value
-            },
-            success: function(msg){
-                console.log("新增腦力激盪成功");
-                brainstorming_input.value="";
-                updateBrain();
-            },
-            error: function(msg){
-                console.log(msg.responseJSON.message);
-                // var alertPopup = $ionicPopup.alert({
-                //     title: '同學你打錯了',
-                //     template: msg.responseJSON.message
-                // });
-                // alertPopup.then(function(res) {
-                //     accountL.value="";
-                //     pwdL.value="";
-                // });
-            }
-        });
-    },false);
+    // var brainstorming_input = document.getElementById("brainstorming_input");
+    // var brainstorming_SmtButton = document.getElementById("brainstorming_SmtButton");
+    // brainstorming_SmtButton.addEventListener("click",function(){
+    //     $.ajax({
+    //         url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/addbs",
+    //         async: false,
+    //         type: "POST",
+    //         headers:{
+    //             "content-type": "application/x-www-form-urlencoded",
+    //         },
+    //         data: {
+    //             "course": localStorage.getItem("course"),
+    //             "sid": localStorage.getItem("sid"),
+    //             "sname": localStorage.getItem("sname"),
+    //             "gno": "1",
+    //             "content": brainstorming_input.value
+    //         },
+    //         success: function(msg){
+    //             console.log("新增腦力激盪成功");
+    //             brainstorming_input.value="";
+    //             updateBrain();
+    //         },
+    //         error: function(msg){
+    //             console.log(msg.responseJSON.message);
+    //             // var alertPopup = $ionicPopup.alert({
+    //             //     title: '同學你打錯了',
+    //             //     template: msg.responseJSON.message
+    //             // });
+    //             // alertPopup.then(function(res) {
+    //             //     accountL.value="";
+    //             //     pwdL.value="";
+    //             // });
+    //         }
+    //     });
+    // },false);
 
 }])
 
