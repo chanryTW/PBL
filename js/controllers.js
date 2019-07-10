@@ -1,63 +1,30 @@
 angular.module('app.controllers', [])
 
 // ----------------------------------------登入頁面----------------------------------------
-.controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state',
-function ($scope, $stateParams, $ionicPopup, $state) {
+.controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state', '$ionicLoading',
+function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
     // 登入
     var accountL = document.getElementById("accountL");
     var pwdL = document.getElementById("pwdL");
     var loginSmtBtn = document.getElementById("loginSmtBtn");
     loginSmtBtn.addEventListener("click",function(){
-        // $.ajax({
-        //     url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/user/login",
-        //     async: false,
-        //     type: "POST",
-        //     headers:{
-        //         "content-type": "application/x-www-form-urlencoded"
-        //     },
-        //     data: {
-        //         "course": classL.value,
-        //         "sid": accountL.value,
-        //         "pwd": pwdL.value
-        //     },
-        //     success: function(msg){
-        //         console.log("登入成功");
-        //         localStorage.setItem("course", classL.value);
-        //         localStorage.setItem("sid", accountL.value);
-        //         localStorage.setItem("sname", msg.sname);
-        //         accountL.value="";
-        //         pwdL.value="";
-        //         open("/#/menu/pbl",'_self');
-        //     },
-        //     error: function(msg){
-        //         console.log(msg.responseJSON.message);
-        //         var alertPopup = $ionicPopup.alert({
-        //             title: '同學你打錯了',
-        //             template: msg.responseJSON.message
-        //         });
-        //         alertPopup.then(function(res) {
-        //             accountL.value="";
-        //             pwdL.value="";
-        //         });
-        //     }
-        // });
-
+        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>登入中...</p>'});
         firebase.auth().signInWithEmailAndPassword(accountL.value+"@nkust.edu.tw", pwdL.value).then(function(){
-            console.log("登入成功");
             localStorage.setItem("LoginWay", "Signin"); // 登入方式標記為 首頁登入
             accountL.value="";
             pwdL.value="";
+            console.log("登入成功");
+            $ionicLoading.hide();
             $state.go("choose_class");
-            // open("/#/menu/pbl",'_self');
         }).catch(function(error) {
             var errorCode = error.code;
             var errorMessage = error.message;
-            console.log(errorCode);
-            console.log(errorMessage);
+            console.log("登入失敗：",errorMessage);
+            $ionicLoading.hide();
             switch(errorCode){
                 case 'auth/user-not-found':
                     var alertPopup = $ionicPopup.alert({
-                        title: '疑？',
+                        title: '登入失敗',
                         template: '查無此帳號。'
                     });
                         alertPopup.then(function(res) {
@@ -67,7 +34,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                     break;
                 case 'auth/invalid-email':
                     var alertPopup = $ionicPopup.alert({
-                        title: '疑？',
+                        title: '登入失敗',
                         template: '格式有誤。'
                     });
                         alertPopup.then(function(res) {
@@ -76,7 +43,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                     break;
                 case 'auth/wrong-password':
                     var alertPopup = $ionicPopup.alert({
-                        title: '疑？',
+                        title: '登入失敗',
                         template: '密碼錯誤。'
                     });
                         alertPopup.then(function(res) {
@@ -90,8 +57,9 @@ function ($scope, $stateParams, $ionicPopup, $state) {
 }])
 
 // ----------------------------------------選擇課程頁面----------------------------------------
-.controller('choose_classCtrl', ['$scope', '$stateParams', '$state',
-function ($scope, $stateParams, $state) {
+.controller('choose_classCtrl', ['$scope', '$stateParams', '$state', '$ionicLoading',
+function ($scope, $stateParams, $state, $ionicLoading) {
+    $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>匯入課程中...</p>'});
     var a = [];
     var db = firebase.firestore();
     var query = db.collection("課程").where("學生名單", "array-contains", "1031241104");
@@ -102,6 +70,7 @@ function ($scope, $stateParams, $state) {
     });
     $scope.items = a;
     $state.go($state.current, {}, {reload: true}); //重新載入view
+    $ionicLoading.hide();
 }])
 
 // ----------------------------------------主頁面----------------------------------------
@@ -199,12 +168,12 @@ function ($scope, $stateParams) {
 }])
 
 // ----------------------------------------腦力激盪頁面----------------------------------------
-.controller('brainstormingCtrl', ['$scope', '$stateParams', '$state',
-function ($scope, $stateParams, $state) {
+.controller('brainstormingCtrl', ['$scope', '$stateParams', '$state', '$ionicScrollDelegate', '$ionicLoading',
+function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading) {
     var db = firebase.firestore();
     $scope.items = [];
     // 監聽 - 腦力激盪內容
-    db.collection("腦力激盪").doc("0001").collection("g0001")
+    db.collection("腦力激盪").doc("0001").collection("g0001").orderBy("time","asc")
     .onSnapshot({
         includeMetadataChanges: true
     }, function(querySnapshot) {
@@ -213,6 +182,7 @@ function ($scope, $stateParams, $state) {
                 console.log("新增: ", change.doc.data());
                 $scope.items.push(change.doc.data());
                 $state.go($state.current, {}, {reload: true}); //重新載入view
+                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
             }
             if (change.type === "modified") {
                 console.log("修改: ", change.doc.data());
@@ -221,8 +191,7 @@ function ($scope, $stateParams, $state) {
                 console.log("刪除: ", change.doc.data());
                 // 用findIndex找出要刪除的位置
                 var indexNum = $scope.items.findIndex((element)=>{
-                    console.log(element.time,change.doc.data().time);
-                    return element.time === change.doc.data().time;
+                    return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
                 });
                 if (indexNum!=-1) {
                     $scope.items.splice(indexNum,1);
@@ -230,15 +199,16 @@ function ($scope, $stateParams, $state) {
                 }else{
                     console.log("刪除列表不成功");
                 }
-
                 $state.go($state.current, {}, {reload: true}); //重新載入view
+                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
             }
         });
 
     });
-
+    
     // 新增腦力激盪
     $scope.add = function() {
+        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
         if ($scope.input!=undefined) {
             db.collection("腦力激盪").doc("0001").collection("g0001")
             .add({
@@ -252,11 +222,14 @@ function ($scope, $stateParams, $state) {
             .catch(function(error) {
                 console.error("新增腦力激盪失敗：", error);
             });
+            $scope.input = "";
         }
+        $ionicLoading.hide();
     };
 
     // 刪除腦力激盪
     $scope.Delete = function(item) {
+        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>刪除中...</p>'});
         var query = db.collection("腦力激盪").doc("0001").collection("g0001").where("time", "==", item.time);
         query.get().then(function (querySnapshot) {
             querySnapshot.forEach(function (doc) {
@@ -268,74 +241,9 @@ function ($scope, $stateParams, $state) {
                 });
             });
         });
+        $ionicLoading.hide();
     };
 
-    // 更新
-    // updateBrain();
-    // function updateBrain() {
-    //     document.getElementById("brainstorming_list").innerHTML = "";
-    //     $.ajax({
-    //         url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/getbs",
-    //         async: false,
-    //         type: "POST",
-    //         headers:{
-    //             "content-type": "application/x-www-form-urlencoded"
-    //         },
-    //         data: {
-    //             "course": "c1",
-    //             "gno": "1",
-    //             "from": "1"
-    //         },
-    //         success: function(msg){
-    //             // console.log(msg.bs);
-    //             console.log("更新腦力激盪列表");
-    //             for (i=0;i<msg.bs.length;i++) {
-    //                 document.getElementById("brainstorming_list").innerHTML = document.getElementById("brainstorming_list").innerHTML+'<div id="brainstorming_item" class="item"><h2>'+msg.bs[i].sname+'</h2><p>'+msg.bs[i].content+'</p></div>';
-    //             }
-    //         },
-    //         error: function(msg){
-    //             console.log(msg);
-    //         }
-    //     });
-    // }
-    // var updateBrain_Time = window.setInterval(updateBrain,5000);
-
-    // 加入
-    // var brainstorming_input = document.getElementById("brainstorming_input");
-    // var brainstorming_SmtButton = document.getElementById("brainstorming_SmtButton");
-    // brainstorming_SmtButton.addEventListener("click",function(){
-    //     $.ajax({
-    //         url: "http://mis2.nkmu.edu.tw/kliou/pblfs/api.php/bs/addbs",
-    //         async: false,
-    //         type: "POST",
-    //         headers:{
-    //             "content-type": "application/x-www-form-urlencoded",
-    //         },
-    //         data: {
-    //             "course": localStorage.getItem("course"),
-    //             "sid": localStorage.getItem("sid"),
-    //             "sname": localStorage.getItem("sname"),
-    //             "gno": "1",
-    //             "content": brainstorming_input.value
-    //         },
-    //         success: function(msg){
-    //             console.log("新增腦力激盪成功");
-    //             brainstorming_input.value="";
-    //             updateBrain();
-    //         },
-    //         error: function(msg){
-    //             console.log(msg.responseJSON.message);
-    //             // var alertPopup = $ionicPopup.alert({
-    //             //     title: '同學你打錯了',
-    //             //     template: msg.responseJSON.message
-    //             // });
-    //             // alertPopup.then(function(res) {
-    //             //     accountL.value="";
-    //             //     pwdL.value="";
-    //             // });
-    //         }
-    //     });
-    // },false);
 
 }])
 
