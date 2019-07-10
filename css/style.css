@@ -59,7 +59,7 @@ a{text-decoration:none}
     background-color: rgba(255, 255, 255, 0.338);
 }
 /* 文字輸入框 */
-#brainstorming_input{
+.brainstorming_input{
     position: relative;
     width: 100%;
     background-color: rgba(255, 255, 255, 0);
