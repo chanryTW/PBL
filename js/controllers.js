@@ -209,7 +209,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading) {
     // 新增腦力激盪
     $scope.add = function() {
         $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
-        if ($scope.input!=undefined) {
+        if ($scope.input!=undefined && $scope.input!="") {
             db.collection("腦力激盪").doc("0001").collection("g0001")
             .add({
                 name: "廖詮睿",
