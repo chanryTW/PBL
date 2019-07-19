@@ -1,15 +1,31 @@
 <ion-view title="首頁" hide-back-button="true" id="pbl">
   <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="false">
     
-     <div ng-repeat="item in items" class="card">
-        <div class="item item-divider">
-          課程公告：
-        </div>
-        <div class="item item-text-wrap" id="co-writing_content">
-          {{item.ClassContent}}}
-        </div>
+    <div ng-repeat="item in items" class="card">
+      <div class="item item-divider">
+        課程公告：
+      </div>
+      <div class="item item-text-wrap" id="co-writing_content">
+        {{item.ClassContent}}}
+      </div>
     </div>
+
+    <div class="pbl-img-div">
+      <img id="pbl-img" src="img/member.png">
+    </div>
+    <div class="pbl-img-div">
+        <img id="pbl-img" src="img/member.png">
+      </div>
+      <div class="pbl-img-div">
+          <img id="pbl-img" src="img/member.png">
+        </div>
+        <div class="pbl-img-div">
+            <img id="pbl-img" src="img/member.png">
+          </div>
     
+    <button class = "button button-block button-balanced" ng-click="addGroup()">
+      創立小組
+    </button>
 
   </ion-content>
 </ion-view>
