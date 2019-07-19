@@ -62,20 +62,20 @@ function ($scope, $stateParams, $state, $ionicLoading) {
     $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>匯入課程中...</p>'});
     var a = [];
     var db = firebase.firestore();
-    var query = db.collection("課程").where("學生名單", "array-contains", "1031241104");
-    query.get().then(function (querySnapshot) {
+    db.collection("課程").where("學生名單", "array-contains", "1031241104")
+    .get().then(function (querySnapshot) {
         querySnapshot.forEach(function (doc) {
             a.push(doc.data());
+            $scope.items = a;
         });
     });
-    $scope.items = a;
     $state.go($state.current, {}, {reload: true}); //重新載入view
     $ionicLoading.hide();
 }])
 
 // ----------------------------------------主頁面----------------------------------------
-.controller('pblCtrl', ['$scope', '$stateParams', '$state', 
-function ($scope, $stateParams, $state) {
+.controller('pblCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup',
+function ($scope, $stateParams, $state, $ionicPopup) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -117,34 +117,138 @@ function ($scope, $stateParams, $state) {
             });
 
             // 取得ClassID
-            var ClassID = window.location.hash.substring(window.location.hash.search("ClassID=")+8);
-            if (ClassID.length != 20){
-                console.log("網址錯誤");
-                $state.go("login");
-            }else {
-                // 監聽 - 公告內容
-                db.collection("課程").doc(ClassID)
-                .onSnapshot(function(doc) {
-                    // document.getElementById("co-writing_content").textContent = doc.data().ClassContent;
-                    $scope.items = [{ClassContent:doc.data().ClassContent}];
-                    
-                },function(error) {
-                    console.error("讀取課程發生錯誤：", error);
-                    $state.go("login");
-                });      
+            // var ClassID = window.location.hash.substring(window.location.hash.search("ClassID=")+8);
+            var ClassID = "r1nWWkWlamDzTCkttlGZ";
 
-                // 更新menu的大頭照
-                // var storage = firebase.storage();
-                // var storageRef = storage.ref();
-                // storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
-                //     document.getElementById("menu-img").src=url;
+            // 監聽 - 公告內容
+            db.collection("課程").doc(ClassID)
+            .onSnapshot(function(doc) {
+                $scope.items = [{ClassContent:doc.data().ClassContent}];
+                $state.go($state.current, {}, {reload: true}); //重新載入view
+            },function(error) {
+                console.error("讀取課程發生錯誤：", error);
+                $state.go("login");
+            });
+            
+            // 監聽 - 搜尋是否已有小組
+            db.collection("分組").doc(ClassID).collection("1031241104").doc("grouped")
+            .onSnapshot(function(doc) {
+                if (doc.data().grouped === false) {//沒有小組
+                    // 顯示創立組員按鈕
+                    console.log("沒有小組",doc.data());
+                } else if (doc.data().grouped === true) {//有小組
+                    // 隱藏創立組員按鈕 監聽組員名單
+                    console.log("有小組",doc.data());
+                }
+            },function(error) {
+                console.log("搜尋是否已有小組發生錯誤：", error); 
+            });
+
+            // 監聽 - 搜尋是否有人邀請
+            db.collection("分組").doc(ClassID).collection("1031241104").doc("invite").collection("invite").where("respond", "==", true)
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    console.log(doc.data());
+                    console.log("有人邀請");//跳出邀請訊息
+                });
+            },function(error) {
+                console.log("搜尋是否有人邀請發生錯誤：", error); 
+            });
+
+
+            // 監聽 - 小組狀態
+            // db.collection("課程").doc(ClassID)
+            // .onSnapshot(function(doc) {
+            //     $scope.items = [{ClassContent:doc.data().ClassContent}];
+            //     $state.go($state.current, {}, {reload: true}); //重新載入view
+            // },function(error) {
+            //     console.error("讀取課程發生錯誤：", error);
+            // }); 
+
+            
+
+            // 創立小組
+            $scope.addGroup = function() {
+                var addGroupJS = function() {
+                    // 這裡寫表單的JS
+                };
+                var confirmPopup = $ionicPopup.show({
+                    title: '選擇加入之組員',
+                    subTitle: '子標題',
+                    template: 'HTML',
+                    scope: addGroupJS(),
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇關閉');
+                        }
+                    }, {
+                        text: '創立',
+                        type: 'button-positive',
+                        onTap: function(e) {
+                            console.log(e);
+                            console.log(scope.data.response);
+                            return scope.data.response;
+                        }
+                    }]
+                });
+
+                // // 創立小組 - 新增小組名單
+                // db.collection("分組").doc("0001").collection("group")
+                // .add({
+                //     leader: "1031241104",
+                //     members: [1031241104]
                 // })
-                // 更新選單的暱稱
-                // var userId = localStorage.getItem("uid");
-                // return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
-                //     var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
+                // .then(function(data) {
+                //     console.log("新增小組成功");
+                // })
+                // .catch(function(error) {
+                //     console.error("新增小組失敗：", error);
                 // });
-            }
+                // // 創立小組 - 更新入組狀態
+                // db.collection("分組").doc("0001").collection("grouped").doc("1031241104")
+                // .update({
+                //     grouped: true
+                // })
+                // .then(function(data) {
+                //     console.log("更新入組狀態成功");
+                // })
+                // .catch(function(error) {
+                //     console.error("更新入組狀態失敗：", error);
+                // });
+            };
+
+            // 加入組員
+            // 加入組員 - 取得未分組的名單
+            // db.collection("分組").doc("0001").collection("grouped").where("grouped", "==", false)
+            // .get().then(function(results) {
+            //     if(results.empty) {
+            //         console.log("No documents found!"); 
+            //     } else {
+            //         results.forEach(function (doc) { 
+            //             console.log("Document data:", doc.data()); 
+            //         });
+            //     } 
+            // }).catch(function(error) { 
+            //     console.log("Error getting documents:", error); 
+            // });
+            
+            // 加入組員 - 被加入
+
+
+            // 更新menu的大頭照
+            // var storage = firebase.storage();
+            // var storageRef = storage.ref();
+            // storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
+            //     document.getElementById("menu-img").src=url;
+            // })
+            // 更新選單的暱稱
+            // var userId = localStorage.getItem("uid");
+            // return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
+            //     var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
+            // });
+            
         }else{
             console.log("尚未登入");
             $state.go("login");

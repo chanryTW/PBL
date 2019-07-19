@@ -27,7 +27,6 @@ a{text-decoration:none}
 }
 
 /* -----------------------------------------------選擇課程頁面----------------------------------------------- */
-
 .class_block{
     display: inline-block;
     width: 40vw;
@@ -48,6 +47,26 @@ a{text-decoration:none}
     .button-text{ font-size: 38.4px; line-height: 307px;}
 }
 
+/* -----------------------------------------------首頁頁面----------------------------------------------- */
+/* 大頭照 */
+.pbl-img-div{
+    display: inline-block;
+    width: 20vw;
+    height: 20vw;
+    border-radius: 50%;
+    border:3px solid #fff;
+    margin: 0 2vw 0 2vw;
+    -moz-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -webkit-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    overflow: hidden; 
+}
+#pbl-img{
+    display: block; 
+    background-size:cover;
+    background-position:center center;
+    height: 100%;
+}
 
 /* -----------------------------------------------腦力激盪頁面----------------------------------------------- */
 /* 對話框 */
