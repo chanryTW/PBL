@@ -98,5 +98,22 @@ angular.module('app.routes', [])
     }
   })
 
+  // 教師版
+  .state('rootmenu', {
+    url: '/rootmenu',
+    templateUrl: 'templates/root/root_menu.html',
+    controller: 'rootmenuCtrl'
+  })
+
+  .state('rootmenu.root_pbl', {
+    url: '/root_pbl',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/root/root_pbl.html',
+        controller: 'root_pblCtrl'
+      }
+    }
+  })
+
 $urlRouterProvider.otherwise('/login')
 });

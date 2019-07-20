@@ -13,8 +13,12 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
             accountL.value="";
             pwdL.value="";
             $ionicLoading.hide();
-            $state.go("choose_class",{StuID:StuID});
-            
+            // 判斷教師版
+            if (StuID=="1031241104") {
+                $state.go("rootmenu.root_pbl",{StuID:StuID});
+            } else {
+                $state.go("choose_class",{StuID:StuID});
+            }
         }).catch(function(error) {
             var errorCode = error.code;
             var errorMessage = error.message;
@@ -61,7 +65,7 @@ function ($scope, $stateParams, $state, $ionicLoading, $timeout) {
     $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>匯入課程中...</p>'});
     var a = [];
     var db = firebase.firestore();
-    db.collection("課程").where("學生名單", "array-contains", $stateParams.StuID)
+    db.collection("課程").where("ClassStu", "array-contains", $stateParams.StuID)
     .get().then(function (querySnapshot) {
         querySnapshot.forEach(function (doc) {
             a.push(doc.data());
@@ -116,24 +120,24 @@ function ($scope, $stateParams, $state, $ionicPopup) {
             // });
 
             // 首次登入(考慮是否移除)
-            db.collection("帳號").doc(StuID).get().then(function(doc) {
-                if (doc.exists) {
-                    console.log("成功取得使用者資料");
-                } else {
-                    console.log("首次登入，建立使用者資料中...");
-                    db.collection("member").doc(StuID).set({
-                        暱稱: StuID,
-                        照片ID: "1321"
-                    })
-                    .then(function() {
-                        console.log("首次登入，建立使用者資料成功");
-                    })
-                    .catch(function(error) {
-                        console.error("首次登入，建立使用者資料失敗：", error);
-                        $state.go("login");
-                    });
-                }
-            });
+            // db.collection("帳號").doc(StuID).get().then(function(doc) {
+            //     if (doc.exists) {
+            //         console.log("成功取得使用者資料");
+            //     } else {
+            //         console.log("首次登入，建立使用者資料中...");
+            //         db.collection("member").doc(StuID).set({
+            //             暱稱: StuID,
+            //             照片ID: "1321"
+            //         })
+            //         .then(function() {
+            //             console.log("首次登入，建立使用者資料成功");
+            //         })
+            //         .catch(function(error) {
+            //             console.error("首次登入，建立使用者資料失敗：", error);
+            //             $state.go("login");
+            //         });
+            //     }
+            // });
 
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
@@ -146,7 +150,7 @@ function ($scope, $stateParams, $state, $ionicPopup) {
             });
             
             // 監聽 - 搜尋是否已有小組
-            db.collection("分組").doc(ClassID).collection(ClassID).doc(StuID)
+            db.collection("分組").doc(ClassID).collection("student").doc(StuID)
             .onSnapshot(function(doc) {
                 if (doc.data().grouped === false) {//沒有小組
                     console.log("沒有小組",doc.data());
@@ -187,7 +191,7 @@ function ($scope, $stateParams, $state, $ionicPopup) {
             });
 
             // 監聽 - 搜尋是否有人邀請
-            db.collection("分組").doc(ClassID).collection(ClassID).doc(StuID).collection("invite").where("respond", "==", false)
+            db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
             .onSnapshot(function(querySnapshot) {
                 querySnapshot.forEach(function(doc) {
                     console.log("有人邀請",doc.data());//跳出邀請訊息
@@ -200,7 +204,7 @@ function ($scope, $stateParams, $state, $ionicPopup) {
             $scope.addGroup = function() {
                 // 創立小組 - 取得未分組名單
                 $scope.Stus = [];
-                db.collection("分組").doc(ClassID).collection(ClassID).where("grouped", "==", false)
+                db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", false)
                 .get().then(function(results) {
                     if(results.empty) {
                         console.log("全班都已分組"); 
@@ -259,7 +263,7 @@ function ($scope, $stateParams, $state, $ionicPopup) {
                                 console.error("新增小組失敗：", error);
                             });
                             // 創立小組 - 更新入組狀態
-                            db.collection("分組").doc(ClassID).collection(ClassID).doc(StuID)
+                            db.collection("分組").doc(ClassID).collection("student").doc(StuID)
                             .update({
                                 grouped: true
                             })
@@ -314,7 +318,7 @@ function ($scope, $stateParams, $state, $ionicPopup) {
                             });
                             
                             // 解散小組 - 更新入組狀態
-                            db.collection("分組").doc(ClassID).collection(ClassID).doc(StuID)
+                            db.collection("分組").doc(ClassID).collection("student").doc(StuID)
                             .update({
                                 grouped: false
                             })
@@ -455,6 +459,8 @@ function ($scope, $stateParams) {
 
 
 }])
+
+// ----------------------------------------組內互評頁面----------------------------------------
 .controller('ingroup_mutualCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
 
@@ -566,6 +572,160 @@ function ($scope, $stateParams) {
         });
     },false);
     
+    // 設定授權文字位置
+    $('#menu-heading2').css('top', window.innerHeight-620+'px');
+}])
+
+// ----------------------------------------教師版主頁面----------------------------------------
+.controller('root_pblCtrl', ['$scope', '$stateParams', '$ionicPopup', '$ionicLoading', '$state',
+function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user.uid==="oZUljfdmzGQDQsaGJWBLgXo15NM2") { //登入成功，取得使用者
+            console.log("已登入狀態");
+
+            // 處理xlsx
+            var persons = []; // 儲存獲取到的資料
+            $('#excel-file').change(function(e) {
+                var files = e.target.files;
+                var fileReader = new FileReader();
+                fileReader.onload = function(ev) {
+                    try {
+                        var data = ev.target.result
+                        var workbook = XLSX.read(data, {
+                            type: 'binary'
+                        }) // 以二進位制流方式讀取得到整份excel表格物件
+                    } catch (e) {
+                        console.log('檔案型別不正確');
+                        return;
+                    }
+                    // 表格的表格範圍，可用於判斷表頭是否數量是否正確
+                    var fromTo = '';
+                    // 遍歷每張表讀取
+                    for (var sheet in workbook.Sheets) {
+                        if (workbook.Sheets.hasOwnProperty(sheet)) {
+                            fromTo = workbook.Sheets[sheet]['!ref'];
+                            console.log(fromTo);
+                            persons = persons.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+                            // break; // 如果只取第一張表，就取消註釋這行
+                        }
+                    }
+                    //在控制檯打印出來表格中的資料
+                    console.log(persons);
+                };
+                // 以二進位制方式開啟檔案
+                fileReader.readAsBinaryString(files[0]);
+            });
+
+            // 點擊創立
+            var db = firebase.firestore();
+            $scope.addClass = function() {
+                var className = this.className;
+                if (className===undefined || className==="" || persons.length===0) {
+                    console.log("未填");
+                    var alertPopup = $ionicPopup.alert({
+                        title: '錯誤',
+                        template: '資料未填完整。'
+                    });
+                } else {
+                    var confirmPopup = $ionicPopup.confirm({
+                        title: '創立課程',
+                        template: '確定創立嗎?'
+                    });
+                    confirmPopup.then(function(res) {
+                        if(res) {
+                            console.log('確定');
+                            $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>創立課程中...</p>'});
+                            // 取得全部人學號
+                            var Stu = [];
+                            for (let index = 0; index < persons.length; index++) {
+                                Stu.push(persons[index].學號);
+                            }
+                            // 創立課程 - 新增課程
+                            db.collection("課程")
+                            .add({
+                                ClassName: className,
+                                ClassContent: "暫無公告。",
+                                ClassStu: Stu
+                            })
+                            .then(function(data) {
+                                console.log("新增課程成功");
+                                // 創立課程 - 更新學生資料
+                                var batch = db.batch();
+                                batch.update(db.collection("課程").doc(data.id), {ClassID:data.id});
+                                for (let index = 0; index < persons.length; index++) {
+                                    db.collection("帳號").doc(persons[index].學號).get().then(function(doc) {
+                                        // 如此判斷才不會覆蓋已新增的其他資料
+                                        if (doc.exists) {
+                                            // 已有帳號
+                                            console.log("已有帳號");
+                                            batch.set(db.collection("分組").doc(data.id).collection("student").doc(persons[index].學號), {grouped:false});
+                                            // 判斷沒資料了 就送出
+                                            if (index === persons.length-1) {
+                                                batch.commit().then(function () {
+                                                    console.log("更新學生成功");
+                                                    persons = [];
+                                                    $ionicLoading.hide();
+                                                }).catch(function(error) {
+                                                    console.error("更新學生資料失敗：", error);
+                                                });
+                                            }
+                                        } else {
+                                            // 尚無帳號
+                                            console.log("尚無帳號");
+                                            batch.set(db.collection("帳號").doc(persons[index].學號), {Name:persons[index].姓名});
+                                            batch.set(db.collection("分組").doc(data.id).collection("student").doc(persons[index].學號), {grouped:false});
+                                            // 判斷沒資料了 就送出
+                                            if (index === persons.length-1) {
+                                                batch.commit().then(function () {
+                                                    console.log("更新學生成功");
+                                                    persons = [];
+                                                    $ionicLoading.hide();
+                                                }).catch(function(error) {
+                                                    console.error("更新學生資料失敗：", error);
+                                                });
+                                            }
+                                        }
+                                    }).catch(function(error) {
+                                        console.log("判斷帳號發生錯誤：", error); 
+                                    });
+
+                                    
+                                }
+                            })
+                            .catch(function(error) {
+                                console.error("新增課程失敗：", error);
+                            });
+                        } else {
+                            console.log('取消');
+                        }
+                    });
+                }
+            }
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
+}])
+
+// ----------------------------------------教師版選單頁面----------------------------------------
+.controller('rootmenuCtrl', ['$scope', '$stateParams', 
+function ($scope, $stateParams) {
+    // 更新使用者姓名
+    document.getElementById("menu-heading1").innerText = localStorage.getItem("sname");
+
+    // 登出
+    var signOutSmtBtn = document.getElementById("menu-list-item8");
+    signOutSmtBtn.addEventListener("click",function(){
+        firebase.auth().signOut().then(function() {
+            console.log("登出成功");
+            localStorage.clear();
+        }).catch(function(error) {
+            console.log("登出發生錯誤!");
+        });
+    },false);
+
     // 設定授權文字位置
     $('#menu-heading2').css('top', window.innerHeight-620+'px');
 }]);
