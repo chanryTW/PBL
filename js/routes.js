@@ -10,6 +10,7 @@ angular.module('app.routes', [])
   })
 
   .state('choose_class', {
+    params:{"StuID":null},
     url: '/choose_class',
     templateUrl: 'templates/choose_class.html',
     controller: 'choose_classCtrl'
