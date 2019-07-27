@@ -7,7 +7,6 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
     $scope.loginSmtBtn = function() {
         $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>登入中...</p>'});
         firebase.auth().signInWithEmailAndPassword(accountL.value+"@nkust.edu.tw", pwdL.value).then(function(){
-            // localStorage.setItem("LoginWay", "Signin"); // 登入方式標記為 首頁登入
             console.log("登入成功");
             var StuID = accountL.value;
             accountL.value="";
@@ -87,7 +86,6 @@ function ($scope, $stateParams, $state, $ionicLoading, $timeout) {
     $scope.choose_class = function(ClassID) {
         $timeout.cancel(mytimeout);//停止計時器
         localStorage.setItem("ClassID",ClassID);
-        localStorage.setItem("StuID",$stateParams.StuID);
         $state.go("menu.pbl");
     };
 }])
@@ -100,8 +98,8 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
-            var StuID = localStorage.getItem("StuID");
 
             // 記錄登入
             // var db = firebase.database();
@@ -591,204 +589,287 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
 // ----------------------------------------課程任務頁面----------------------------------------
 .controller('missionCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
 
-
+            // ...
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
 }])
    
 // ----------------------------------------分組頁面----------------------------------------
 .controller('groupCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
 
-
+            // ...
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
 }])
 
 // ----------------------------------------腦力激盪頁面----------------------------------------
 .controller('brainstormingCtrl', ['$scope', '$stateParams', '$state', '$ionicScrollDelegate', '$ionicLoading',
 function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading) {
     var db = firebase.firestore();
-    $scope.items = [];
-    // 監聽 - 腦力激盪內容
-    db.collection("腦力激盪").doc("0001").collection("g0001").orderBy("time","asc")
-    .onSnapshot({
-        includeMetadataChanges: true
-    }, function(querySnapshot) {
-        querySnapshot.docChanges().forEach(function(change) {
-            if (change.type === "added") {
-                console.log("新增: ", change.doc.data());
-                $scope.items.push(change.doc.data());
-                $state.go($state.current, {}, {reload: true}); //重新載入view
-                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-            }
-            if (change.type === "modified") {
-                console.log("修改: ", change.doc.data());
-            }
-            if (change.type === "removed") {
-                console.log("刪除: ", change.doc.data());
-                // 用findIndex找出要刪除的位置
-                var indexNum = $scope.items.findIndex((element)=>{
-                    return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
+
+            $scope.items = [];
+            // 監聽 - 腦力激盪內容
+            db.collection("腦力激盪").doc("0001").collection("g0001").orderBy("time","asc")
+            .onSnapshot({
+                includeMetadataChanges: true
+            }, function(querySnapshot) {
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        console.log("新增: ", change.doc.data());
+                        $scope.items.push(change.doc.data());
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                    }
+                    if (change.type === "modified") {
+                        console.log("修改: ", change.doc.data());
+                    }
+                    if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                        // 用findIndex找出要刪除的位置
+                        var indexNum = $scope.items.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        if (indexNum!=-1) {
+                            $scope.items.splice(indexNum,1);
+                            console.log("刪除列表成功");
+                        }else{
+                            console.log("刪除列表不成功");
+                        }
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                    }
                 });
-                if (indexNum!=-1) {
-                    $scope.items.splice(indexNum,1);
-                    console.log("刪除列表成功");
-                }else{
-                    console.log("刪除列表不成功");
+
+            });
+            
+            // 新增腦力激盪
+            $scope.add = function() {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
+                if ($scope.input!=undefined && $scope.input!="") {
+                    db.collection("腦力激盪").doc("0001").collection("g0001")
+                    .add({
+                        name: "廖詮睿",
+                        msg: $scope.input,
+                        time: new Date()
+                    })
+                    .then(function(data) {
+                        console.log("新增腦力激盪成功");
+                    })
+                    .catch(function(error) {
+                        console.error("新增腦力激盪失敗：", error);
+                    });
+                    $scope.input = "";
                 }
-                $state.go($state.current, {}, {reload: true}); //重新載入view
-                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-            }
-        });
+                $ionicLoading.hide();
+            };
 
-    });
-    
-    // 新增腦力激盪
-    $scope.add = function() {
-        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
-        if ($scope.input!=undefined && $scope.input!="") {
-            db.collection("腦力激盪").doc("0001").collection("g0001")
-            .add({
-                name: "廖詮睿",
-                msg: $scope.input,
-                time: new Date()
-            })
-            .then(function(data) {
-                console.log("新增腦力激盪成功");
-            })
-            .catch(function(error) {
-                console.error("新增腦力激盪失敗：", error);
-            });
-            $scope.input = "";
-        }
-        $ionicLoading.hide();
-    };
-
-    // 刪除腦力激盪
-    $scope.Delete = function(item) {
-        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>刪除中...</p>'});
-        var query = db.collection("腦力激盪").doc("0001").collection("g0001").where("time", "==", item.time);
-        query.get().then(function (querySnapshot) {
-            querySnapshot.forEach(function (doc) {
-                db.collection("腦力激盪").doc("0001").collection("g0001").doc(doc.id)
-                .delete().then(function () {
-                    console.log("刪除腦力激盪成功");
-                }).catch(function(error) {
-                    console.error("刪除腦力激盪失敗：", error);
+            // 刪除腦力激盪
+            $scope.Delete = function(item) {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>刪除中...</p>'});
+                var query = db.collection("腦力激盪").doc("0001").collection("g0001").where("time", "==", item.time);
+                query.get().then(function (querySnapshot) {
+                    querySnapshot.forEach(function (doc) {
+                        db.collection("腦力激盪").doc("0001").collection("g0001").doc(doc.id)
+                        .delete().then(function () {
+                            console.log("刪除腦力激盪成功");
+                        }).catch(function(error) {
+                            console.error("刪除腦力激盪失敗：", error);
+                        });
+                    });
                 });
-            });
-        });
-        $ionicLoading.hide();
-    };
+                $ionicLoading.hide();
+            };
 
-
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
 }])
 
 // ----------------------------------------提案聚焦頁面----------------------------------------
 .controller('proposalCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
 
-
+            // ...
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
 }])
 
 // ----------------------------------------分組評分頁面----------------------------------------
 .controller('scoreCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
 
-
+            // ...
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
 }])
 
 // ----------------------------------------組內互評頁面----------------------------------------
 .controller('ingroup_mutualCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
 
-
+            // ...
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
 }])
 
 // ----------------------------------------設定頁面----------------------------------------
 .controller('settingCtrl', ['$scope', '$stateParams', '$ionicLoading', '$ionicPopup',
 function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
-    // 修改暱稱功能
-    var SaveBtn1 = document.getElementById("page7_savebtn1");
-    var uploadFileInput1 = document.getElementById("uploadFileInput1");    
-    SaveBtn1.addEventListener("click",function(){
-        $ionicLoading.show({ // 開始跑圈圈
-            template: '更新暱稱中...'
-        });
-        var uid = localStorage.getItem("uid"); // 取回uid
-        var db = firebase.database();
-        db.ref("使用者/" + uid).update({暱稱: uploadFileInput1.value},
-        function (error) {
-            if (error) {
-                console.log("修改失敗");
-                $ionicLoading.hide();
-                console.log(error);
-                var alertPopup = $ionicPopup.alert({
-                    title: '修改暱稱失敗',
-                    template: error
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
+            
+            // 修改暱稱功能
+            var SaveBtn1 = document.getElementById("page7_savebtn1");
+            var uploadFileInput1 = document.getElementById("uploadFileInput1");    
+            SaveBtn1.addEventListener("click",function(){
+                $ionicLoading.show({ // 開始跑圈圈
+                    template: '更新暱稱中...'
                 });
-            }
-            else {
-                console.log("修改成功");
-                $ionicLoading.hide();
-                var alertPopup = $ionicPopup.alert({
-                    title: '成功',
-                    template: '暱稱修改完成。'
+                var uid = localStorage.getItem("uid"); // 取回uid
+                var db = firebase.database();
+                db.ref("使用者/" + uid).update({暱稱: uploadFileInput1.value},
+                function (error) {
+                    if (error) {
+                        console.log("修改失敗");
+                        $ionicLoading.hide();
+                        console.log(error);
+                        var alertPopup = $ionicPopup.alert({
+                            title: '修改暱稱失敗',
+                            template: error
+                        });
+                    }
+                    else {
+                        console.log("修改成功");
+                        $ionicLoading.hide();
+                        var alertPopup = $ionicPopup.alert({
+                            title: '成功',
+                            template: '暱稱修改完成。'
+                        });
+                        // 更新選單的暱稱
+                        var userId = localStorage.getItem("uid");
+                        return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
+                            var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
+                            document.getElementById("menu-heading1").innerText = username; 
+                        });
+                    }
                 });
-                // 更新選單的暱稱
-                var userId = localStorage.getItem("uid");
-                return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
-                    var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
-                    document.getElementById("menu-heading1").innerText = username; 
+            });
+            // 上傳大頭照功能
+            var SaveBtn2 = document.getElementById("page7_savebtn2");    
+            var uploadFileInput2 = document.getElementById("uploadFileInput2");
+            SaveBtn2.addEventListener("click",function(){
+                $ionicLoading.show({ // 開始跑圈圈
+                    template: '上傳圖片中...'
                 });
-            }
-        });
+                var file = uploadFileInput2.files[0];
+                var storage = firebase.storage();
+                var storageRef = storage.ref();
+                var uploadTask = storageRef.child('images/'+localStorage.getItem("uid")).put(file);
+                uploadTask.on('state_changed', function(snapshot){
+                    // 取得檔案上傳狀態，並用數字顯示
+                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('已上傳 ' + progress + '%');
+                    switch (snapshot.state) {
+                        case firebase.storage.TaskState.PAUSED: 
+                        console.log('上傳暫停');
+                        break;
+                        case firebase.storage.TaskState.RUNNING: 
+                        console.log('上傳中');
+                        break;
+                    }
+                }, function(error) {
+                    console.log("上傳失敗");
+                    $ionicLoading.hide();
+                    console.log(error);
+                    var alertPopup = $ionicPopup.alert({
+                        title: '上傳圖片失敗',
+                        template: error
+                    });
+                }, function() {
+                    console.log("上傳成功");
+                    $ionicLoading.hide();
+                    var alertPopup = $ionicPopup.alert({
+                        title: '成功',
+                        template: '更換照片完成。'
+                    });
+                    // 更新menu的大頭照
+                    var storage = firebase.storage();
+                    var storageRef = storage.ref();
+                    storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
+                        document.getElementById("menu-img").src=url;
+                    })
+                });
+            },false);
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
     });
-    // 上傳大頭照功能
-    var SaveBtn2 = document.getElementById("page7_savebtn2");    
-    var uploadFileInput2 = document.getElementById("uploadFileInput2");
-    SaveBtn2.addEventListener("click",function(){
-        $ionicLoading.show({ // 開始跑圈圈
-            template: '上傳圖片中...'
-        });
-        var file = uploadFileInput2.files[0];
-        var storage = firebase.storage();
-        var storageRef = storage.ref();
-        var uploadTask = storageRef.child('images/'+localStorage.getItem("uid")).put(file);
-        uploadTask.on('state_changed', function(snapshot){
-            // 取得檔案上傳狀態，並用數字顯示
-            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log('已上傳 ' + progress + '%');
-            switch (snapshot.state) {
-                case firebase.storage.TaskState.PAUSED: 
-                console.log('上傳暫停');
-                break;
-                case firebase.storage.TaskState.RUNNING: 
-                console.log('上傳中');
-                break;
-            }
-        }, function(error) {
-            console.log("上傳失敗");
-            $ionicLoading.hide();
-            console.log(error);
-            var alertPopup = $ionicPopup.alert({
-                title: '上傳圖片失敗',
-                template: error
-            });
-        }, function() {
-            console.log("上傳成功");
-            $ionicLoading.hide();
-            var alertPopup = $ionicPopup.alert({
-                title: '成功',
-                template: '更換照片完成。'
-            });
-            // 更新menu的大頭照
-            var storage = firebase.storage();
-            var storageRef = storage.ref();
-            storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
-                document.getElementById("menu-img").src=url;
-            })
-        });
-    },false);
-   
 }])
 
 // ----------------------------------------選單頁面----------------------------------------
