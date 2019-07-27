@@ -13,11 +13,11 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
             pwdL.value="";
             $ionicLoading.hide();
             // 判斷教師版
-            // if (StuID=="1031241104") {
-            //     $state.go("rootmenu.root_pbl",{StuID:StuID});
-            // } else {
+            if (StuID=="1031241104") {
+                $state.go("rootmenu.root_pbl",{StuID:StuID});
+            } else {
                 $state.go("choose_class",{StuID:StuID});
-            // }
+            }
         }).catch(function(error) {
             var errorCode = error.code;
             var errorMessage = error.message;
@@ -116,7 +116,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             //         console.log("記錄登入記錄成功");
             //     }
             // });
-
+            
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
@@ -125,6 +125,16 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             },function(error) {
                 console.error("讀取課程發生錯誤：", error);
                 $state.go("login");
+            });
+
+            // 監聽 - 是否開放分組
+            db.collection("課程").doc(ClassID)
+            .onSnapshot(function(doc) {
+                $scope.LockGroupShow = doc.data().inviteLock;
+                $state.go($state.current, {}, {reload: true}); //重新載入view
+                console.log("是否開放分組：",$scope.LockGroupShow);
+            },function(error) {
+                console.error("搜尋是否開放分組發生錯誤：", error);
             });
             
             // 監聽 - 搜尋是否已有小組
@@ -434,6 +444,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     var confirmPopup = $ionicPopup.confirm({
                         title: '解散小組',
                         template: '確定要解散小組嗎?',
+                        subTitle: '注意：解散後會刪除所有小組資料，包括討論紀錄、上傳作業、分組評分...等。',
                         buttons: [{
                             text: '取消',
                             type: 'button-default',
@@ -964,6 +975,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                             .add({
                                 ClassName: className,
                                 ClassContent: "暫無公告。",
+                                inviteLock: false,
                                 ClassStu: Stu
                             })
                             .then(function(data) {
@@ -1029,6 +1041,33 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                     });
                 }
             }
+           
+            // 列出全部課程
+            db.collection("課程")
+            .get().then(function (querySnapshot) {
+                $scope.AllClass = [];
+                querySnapshot.forEach(function (doc) {
+                    $scope.AllClass.push(doc.data());
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                });
+            });
+
+            // 設定 - 開放學生自行分組
+            $scope.LockGroupChange = function(ClassID,inviteLock) {
+                console.log(ClassID,' 開放學生自行分組：',inviteLock);
+                // 更新inviteLock
+                db.collection("課程").doc(ClassID)
+                .update({
+                    inviteLock: inviteLock
+                })
+                .then(function(data) {
+                    console.log("更新inviteLock成功");
+                })
+                .catch(function(error) {
+                    console.error("更新inviteLock失敗：", error);
+                });
+            };
+
         }else{
             console.log("非管理員");
             $state.go("login");

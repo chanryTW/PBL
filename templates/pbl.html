@@ -17,16 +17,17 @@
         <span class="pbl-member-span">{{member.memberName}}</span>
       </div>
 
-      <div class="pbl-member">
+      <!-- <div class="pbl-member">
         <div class="pbl-img-div">
           <img id="pbl-img">
         </div>
         <span class="pbl-member-span">邀請</span>
-      </div>
-
-    <button class = "button button-block button-balanced pbl-button" ng-show="addGroupShow" ng-click="addGroup()">創立小組</button>
-    <button class = "button button-block button-assertive pbl-button" ng-show="delGroupShow" ng-click="delGroup('del')">解散小組</button>
-    <button class = "button button-block button-assertive pbl-button" ng-show="quitGroupShow" ng-click="delGroup('quit')">退出小組</button>
-
+      </div> -->
+    
+    <div ng-show="LockGroupShow" >
+      <button class = "button button-block button-balanced pbl-button" ng-show="addGroupShow" ng-click="addGroup()">創立小組</button>
+      <button class = "button button-block button-assertive pbl-button" ng-show="delGroupShow" ng-click="delGroup('del')">解散小組</button>
+      <button class = "button button-block button-assertive pbl-button" ng-show="quitGroupShow" ng-click="delGroup('quit')">退出小組</button>
+    </div>
   </ion-content>
 </ion-view>
