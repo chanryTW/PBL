@@ -6,25 +6,27 @@
         課程公告：
       </div>
       <div class="item item-text-wrap" id="co-writing_content">
-        {{item.ClassContent}}}
+        {{item.ClassContent}}
       </div>
     </div>
 
-    <div class="pbl-img-div">
-      <img id="pbl-img" src="img/member.png">
-    </div>
-    <div class="pbl-img-div">
-        <img id="pbl-img" src="img/member.png">
-      </div>
-      <div class="pbl-img-div">
-          <img id="pbl-img" src="img/member.png">
-        </div>
+      <div class="pbl-member" ng-repeat="member in members">
         <div class="pbl-img-div">
-            <img id="pbl-img" src="img/member.png">
-          </div>
-    
-    <button class = "button button-block button-balanced" ng-show="addGroupShow" ng-click="addGroup()">創立小組</button>
-    <button class = "button button-block button-assertive" ng-show="delGroupShow" ng-click="delGroup()">解散小組</button>
+          <img id="pbl-img" ng-src="{{member.memberImg}}">
+        </div>
+        <span class="pbl-member-span">{{member.memberName}}</span>
+      </div>
+
+      <div class="pbl-member">
+        <div class="pbl-img-div">
+          <img id="pbl-img">
+        </div>
+        <span class="pbl-member-span">邀請</span>
+      </div>
+
+    <button class = "button button-block button-balanced pbl-button" ng-show="addGroupShow" ng-click="addGroup()">創立小組</button>
+    <button class = "button button-block button-assertive pbl-button" ng-show="delGroupShow" ng-click="delGroup('del')">解散小組</button>
+    <button class = "button button-block button-assertive pbl-button" ng-show="quitGroupShow" ng-click="delGroup('quit')">退出小組</button>
 
   </ion-content>
 </ion-view>

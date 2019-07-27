@@ -48,6 +48,13 @@ a{text-decoration:none}
 }
 
 /* -----------------------------------------------首頁頁面----------------------------------------------- */
+/* 組員 */
+.pbl-member{
+    display: inline-block;
+    width: 24vw;
+    height: 30vw;
+    text-align: center;
+}
 /* 大頭照 */
 .pbl-img-div{
     display: inline-block;
@@ -67,9 +74,21 @@ a{text-decoration:none}
     background-position:center center;
     height: 100%;
 }
+/* 姓名部分 */
+.pbl-member-span{
+    color: #ffffff;
+    font-size: 4vw;
+    line-height: 6vw;
+}
 /* 邀請泡泡圖片 */
 .inviteImg{
     width: 100%;
+}
+/* 小組按鈕 */
+.pbl-button{
+    position: fixed;
+    width: 80%;
+    bottom: 5px;
 }
 
 /* -----------------------------------------------腦力激盪頁面----------------------------------------------- */
