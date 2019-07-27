@@ -119,26 +119,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             //     }
             // });
 
-            // 首次登入(考慮是否移除)
-            // db.collection("帳號").doc(StuID).get().then(function(doc) {
-            //     if (doc.exists) {
-            //         console.log("成功取得使用者資料");
-            //     } else {
-            //         console.log("首次登入，建立使用者資料中...");
-            //         db.collection("member").doc(StuID).set({
-            //             暱稱: StuID,
-            //             照片ID: "1321"
-            //         })
-            //         .then(function() {
-            //             console.log("首次登入，建立使用者資料成功");
-            //         })
-            //         .catch(function(error) {
-            //             console.error("首次登入，建立使用者資料失敗：", error);
-            //             $state.go("login");
-            //         });
-            //     }
-            // });
-
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
@@ -176,14 +156,14 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         console.log("取得未分組名單發生錯誤：", error); 
                     });
                     // 監聽 - 小組狀態
-                    db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
-                    .onSnapshot(function(querySnapshot) {
-                        querySnapshot.forEach(function (doc) {
-                            console.log("小組狀態",doc.data().members);
-                        });
-                    },function(error) {
+                    // db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
+                    // .onSnapshot(function(querySnapshot) {
+                    //     querySnapshot.forEach(function (doc) {
+                    //         console.log("小組狀態",doc.data().members);
+                    //     });
+                    // },function(error) {
 
-                    }); 
+                    // }); 
                     $state.go($state.current, {}, {reload: true}); //重新載入view
                 }
             },function(error) {
@@ -194,7 +174,38 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
             .onSnapshot(function(querySnapshot) {
                 querySnapshot.forEach(function(doc) {
-                    console.log("有人邀請",doc.data());//跳出邀請訊息
+                    console.log("有人邀請");
+                    // 查詢姓名
+                    var leaderID = doc.data().leader;
+                    db.collection("帳號").doc(leaderID)
+                    .get().then(function(results) {
+                        var leaderName = results.data().Name;
+                        //跳出邀請訊息
+                        var confirmPopup = $ionicPopup.show({
+                            title: '小組邀請',
+                            subTitle: leaderID+' '+leaderName+' 邀請你加入小組。',
+                            template: 
+                                '<img class="inviteImg" src="img/invite.jpg">',
+                            scope: $scope,
+                            buttons: [{
+                                text: '拒絕',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇拒絕');
+                                    // 
+                                }
+                            }, {
+                                text: '接受',
+                                type: 'button-positive',
+                                onTap: function(e) {
+                                    console.log('選擇接受');
+                                    // 
+                                }
+                            }]
+                        });
+                    }).catch(function(error) { 
+                        console.log("查詢姓名發生錯誤：", error); 
+                    });
                 });
             },function(error) {
                 console.log("搜尋是否有人邀請發生錯誤：", error); 
