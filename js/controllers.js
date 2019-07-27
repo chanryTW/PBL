@@ -804,7 +804,9 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                 var file = uploadFileInput2.files[0];
                 var storage = firebase.storage();
                 var storageRef = storage.ref();
-                var uploadTask = storageRef.child('members/'+StuID).put(file);
+                var now = new Date();
+                var ImgID = now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
+                var uploadTask = storageRef.child('members/'+ImgID).put(file);
                 uploadTask.on('state_changed', function(snapshot){
                     // 取得檔案上傳狀態，並用數字顯示
                     var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -831,13 +833,13 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                     console.log("上傳成功");
                     $ionicLoading.hide();
                     // 更新menu的大頭照
-                    storageRef.child('members/'+StuID).getDownloadURL().then(function(url) {
+                    storageRef.child('members/'+ImgID).getDownloadURL().then(function(url) {
                         document.getElementById("menu-img").src=url;
                     })
                     // 更新DB檔名
                     db.collection("帳號").doc(StuID)
                     .update({
-                        Img: StuID
+                        Img: ImgID
                     })
                     .then(function(data) {
                         console.log("更新DB檔名成功");
