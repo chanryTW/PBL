@@ -794,42 +794,6 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
             
-            // 修改暱稱功能
-            var SaveBtn1 = document.getElementById("page7_savebtn1");
-            var uploadFileInput1 = document.getElementById("uploadFileInput1");    
-            SaveBtn1.addEventListener("click",function(){
-                $ionicLoading.show({ // 開始跑圈圈
-                    template: '更新暱稱中...'
-                });
-                var uid = localStorage.getItem("uid"); // 取回uid
-                var db = firebase.database();
-                db.ref("使用者/" + uid).update({暱稱: uploadFileInput1.value},
-                function (error) {
-                    if (error) {
-                        console.log("修改失敗");
-                        $ionicLoading.hide();
-                        console.log(error);
-                        var alertPopup = $ionicPopup.alert({
-                            title: '修改暱稱失敗',
-                            template: error
-                        });
-                    }
-                    else {
-                        console.log("修改成功");
-                        $ionicLoading.hide();
-                        var alertPopup = $ionicPopup.alert({
-                            title: '成功',
-                            template: '暱稱修改完成。'
-                        });
-                        // 更新選單的暱稱
-                        var userId = localStorage.getItem("uid");
-                        return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
-                            var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
-                            document.getElementById("menu-heading1").innerText = username; 
-                        });
-                    }
-                });
-            });
             // 上傳大頭照功能
             var SaveBtn2 = document.getElementById("page7_savebtn2");    
             var uploadFileInput2 = document.getElementById("uploadFileInput2");
@@ -840,11 +804,13 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                 var file = uploadFileInput2.files[0];
                 var storage = firebase.storage();
                 var storageRef = storage.ref();
-                var uploadTask = storageRef.child('images/'+localStorage.getItem("uid")).put(file);
+                var uploadTask = storageRef.child('members/'+StuID).put(file);
                 uploadTask.on('state_changed', function(snapshot){
                     // 取得檔案上傳狀態，並用數字顯示
                     var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('已上傳 ' + progress + '%');
+                    $ionicLoading.show({ // 開始跑圈圈
+                        template: '已上傳 ' + progress + '%'
+                    });
                     switch (snapshot.state) {
                         case firebase.storage.TaskState.PAUSED: 
                         console.log('上傳暫停');
@@ -864,18 +830,29 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                 }, function() {
                     console.log("上傳成功");
                     $ionicLoading.hide();
+                    // 更新menu的大頭照
+                    storageRef.child('members/'+StuID).getDownloadURL().then(function(url) {
+                        document.getElementById("menu-img").src=url;
+                    })
+                    // 更新DB檔名
+                    db.collection("帳號").doc(StuID)
+                    .update({
+                        Img: StuID
+                    })
+                    .then(function(data) {
+                        console.log("更新DB檔名成功");
+                    })
+                    .catch(function(error) {
+                        console.error("更新DB檔名失敗：", error);
+                    });
+
                     var alertPopup = $ionicPopup.alert({
                         title: '成功',
                         template: '更換照片完成。'
                     });
-                    // 更新menu的大頭照
-                    var storage = firebase.storage();
-                    var storageRef = storage.ref();
-                    storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
-                        document.getElementById("menu-img").src=url;
-                    })
                 });
             },false);
+
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -886,22 +863,56 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
 // ----------------------------------------選單頁面----------------------------------------
 .controller('menuCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
-    // 更新使用者姓名
-    document.getElementById("menu-heading1").innerText = localStorage.getItem("sname");
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
 
-    // 登出
-    var signOutSmtBtn = document.getElementById("menu-list-item8");
-    signOutSmtBtn.addEventListener("click",function(){
-        firebase.auth().signOut().then(function() {
-            console.log("登出成功");
-            localStorage.clear();
-        }).catch(function(error) {
-            console.log("登出發生錯誤!");
-        });
-    },false);
-    
-    // 設定授權文字位置
-    $('#menu-heading2').css('top', window.innerHeight-620+'px');
+            // 查詢姓名
+            db.collection("帳號").doc(StuID)
+            .get().then(function(results) {
+                // 更新使用者姓名
+                document.getElementById("menu-heading1").innerText = StuID + ' ' +results.data().Name;
+                localStorage.setItem("StuName",results.data().Name);
+            }).catch(function(error) { 
+                console.log("查詢姓名發生錯誤：", error); 
+            });
+
+            // 登出
+            var signOutSmtBtn = document.getElementById("menu-list-item8");
+            signOutSmtBtn.addEventListener("click",function(){
+                firebase.auth().signOut().then(function() {
+                    console.log("登出成功");
+                    localStorage.clear();
+                }).catch(function(error) {
+                    console.log("登出發生錯誤!");
+                });
+            },false);
+            
+            // 查詢圖片檔名
+            db.collection("帳號").doc(StuID)
+            .get().then(function(results) {
+                // 更新menu的大頭照
+                console.log("更新大頭照成功");
+                var storage = firebase.storage();
+                var storageRef = storage.ref();
+                storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                    document.getElementById("menu-img").src=url;
+                })
+            }).catch(function(error) { 
+                console.log("查詢圖片檔名發生錯誤：", error); 
+            });
+              
+            // 設定授權文字位置
+            $('#menu-heading2').css('top', window.innerHeight-620+'px');
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
 }])
 
 // ----------------------------------------教師版主頁面----------------------------------------
