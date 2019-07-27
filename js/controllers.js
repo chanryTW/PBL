@@ -13,7 +13,7 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
             pwdL.value="";
             $ionicLoading.hide();
             // 判斷教師版
-            if (StuID=="1031241104") {
+            if (StuID=="root") {
                 $state.go("rootmenu.root_pbl",{StuID:StuID});
             } else {
                 $state.go("choose_class",{StuID:StuID});
@@ -909,7 +909,7 @@ function ($scope, $stateParams) {
 function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user.uid==="oZUljfdmzGQDQsaGJWBLgXo15NM2") { //登入成功，取得使用者
+        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
             console.log("已登入狀態");
             let originalUser = firebase.auth().currentUser;
 
@@ -1054,7 +1054,6 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
 
             // 設定 - 開放學生自行分組
             $scope.LockGroupChange = function(ClassID,inviteLock) {
-                console.log(ClassID,' 開放學生自行分組：',inviteLock);
                 // 更新inviteLock
                 db.collection("課程").doc(ClassID)
                 .update({
