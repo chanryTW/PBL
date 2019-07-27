@@ -137,6 +137,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     // 顯示創立組員按鈕
                     $scope.addGroupShow = true;
                     $scope.delGroupShow = false;
+                    $scope.quitGroupShow = false;
+                    // 清空組員列表
+                    $scope.members = [];
                     $state.go($state.current, {}, {reload: true}); //重新載入view
                 } else if (doc.data().grouped === true) {//有小組
                     console.log("有小組",doc.data());
@@ -147,6 +150,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     .get().then(function(results) {
                         if(results.empty) {
                             console.log("你非組長"); 
+                            $scope.quitGroupShow = true;
                         } else {
                             console.log("你是組長");
                             $scope.delGroupShow = true;
@@ -155,20 +159,36 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     }).catch(function(error) { 
                         console.log("取得未分組名單發生錯誤：", error); 
                     });
-                    // 監聽 - 小組狀態
-                    // db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
-                    // .onSnapshot(function(querySnapshot) {
-                    //     querySnapshot.forEach(function (doc) {
-                    //         console.log("小組狀態",doc.data().members);
-                    //     });
-                    // },function(error) {
-
-                    // }); 
-                    $state.go($state.current, {}, {reload: true}); //重新載入view
                 }
             },function(error) {
                 console.log("搜尋是否已有小組發生錯誤：", error); 
             });
+
+            // 監聽 - 小組狀態
+            db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.forEach(function (doc) {
+                    $scope.members = [];
+                    console.log("小組狀態",doc.data().members);
+                    for (let index = 0; index < doc.data().members.length; index++) {
+                        // 查詢帳號資料
+                        db.collection("帳號").doc(doc.data().members[index])
+                        .get().then(function(results) {
+                            // 獲取組員大頭照
+                            var storage = firebase.storage();
+                            storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                $scope.members.push({memberID:doc.data().members[index],memberName:results.data().Name,memberImg:url});
+                                $state.go($state.current, {}, {reload: true}); //重新載入view
+                                console.log($scope.members);
+                            })
+                        }).catch(function(error) { 
+                            console.log("查詢帳號資料發生錯誤：", error); 
+                        });
+                    }
+                });
+            },function(error) {
+                console.log("檢查小組狀態發生錯誤：", error); 
+            }); 
 
             // 監聽 - 搜尋是否有人邀請
             db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
@@ -176,6 +196,8 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                 querySnapshot.forEach(function(doc) {
                     console.log("有人邀請");
                     // 查詢姓名
+                    var groupID = doc.data().groupID;
+                    var inviteID = doc.id;
                     var leaderID = doc.data().leader;
                     db.collection("帳號").doc(leaderID)
                     .get().then(function(results) {
@@ -192,14 +214,89 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                 type: 'button-default',
                                 onTap: function(e) {
                                     console.log('選擇拒絕');
-                                    // 
+                                    // 更新回應狀態
+                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
+                                    .update({
+                                        respond: true
+                                    })
+                                    .then(function(data) {
+                                        console.log("更新回應狀態成功");
+                                        // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
+                                        db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                        .get().then(function(results) {
+                                            var inviting = results.data().inviting;
+                                            // 刪除自己
+                                            inviting.splice(inviting.indexOf(StuID),1);
+                                            // 取消邀請
+                                            db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                            .update({
+                                                inviting: inviting
+                                            })
+                                            .then(function(data) {
+                                                console.log("更新inviting成功");
+                                            })
+                                            .catch(function(error) {
+                                                console.error("更新inviting失敗：", error);
+                                            });
+                                        }).catch(function(error) { 
+                                            console.log("檢查小組是否還存在，可能小組已解散：", error); 
+                                        });
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新回應狀態失敗：", error);
+                                    });
                                 }
                             }, {
                                 text: '接受',
                                 type: 'button-positive',
                                 onTap: function(e) {
                                     console.log('選擇接受');
-                                    // 
+                                    // 更新回應狀態
+                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
+                                    .update({
+                                        respond: true
+                                    })
+                                    .then(function(data) {
+                                        console.log("更新回應狀態成功");
+                                        // 創立小組 - 更新入組狀態
+                                        db.collection("分組").doc(ClassID).collection("student").doc(StuID)
+                                        .update({
+                                            grouped: true
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新入組狀態成功");
+                                            // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
+                                            db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                            .get().then(function(results) {
+                                                var inviting = results.data().inviting;
+                                                var members = results.data().members;
+                                                // 刪除自己
+                                                inviting.splice(inviting.indexOf(StuID),1);
+                                                // 新增自己
+                                                members.push(StuID);
+                                                // 取消邀請
+                                                db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                                .update({
+                                                    inviting: inviting,
+                                                    members: members
+                                                })
+                                                .then(function(data) {
+                                                    console.log("更新inviting成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("更新inviting失敗：", error);
+                                                });
+                                            }).catch(function(error) { 
+                                                console.log("檢查小組是否還存在，可能小組已解散：", error); 
+                                            });
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新入組狀態失敗：", error);
+                                        });
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新回應狀態失敗：", error);
+                                    });
                                 }
                             }]
                         });
@@ -292,15 +389,172 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                     inviting: $scope.checkStus
                                 })
                                 .then(function(data) {
+                                    var groupID = data.id;
                                     console.log("新增小組成功");
+                                    // 創立小組 - 更新入組狀態
+                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID)
+                                    .update({
+                                        grouped: true
+                                    })
+                                    .then(function(data) {
+                                        console.log("更新入組狀態成功");
+                                        // 創立小組 - 傳送邀請通知
+                                        for (let index = 0; index < $scope.checkStus.length; index++) {
+                                            db.collection("分組").doc(ClassID).collection("student").doc($scope.checkStus[index]).collection("invite")
+                                            .add({
+                                                leader: StuID,
+                                                groupID: groupID,
+                                                respond: false
+                                            })
+                                            .then(function(data) {
+                                                console.log("傳送邀請通知成功");
+                                            })
+                                            .catch(function(error) {
+                                                console.error("傳送邀請通知失敗：", error);
+                                            });
+                                        }
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新入組狀態失敗：", error);
+                                    });
                                 })
                                 .catch(function(error) {
                                     console.error("新增小組失敗：", error);
                                 });
-                                // 創立小組 - 更新入組狀態
+                                
+                                
+                            }
+                        }
+                    }]
+                });
+            };
+
+            // 解散小組 or 退出小組
+            $scope.delGroup = function(DelOrQuit) {
+                if (DelOrQuit == "del") {
+                    // 解散小組 - 跳出泡泡
+                    var confirmPopup = $ionicPopup.confirm({
+                        title: '解散小組',
+                        template: '確定要解散小組嗎?',
+                        buttons: [{
+                            text: '取消',
+                            type: 'button-default',
+                            onTap: function(e) {
+                                console.log('選擇取消');
+                            }
+                        }, {
+                            text: '解散',
+                            type: 'button-positive',
+                            onTap: function(e) {
+                                console.log('選擇解散');
+
+                                // 解散小組 - 刪除小組資料+收回邀請通知
+                                db.collection("分組").doc(ClassID).collection("group").where("leader", "==", StuID)
+                                .get().then(function(results) {
+                                    if(results.empty) {
+                                        console.log("解散小組錯誤：非組長"); 
+                                    } else {
+                                        results.forEach(function (doc) {
+                                            // 跑邀請清單(邀請清單內無人則不會跑)
+                                            for (let index = 0; index < doc.data().inviting.length; index++) {
+                                                db.collection("分組").doc(ClassID).collection("student").doc(doc.data().inviting[index]).collection("invite").where("groupID", "==", doc.id)
+                                                .get().then(function(results) {
+                                                    if(results.empty) {
+                                                        console.log("收回邀請通知錯誤：無須收回之通知"); 
+                                                    } else {
+                                                        results.forEach(function (doc2) {
+                                                            // 收回邀請通知
+                                                            db.collection("分組").doc(ClassID).collection("student").doc(doc.data().inviting[index]).collection("invite").doc(doc2.id)
+                                                            .update({
+                                                                respond: true
+                                                            })
+                                                            .then(function(data) {
+                                                                console.log("收回邀請通知成功");
+                                                            })
+                                                            .catch(function(error) {
+                                                                console.error("收回邀請通知失敗：", error);
+                                                            });
+                                                        });
+                                                    }
+                                                }).catch(function(error) { 
+                                                    console.log("收回邀請通知錯誤：", error); 
+                                                });
+                                            }
+                                            // 跑組員清單(組員清單內無人則不會跑)
+                                            for (let index = 0; index < doc.data().members.length; index++) {
+                                                // 更新入組狀態
+                                                db.collection("分組").doc(ClassID).collection("student").doc(doc.data().members[index])
+                                                .update({
+                                                    grouped: false
+                                                })
+                                                .then(function(data) {
+                                                    console.log("更新入組狀態成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("更新入組狀態失敗：", error);
+                                                });
+                                            }
+                                            // 刪除小組資料
+                                            db.collection("分組").doc(ClassID).collection("group").doc(doc.id)
+                                            .delete()
+                                            .then(function(data) {
+                                                console.log("解散小組成功");
+                                                $scope.members = [];
+                                                $state.go($state.current, {}, {reload: true}); //重新載入view
+                                            })
+                                            .catch(function(error) {
+                                                console.error("解散小組失敗：", error);
+                                            });
+                                            
+                                        });
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("解散小組錯誤：", error); 
+                                });
+                            }
+                        }]
+                    });
+                } else if(DelOrQuit == "quit") {
+                    // 退出小組 - 跳出泡泡
+                    var confirmPopup = $ionicPopup.confirm({
+                        title: '退出小組',
+                        template: '確定要退出小組嗎?',
+                        buttons: [{
+                            text: '取消',
+                            type: 'button-default',
+                            onTap: function(e) {
+                                console.log('選擇取消');
+                            }
+                        }, {
+                            text: '退出',
+                            type: 'button-positive',
+                            onTap: function(e) {
+                                console.log('選擇解散');
+                                // 退出小組 - 刪除小組members資料
+                                db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
+                                .get().then(function (querySnapshot) {
+                                    querySnapshot.forEach(function (doc) {
+                                        var groupID = doc.id;
+                                        var members = doc.data().members;
+                                        // 刪除自己
+                                        members.splice(members.indexOf(StuID),1);
+                                        // 更新members資料
+                                        db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                        .update({
+                                            members: members
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新members資料成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新members資料失敗：", error);
+                                        });
+                                    });
+                                });
+                                // 更新入組狀態
                                 db.collection("分組").doc(ClassID).collection("student").doc(StuID)
                                 .update({
-                                    grouped: true
+                                    grouped: false
                                 })
                                 .then(function(data) {
                                     console.log("更新入組狀態成功");
@@ -308,109 +562,11 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                 .catch(function(error) {
                                     console.error("更新入組狀態失敗：", error);
                                 });
-                                // 創立小組 - 傳送邀請通知
-                                for (let index = 0; index < $scope.checkStus.length; index++) {
-                                    db.collection("分組").doc(ClassID).collection("student").doc($scope.checkStus[index]).collection("invite")
-                                    .add({
-                                        leader: StuID,
-                                        respond: false
-                                    })
-                                    .then(function(data) {
-                                        console.log("傳送邀請通知成功");
-                                    })
-                                    .catch(function(error) {
-                                        console.error("傳送邀請通知失敗：", error);
-                                    });
-                                }
                             }
-                        }
-                    }]
-                });
-            };
-
-            // 解散小組
-            $scope.delGroup = function() {
-                // 解散小組 - 跳出泡泡
-                var confirmPopup = $ionicPopup.confirm({
-                    title: '解散小組',
-                    template: '確定要解散小組嗎?',
-                    buttons: [{
-                        text: '取消',
-                        type: 'button-default',
-                        onTap: function(e) {
-                            console.log('選擇取消');
-                        }
-                    }, {
-                        text: '解散',
-                        type: 'button-positive',
-                        onTap: function(e) {
-                            console.log('選擇解散');
-
-                            // 解散小組 - 刪除小組資料+收回邀請通知
-                            db.collection("分組").doc(ClassID).collection("group").where("leader", "==", StuID)
-                            .get().then(function(results) {
-                                if(results.empty) {
-                                    console.log("解散小組錯誤：非組長"); 
-                                } else {
-                                    results.forEach(function (doc) {
-                                        // 刪除小組資料+收回邀請通知
-                                        for (let index = 0; index < doc.data().inviting.length; index++) {
-                                            db.collection("分組").doc(ClassID).collection("student").doc(doc.data().inviting[index]).collection("invite").where("leader", "==", StuID)
-                                            .get().then(function(results) {
-                                                if(results.empty) {
-                                                    console.log("收回邀請通知錯誤：無須收回之通知"); 
-                                                } else {
-                                                    results.forEach(function (doc2) {
-                                                        // 收回邀請通知
-                                                        db.collection("分組").doc(ClassID).collection("student").doc(doc.data().inviting[index]).collection("invite").doc(doc2.id)
-                                                        .update({
-                                                            respond: true
-                                                        })
-                                                        .then(function(data) {
-                                                            console.log("收回邀請通知成功");
-                                                            // 刪除小組資料
-                                                            db.collection("分組").doc(ClassID).collection("group").doc(doc.id)
-                                                            .delete()
-                                                            .then(function(data) {
-                                                                console.log("解散小組成功");
-                                                            })
-                                                            .catch(function(error) {
-                                                                console.error("解散小組失敗：", error);
-                                                            });
-                                                        })
-                                                        .catch(function(error) {
-                                                            console.error("收回邀請通知失敗：", error);
-                                                        });
-                                                    });
-                                                }
-                                            }).catch(function(error) { 
-                                                console.log("收回邀請通知錯誤：", error); 
-                                            });
-                                        }
-                                    });
-                                }
-                            }).catch(function(error) { 
-                                console.log("解散小組錯誤：", error); 
-                            });
-                            
-                            // 解散小組 - 更新入組狀態(自己)
-                            db.collection("分組").doc(ClassID).collection("student").doc(StuID)
-                            .update({
-                                grouped: false
-                            })
-                            .then(function(data) {
-                                console.log("更新入組狀態成功");
-                            })
-                            .catch(function(error) {
-                                console.error("更新入組狀態失敗：", error);
-                            });
-
-                            // 解散小組 - 更新入組狀態(組員)
-
-
-                        }
-                    }]
-                });
+                        }]
+                    });
+                }
+                
             };
 
             // 更新menu的大頭照
@@ -424,7 +580,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             // return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
             //     var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
             // });
-            
+
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -754,7 +910,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                                         } else {
                                             // 尚無帳號
                                             console.log("尚無帳號");
-                                            batch.set(db.collection("帳號").doc(persons[index].學號), {Name:persons[index].姓名});
+                                            batch.set(db.collection("帳號").doc(persons[index].學號), {Name:persons[index].姓名}, {Img:"default"});
                                             batch.set(db.collection("分組").doc(data.id).collection("student").doc(persons[index].學號), {grouped:false});
                                             // 註冊Authentication
                                             firebase.auth().createUserWithEmailAndPassword(persons[index].學號+"@nkust.edu.tw", persons[index].學號)
