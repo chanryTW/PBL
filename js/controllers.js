@@ -578,18 +578,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                 
             };
 
-            // 更新menu的大頭照
-            // var storage = firebase.storage();
-            // var storageRef = storage.ref();
-            // storageRef.child('images/'+localStorage.getItem("uid")).getDownloadURL().then(function(url) {
-            //     document.getElementById("menu-img").src=url;
-            // })
-            // 更新選單的暱稱
-            // var userId = localStorage.getItem("uid");
-            // return firebase.database().ref('/使用者/' + userId).once('value').then(function(snapshot) {
-            //     var username = (snapshot.val() && snapshot.val().暱稱) || 'Anonymous';
-            // });
-
         }else{
             console.log("尚未登入");
             $state.go("login");

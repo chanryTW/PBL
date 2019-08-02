@@ -5,6 +5,16 @@ html,body{
 }
 a{text-decoration:none}
 /* -----------------------------------------------登入頁面----------------------------------------------- */
+.login_LOGO{
+    display: block;
+    width: 60vw;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+@media screen and (min-width: 768px) { 
+    .login_LOGO{ width: 460.8px;}
+}
 .page4-label{
     background-color: rgba(0, 0, 0, 0);
     border-top:0px;
@@ -79,6 +89,11 @@ a{text-decoration:none}
     color: #ffffff;
     font-size: 4vw;
     line-height: 6vw;
+}
+@media screen and (min-width: 768px) { 
+    .pbl-img-div{ width: 153.6px; height: 153.6px; }
+    .pbl-member{ width: 184.32px; height: 230.4px; }
+    .pbl-member-span{ font-size: 30.72px; line-height: 46.08px; }
 }
 /* 邀請泡泡圖片 */
 .inviteImg{
