@@ -3,6 +3,7 @@
     
     <div ng-repeat="item in items" class="card">
       <div class="item item-divider">
+        <ion-icon name="notifications"></ion-icon>
         課程公告：
       </div>
       <div class="item item-text-wrap" id="co-writing_content">
@@ -11,7 +12,7 @@
     </div>
 
       <div class="pbl-member" ng-repeat="member in members">
-        <div class="pbl-img-div">
+        <div ng-class="{true:'pbl-leader pbl-img-div',false:'pbl-img-div'}[{{member.leader}}]">
           <img id="pbl-img" ng-src="{{member.memberImg}}">
         </div>
         <span class="pbl-member-span">{{member.memberName}}</span>

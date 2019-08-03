@@ -61,9 +61,22 @@ a{text-decoration:none}
 /* 組員 */
 .pbl-member{
     display: inline-block;
+    position: relative;
     width: 24vw;
     height: 30vw;
     text-align: center;
+}
+/* 組長圖示 */
+.pbl-leader:after{
+    content: "";
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 1vw;
+    width: 8vw;
+    height: 8vw;
+    z-index: 2;
+    background-image: url(/svg/medal.svg)
 }
 /* 大頭照 */
 .pbl-img-div{
@@ -94,6 +107,7 @@ a{text-decoration:none}
     .pbl-img-div{ width: 153.6px; height: 153.6px; }
     .pbl-member{ width: 184.32px; height: 230.4px; }
     .pbl-member-span{ font-size: 30.72px; line-height: 46.08px; }
+    .pbl-leader:after{ left: 7.68px;width: 61.44px;height: 61.44px; }
 }
 /* 邀請泡泡圖片 */
 .inviteImg{

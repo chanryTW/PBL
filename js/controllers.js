@@ -182,10 +182,15 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         // 查詢帳號資料
                         db.collection("帳號").doc(doc.data().members[index])
                         .get().then(function(results) {
+                            // 第一位是組長
+                            var leaderTrue = false;
+                            if (index == 0) {
+                                leaderTrue = true;
+                            }
                             // 獲取組員大頭照
                             var storage = firebase.storage();
                             storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
-                                $scope.members.push({memberID:doc.data().members[index],memberName:results.data().Name,memberImg:url});
+                                $scope.members.push({memberID:doc.data().members[index],memberName:results.data().Name,memberImg:url,leader:leaderTrue});
                                 $state.go($state.current, {}, {reload: true}); //重新載入view
                                 console.log($scope.members);
                             })
@@ -790,57 +795,68 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                     template: '上傳圖片中...'
                 });
                 var file = uploadFileInput2.files[0];
-                var storage = firebase.storage();
-                var storageRef = storage.ref();
-                var now = new Date();
-                var ImgID = now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
-                var uploadTask = storageRef.child('members/'+ImgID).put(file);
-                uploadTask.on('state_changed', function(snapshot){
-                    // 取得檔案上傳狀態，並用數字顯示
-                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    $ionicLoading.show({ // 開始跑圈圈
-                        template: '已上傳 ' + progress + '%'
-                    });
-                    switch (snapshot.state) {
-                        case firebase.storage.TaskState.PAUSED: 
-                        console.log('上傳暫停');
-                        break;
-                        case firebase.storage.TaskState.RUNNING: 
-                        console.log('上傳中');
-                        break;
-                    }
-                }, function(error) {
-                    console.log("上傳失敗");
+                // 判斷是否有上傳
+                if (file == undefined) {
+                    console.log("未選擇檔案");
                     $ionicLoading.hide();
-                    console.log(error);
                     var alertPopup = $ionicPopup.alert({
-                        title: '上傳圖片失敗',
-                        template: error
+                        title: '未選擇檔案',
+                        template: '請先選擇檔案再上傳'
                     });
-                }, function() {
-                    console.log("上傳成功");
-                    $ionicLoading.hide();
-                    // 更新menu的大頭照
-                    storageRef.child('members/'+ImgID).getDownloadURL().then(function(url) {
-                        document.getElementById("menu-img").src=url;
-                    })
-                    // 更新DB檔名
-                    db.collection("帳號").doc(StuID)
-                    .update({
-                        Img: ImgID
-                    })
-                    .then(function(data) {
-                        console.log("更新DB檔名成功");
-                    })
-                    .catch(function(error) {
-                        console.error("更新DB檔名失敗：", error);
-                    });
+                } else {
+                    var storage = firebase.storage();
+                    var storageRef = storage.ref();
+                    var now = new Date();
+                    var ImgID = now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
+                    var uploadTask = storageRef.child('members/'+ImgID).put(file);
+                    uploadTask.on('state_changed', function(snapshot){
+                        // 取得檔案上傳狀態，並用數字顯示
+                        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        $ionicLoading.show({ // 開始跑圈圈
+                            template: '已上傳 ' + progress + '%'
+                        });
+                        switch (snapshot.state) {
+                            case firebase.storage.TaskState.PAUSED: 
+                            console.log('上傳暫停');
+                            break;
+                            case firebase.storage.TaskState.RUNNING: 
+                            console.log('上傳中');
+                            break;
+                        }
+                    }, function(error) {
+                        console.log("上傳失敗");
+                        $ionicLoading.hide();
+                        console.log(error);
+                        var alertPopup = $ionicPopup.alert({
+                            title: '上傳圖片失敗',
+                            template: error
+                        });
+                    }, function() {
+                        console.log("上傳成功");
+                        $ionicLoading.hide();
+                        // 更新menu的大頭照
+                        storageRef.child('members/'+ImgID).getDownloadURL().then(function(url) {
+                            document.getElementById("menu-img").src=url;
+                        })
+                        // 更新DB檔名
+                        db.collection("帳號").doc(StuID)
+                        .update({
+                            Img: ImgID
+                        })
+                        .then(function(data) {
+                            console.log("更新DB檔名成功");
+                        })
+                        .catch(function(error) {
+                            console.error("更新DB檔名失敗：", error);
+                        });
 
-                    var alertPopup = $ionicPopup.alert({
-                        title: '成功',
-                        template: '更換照片完成。'
+                        var alertPopup = $ionicPopup.alert({
+                            title: '成功',
+                            template: '更換照片完成。'
+                        });
                     });
-                });
+                }
+                
             },false);
 
         }else{
