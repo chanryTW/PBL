@@ -56,6 +56,48 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
         });
     };
 
+    // 忘記密碼
+    $scope.forgetBtn = function() {
+        $scope.data = {};
+        var confirmPopup = $ionicPopup.show({
+            title: '忘記密碼',
+            subTitle: '請輸入學號，重設信件將寄送至nkust信箱',
+            template: 
+                '<input type="text" ng-model="data.forgetInput" placeholder="ex:C107193000">',
+            scope: $scope,
+            buttons: [{
+                text: '取消',
+                type: 'button-default',
+                onTap: function(e) {
+                    console.log('選擇取消');
+                }
+            }, {
+                text: '送出',
+                type: 'button-positive',
+                onTap: function(e) {
+                    console.log('選擇送出');
+                    firebase.auth().sendPasswordResetEmail($scope.data.forgetInput+"@nkust.edu.tw").then(function() {
+                        console.log("寄送密碼重置信成功");
+                        var alertPopup = $ionicPopup.alert({
+                            title: '成功',
+                            template: '寄送密碼重置信成功，請至 '+$scope.data.forgetInput+"@nkust.edu.tw"+" 收信"
+                        });
+                    }).catch(function(error) {
+                        console.log("寄送密碼重置信失敗");
+                        switch(error.code){
+                            case 'auth/user-not-found':
+                                var alertPopup = $ionicPopup.alert({
+                                    title: '寄信失敗',
+                                    template: '查無此帳號。'
+                                });
+                                break;
+                        }
+                    });
+                }
+            }]
+        });
+    };
+
 }])
 
 // ----------------------------------------選擇課程頁面----------------------------------------
