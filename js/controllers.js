@@ -1247,6 +1247,143 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
     });
 }])
 
+// ----------------------------------------教師版分組狀態----------------------------------------
+.controller('root_groupCtrl', ['$scope', '$stateParams', '$state', '$ionicLoading',
+function ($scope, $stateParams, $state, $ionicLoading) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+            console.log("已登入狀態");
+            $scope.cardShow = false;
+            
+            // 列出全部課程
+            db.collection("課程")
+            .get().then(function (querySnapshot) {
+                $scope.AllClass = [];
+                querySnapshot.forEach(function (doc) {
+                    $scope.AllClass.push(doc.data());
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                });
+            });
+
+            // 按下課程
+            $scope.choose_class = function(ClassID,ClassName) {
+                $scope.cardShow = false;
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入資料中...</p>'});
+
+                // 取得分組狀態
+                $scope.Allgroups = [];
+                // 未分組的人
+                var Ngroup = [];
+                db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", false)
+                .get().then(function (querySnapshot) {
+                    querySnapshot.forEach(function (doc) {
+                        // 查詢姓名
+                        db.collection("帳號").doc(doc.id)
+                        .get().then(function(results) {
+                            Ngroup.push(doc.id+results.data().Name);
+                        }).catch(function(error) { 
+                            console.log("查詢姓名發生錯誤：", error); 
+                        });
+                    });
+                    // 已分組的人
+                    var Ygroup = [];
+                    db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", true)
+                    .get().then(function (querySnapshot) {
+                        querySnapshot.forEach(function (doc) {
+                            Ygroup.push(doc.id);
+                        });
+                        $scope.Allgroups = [{ClassName:ClassName,Ngroup:Ngroup,Ygroup:Ygroup}];
+                        // 繪製環形圖
+                        var dom = document.getElementById("container");
+                        var myChart = echarts.init(dom);
+                        var app = {};
+                        option = null;
+                        app.title = '環形圖';
+                        option = {
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: "{a} <br/>{b}: {c} ({d}%)"
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                x: 'left',
+                                data:['未分組','已分組']
+                            },
+                            series: [
+                                {
+                                    name:'分組狀態',
+                                    type:'pie',
+                                    radius: ['50%', '70%'],
+                                    avoidLabelOverlap: false,
+                                    label: {
+                                        normal: {
+                                            show: false,
+                                            position: 'center'
+                                        },
+                                        emphasis: {
+                                            show: true,
+                                            textStyle: {
+                                                fontSize: '15',
+                                                fontWeight: 'bold'
+                                            }
+                                        }
+                                    },
+                                    labelLine: {
+                                        normal: {
+                                            show: false
+                                        }
+                                    },
+                                    data:[
+                                        {value:Ngroup.length, name:'未分組'},
+                                        {value:Ygroup.length, name:'已分組'}
+                                    ]
+                                }
+                            ]
+                        };
+                        if (option && typeof option === "object") {
+                            myChart.setOption(option, true);
+                        }
+
+                        $scope.cardShow = true;
+                        $ionicLoading.hide();
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                    });
+                });
+
+                // 取得組別組員名單
+                $scope.Allgroups2 = [];
+                db.collection("分組").doc(ClassID).collection("group")
+                .get().then(function (querySnapshot) {
+                    querySnapshot.forEach(function (doc) {
+                        var a = doc.data();
+                        for (let index = 0; index < doc.data().members.length; index++) {
+                            // 查詢姓名
+                            db.collection("帳號").doc(doc.data().members[index])
+                            .get().then(function(results) {
+                                a.members[index] += results.data().Name;
+                            }).catch(function(error) { 
+                                console.log("查詢姓名發生錯誤：", error); 
+                            });
+                        }
+                        $scope.Allgroups2.push(a);
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                    });
+                });
+
+            };
+
+
+
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
+}])
+
 // ----------------------------------------教師版選單頁面----------------------------------------
 .controller('rootmenuCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {

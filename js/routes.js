@@ -115,5 +115,15 @@ angular.module('app.routes', [])
     }
   })
 
+  .state('rootmenu.root_group', {
+    url: '/root_group',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/root/root_group.html',
+        controller: 'root_groupCtrl'
+      }
+    }
+  })
+
 $urlRouterProvider.otherwise('/login')
 });

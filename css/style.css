@@ -198,12 +198,14 @@ a{text-decoration:none}
 #menu-heading2{
     position: relative;
 }
+
 /* -----------------------------------------------設定頁面----------------------------------------------- */
 /* 存檔按鈕 */
 #page7_savebtn1,#page7_savebtn2,#page7_savebtn3{
     margin: 10px;
     width: 94.5%;
 }
+
 /* -----------------------------------------------關於我們頁面----------------------------------------------- */
 /* 成員大頭照 */
 .imgradius{
@@ -211,4 +213,12 @@ a{text-decoration:none}
     -moz-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
     -webkit-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
     box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+}
+/* -----------------------------------------------教師版分組狀態頁面----------------------------------------------- */
+/* 環形圖 */
+#container{
+    display: block;
+    position: relative;
+    left:50%;
+    transform: translate(-50%);
 }
