@@ -1,0 +1,28 @@
+<ion-view title="分組狀態" hide-back-button="true" id="root_group">
+  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
+    
+    <div class="button-bar">
+      <a class="button button-block button-dark" ng-repeat="Class in AllClass" ng-click="choose_class(Class.ClassID,Class.ClassName)">{{Class.ClassName}}</a>
+    </div>
+
+    <div class="card" ng-show="cardShow">
+      <div ng-repeat="Allgroup in Allgroups">
+        <div class="item item-divider">
+          【{{Allgroup.ClassName}}】分組狀態（請點按鈕更新）：
+        </div>
+        <h4 style="padding:5px;"><b>未分組名單：</b></h4>
+        <p>{{Allgroup.Ngroup}}</p>
+        <h4 style="text-align: center;">已分組：{{Allgroup.Ygroup.length}} 尚未分組：{{Allgroup.Ngroup.length}}</h4>
+      </div>
+      <canvas id="container"></canvas>
+    </div>
+
+    <div class="card" ng-show="cardShow" ng-repeat="Allgroup2 in Allgroups2">
+        <div class="item item-divider">
+          【{{Allgroup2.members.length}}人】{{Allgroup2.leader}}：
+        </div>
+        <p>{{Allgroup2.members}}</p>
+    </div>
+
+  </ion-content>
+</ion-view>
