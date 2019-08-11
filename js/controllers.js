@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 angular.module('app.controllers', [])
 
 // ----------------------------------------登入頁面----------------------------------------
@@ -191,6 +192,8 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     $scope.quitGroupShow = false;
                     // 清空組員列表
                     $scope.members = [];
+                    // 設定小組ID
+                    localStorage.setItem("GroupID","none");
                     $state.go($state.current, {}, {reload: true}); //重新載入view
                 } else if (doc.data().grouped === true) {//有小組
                     console.log("有小組",doc.data());
@@ -222,6 +225,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
             .onSnapshot(function(querySnapshot) {
                 querySnapshot.forEach(function (doc) {
+                    localStorage.setItem("GroupID",doc.id);
                     $scope.members = [];
                     console.log("小組狀態",doc.data().members);
                     for (let index = 0; index < doc.data().members.length; index++) {
@@ -431,7 +435,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             $scope.checkStus.splice($scope.checkStus.indexOf(Stu),1);
                             // 不讓此項打勾
                             var index = $.map($scope.Stus, function(item, index) {
-                                return item.StuID
+                                return item.StuID;
                             }).indexOf(Stu);
                             $scope.Stus[index].Checked = false;
                         }
@@ -777,103 +781,103 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuName = localStorage.getItem("StuName");
             var ClassID = localStorage.getItem("ClassID");
+            $scope.brainstormingAlertShow = true;
+            $scope.brainstormingShow = false;
 
-            // 取得小組ID
+            // 監聽 - 取得小組ID
             db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
-            .get().then(function(results) {
+            .onSnapshot(function(results) {
                 // 確認是否有小組
-                if (results.exists) {
+                if (results.empty == false) {
                     results.forEach(function (doc) {
-                        console.log(doc.id);
+                        var groupID = doc.id;
+                        $scope.brainstormingAlertShow = false;
+                        $scope.brainstormingShow = true;
+
+                        $scope.items = [];
+                        // 監聽 - 腦力激盪內容
+                        db.collection("腦力激盪").doc(ClassID).collection(groupID).orderBy("time","asc")
+                        .onSnapshot({
+                            includeMetadataChanges: true
+                        }, function(querySnapshot) {
+                            querySnapshot.docChanges().forEach(function(change) {
+                                if (change.type === "added") {
+                                    console.log("新增: ", change.doc.data());
+                                    $scope.items.push(change.doc.data());
+                                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                                    $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                                }
+                                if (change.type === "modified") {
+                                    console.log("修改: ", change.doc.data());
+                                }
+                                if (change.type === "removed") {
+                                    console.log("刪除: ", change.doc.data());
+                                    // 用findIndex找出要刪除的位置
+                                    var indexNum = $scope.items.findIndex((element)=>{
+                                        return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                                    });
+                                    if (indexNum!=-1) {
+                                        $scope.items.splice(indexNum,1);
+                                        console.log("刪除列表成功");
+                                    }else{
+                                        console.log("刪除列表不成功");
+                                    }
+                                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                                    $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                                }
+                            });
+
+                        });
+                        
+                        // 新增腦力激盪
+                        $scope.add = function() {
+                            $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
+                            if ($scope.input!=undefined && $scope.input!="") {
+                                db.collection("腦力激盪").doc(ClassID).collection(groupID)
+                                .add({
+                                    StuID: StuID,
+                                    StuName: StuName,
+                                    msg: $scope.input,
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("新增腦力激盪成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("新增腦力激盪失敗：", error);
+                                });
+                                $scope.input = "";
+                            }
+                            $ionicLoading.hide();
+                        };
+
+                        // 刪除腦力激盪
+                        $scope.Delete = function(item) {
+                            $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>刪除中...</p>'});
+                            var query = db.collection("腦力激盪").doc(ClassID).collection(groupID).where("time", "==", item.time);
+                            query.get().then(function (querySnapshot) {
+                                querySnapshot.forEach(function (doc) {
+                                    db.collection("腦力激盪").doc(ClassID).collection(groupID).doc(doc.id)
+                                    .delete().then(function () {
+                                        console.log("刪除腦力激盪成功");
+                                    }).catch(function(error) {
+                                        console.error("刪除腦力激盪失敗：", error);
+                                    });
+                                });
+                            });
+                            $ionicLoading.hide();
+                        };
                     });
                 } else {
                     console.log("未加入小組");
-                    var alertPopup = $ionicPopup.alert({
-                        title: '未加入小組',
-                        template: '請至首頁組隊'
-                    });
-                    alertPopup.then(function(res) {
-                        $state.go("pbl");
-                    });
+                    $scope.brainstormingAlertShow = true;
+                    $scope.brainstormingShow = false;
                 }
             },function(error) {
                 console.log("檢查小組狀態發生錯誤：", error); 
             }); 
-
-            $scope.items = [];
-            // 監聽 - 腦力激盪內容
-            db.collection("腦力激盪").doc("0001").collection("g0001").orderBy("time","asc")
-            .onSnapshot({
-                includeMetadataChanges: true
-            }, function(querySnapshot) {
-                querySnapshot.docChanges().forEach(function(change) {
-                    if (change.type === "added") {
-                        console.log("新增: ", change.doc.data());
-                        $scope.items.push(change.doc.data());
-                        $state.go($state.current, {}, {reload: true}); //重新載入view
-                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-                    }
-                    if (change.type === "modified") {
-                        console.log("修改: ", change.doc.data());
-                    }
-                    if (change.type === "removed") {
-                        console.log("刪除: ", change.doc.data());
-                        // 用findIndex找出要刪除的位置
-                        var indexNum = $scope.items.findIndex((element)=>{
-                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
-                        });
-                        if (indexNum!=-1) {
-                            $scope.items.splice(indexNum,1);
-                            console.log("刪除列表成功");
-                        }else{
-                            console.log("刪除列表不成功");
-                        }
-                        $state.go($state.current, {}, {reload: true}); //重新載入view
-                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-                    }
-                });
-
-            });
-            
-            // 新增腦力激盪
-            $scope.add = function() {
-                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
-                if ($scope.input!=undefined && $scope.input!="") {
-                    db.collection("腦力激盪").doc("0001").collection("g0001")
-                    .add({
-                        name: "廖詮睿",
-                        msg: $scope.input,
-                        time: new Date()
-                    })
-                    .then(function(data) {
-                        console.log("新增腦力激盪成功");
-                    })
-                    .catch(function(error) {
-                        console.error("新增腦力激盪失敗：", error);
-                    });
-                    $scope.input = "";
-                }
-                $ionicLoading.hide();
-            };
-
-            // 刪除腦力激盪
-            $scope.Delete = function(item) {
-                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>刪除中...</p>'});
-                var query = db.collection("腦力激盪").doc("0001").collection("g0001").where("time", "==", item.time);
-                query.get().then(function (querySnapshot) {
-                    querySnapshot.forEach(function (doc) {
-                        db.collection("腦力激盪").doc("0001").collection("g0001").doc(doc.id)
-                        .delete().then(function () {
-                            console.log("刪除腦力激盪成功");
-                        }).catch(function(error) {
-                            console.error("刪除腦力激盪失敗：", error);
-                        });
-                    });
-                });
-                $ionicLoading.hide();
-            };
-
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -1099,7 +1103,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                 var fileReader = new FileReader();
                 fileReader.onload = function(ev) {
                     try {
-                        var data = ev.target.result
+                        var data = ev.target.result;
                         var workbook = XLSX.read(data, {
                             type: 'binary'
                         }) // 以二進位制流方式讀取得到整份excel表格物件
@@ -1447,7 +1451,7 @@ function ($scope, $stateParams) {
                 var storageRef = storage.ref();
                 storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
                     document.getElementById("menu-img").src=url;
-                })
+                });
             }).catch(function(error) { 
                 console.log("查詢圖片檔名發生錯誤：", error); 
             });
