@@ -1,4 +1,5 @@
 /*jshint esversion: 6 */
+var verson = "1.0.0";// 版本編號
 angular.module('app.controllers', [])
 
 // ----------------------------------------登入頁面----------------------------------------
@@ -126,9 +127,10 @@ function ($scope, $stateParams, $state, $ionicLoading, $timeout) {
     $ionicLoading.hide();
 
     // 按下課程
-    $scope.choose_class = function(ClassID) {
+    $scope.choose_class = function(ClassID,ClassName) {
         $timeout.cancel(mytimeout);//停止計時器
         localStorage.setItem("ClassID",ClassID);
+        localStorage.setItem("ClassName",ClassName);
         $state.go("menu.pbl");
     };
 }])
@@ -670,8 +672,6 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
             var StuName = localStorage.getItem("StuName");
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
-            $scope.brainstormingAlertShow = true;
-            $scope.brainstormingShow = false;
 
             $scope.items = [];
             // 監聽 - 腦力激盪內容
@@ -679,15 +679,43 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
             .onSnapshot({
                 includeMetadataChanges: true
             }, function(querySnapshot) {
-                console.log("監聽測試");
                 querySnapshot.docChanges().forEach(function(change) {
                     if (change.type === "added") {
-                        console.log("新增: ", change.doc.data());
-                        $scope.items.push(change.doc.data());
+                        // 判斷有無按過讚
+                        var a = change.doc.data();
+                        a.ID = change.doc.id;
+                        if (a.like.indexOf(StuID)!=-1) {
+                            a.likeBtn = true;
+                        } else {
+                            a.likeBtn = false;  
+                        }
+                        $scope.items.push(a);
                         $state.go($state.current, {}, {reload: true}); //重新載入view
                         $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                        console.log("新增: ", a);
                     }
                     if (change.type === "modified") {
+                        // 判斷有無按過讚
+                        var a = change.doc.data();
+                        a.ID = change.doc.id;
+                        if (a.like.indexOf(StuID)!=-1) {
+                            a.likeBtn = true;
+                        } else {
+                            a.likeBtn = false;  
+                        }
+                        // 用findIndex找出要刪除的位置
+                        var indexNum = $scope.items.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        if (indexNum!=-1) {
+                            // 刪掉舊的 並插入新的
+                            $scope.items.splice(indexNum,1,a);
+                            console.log("修改列表成功");
+                        }else{
+                            console.log("修改列表不成功");
+                        }
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                         console.log("修改: ", change.doc.data());
                     }
                     if (change.type === "removed") {
@@ -717,7 +745,8 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     .add({
                         StuID: StuID,
                         StuName: StuName,
-                        msg: $scope.input,
+                        msg: "匿名："+$scope.input,
+                        like: [],
                         time: new Date()
                     })
                     .then(function(data) {
@@ -747,6 +776,38 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                 });
                 $ionicLoading.hide();
             };
+
+            // 按讚
+            $scope.like = function(item) {
+                if (item.likeBtn == true) {
+                    // 更新按讚狀態
+                    item.like.splice(item.like.indexOf(StuID),1);
+                    db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(item.ID)
+                    .update({
+                        like: item.like
+                    })
+                    .then(function(data) {
+                        console.log("更新按讚狀態成功");
+                    })
+                    .catch(function(error) {
+                        console.error("更新按讚狀態失敗：", error);
+                    });
+                } else {
+                    // 更新按讚狀態
+                    item.like.push(StuID);
+                    db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(item.ID)
+                    .update({
+                        like: item.like
+                    })
+                    .then(function(data) {
+                        console.log("更新按讚狀態成功");
+                    })
+                    .catch(function(error) {
+                        console.error("更新按讚狀態失敗：", error);
+                    });
+                }
+                $state.go($state.current, {}, {reload: true}); //重新載入view
+            };  
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -935,8 +996,8 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
 }])
 
 // ----------------------------------------選單頁面----------------------------------------
-.controller('menuCtrl', ['$scope', '$stateParams', '$ionicPopup',
-function ($scope, $stateParams, $ionicPopup) {
+.controller('menuCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state',
+function ($scope, $stateParams, $ionicPopup, $state) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -980,8 +1041,8 @@ function ($scope, $stateParams, $ionicPopup) {
                 console.log("查詢圖片檔名發生錯誤：", error); 
             });
               
-            // 設定授權文字位置
-            $('#menu-heading2').css('top', window.innerHeight-620+'px');
+            // 設定授權文字
+            document.getElementById("menu-heading2").innerText="Copyright © 2019 ver "+verson;
 
             // 監聽 - 搜尋是否有人邀請
             db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
