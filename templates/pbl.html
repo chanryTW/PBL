@@ -4,9 +4,9 @@
     <div ng-repeat="item in items" class="card">
       <div class="item item-divider">
         <ion-icon name="notifications"></ion-icon>
-        課程公告：
+        【{{item.ClassName}}】課程公告：
       </div>
-      <div class="item item-text-wrap" id="co-writing_content">
+      <div class="item item-text-wrap">
         {{item.ClassContent}}
       </div>
     </div>

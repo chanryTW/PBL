@@ -165,7 +165,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
-                $scope.items = [{ClassContent:doc.data().ClassContent}];
+                $scope.items = [{ClassName:doc.data().ClassName,ClassContent:doc.data().ClassContent}];
                 $state.go($state.current, {}, {reload: true}); //重新載入view
             },function(error) {
                 console.error("讀取課程發生錯誤：", error);
