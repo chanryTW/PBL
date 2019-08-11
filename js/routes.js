@@ -32,22 +32,22 @@ angular.module('app.routes', [])
     }
   })
 
-  .state('menu.mission', {
-    url: '/mission',
+  .state('menu.vote', {
+    url: '/vote',
     views: {
       'side-menu21': {
-        templateUrl: 'templates/mission.html',
-        controller: 'missionCtrl'
+        templateUrl: 'templates/vote.html',
+        controller: 'voteCtrl'
       }
     }
   })
 
-  .state('menu.group', {
-    url: '/group',
+  .state('menu.irs', {
+    url: '/irs',
     views: {
       'side-menu21': {
-        templateUrl: 'templates/group.html',
-        controller: 'groupCtrl'
+        templateUrl: 'templates/irs.html',
+        controller: 'irsCtrl'
       }
     }
   })
