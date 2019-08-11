@@ -225,7 +225,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
             .onSnapshot(function(querySnapshot) {
                 querySnapshot.forEach(function (doc) {
+                    // 設定小組ID
                     localStorage.setItem("GroupID",doc.id);
+
                     $scope.members = [];
                     console.log("小組狀態",doc.data().members);
                     for (let index = 0; index < doc.data().members.length; index++) {
@@ -253,123 +255,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                 console.log("檢查小組狀態發生錯誤：", error); 
             }); 
 
-            // 監聽 - 搜尋是否有人邀請
-            db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
-            .onSnapshot(function(querySnapshot) {
-                querySnapshot.forEach(function(doc) {
-                    console.log("有人邀請");
-                    // 查詢姓名
-                    var groupID = doc.data().groupID;
-                    var inviteID = doc.id;
-                    var leaderID = doc.data().leader;
-                    db.collection("帳號").doc(leaderID)
-                    .get().then(function(results) {
-                        var leaderName = results.data().Name;
-                        //跳出邀請訊息
-                        var confirmPopup = $ionicPopup.show({
-                            title: '小組邀請',
-                            subTitle: leaderID+' '+leaderName+' 邀請你加入小組。',
-                            template: 
-                                '<img class="inviteImg" src="img/invite.jpg">',
-                            scope: $scope,
-                            buttons: [{
-                                text: '拒絕',
-                                type: 'button-default',
-                                onTap: function(e) {
-                                    console.log('選擇拒絕');
-                                    // 更新回應狀態
-                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
-                                    .update({
-                                        respond: true
-                                    })
-                                    .then(function(data) {
-                                        console.log("更新回應狀態成功");
-                                        // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
-                                        db.collection("分組").doc(ClassID).collection("group").doc(groupID)
-                                        .get().then(function(results) {
-                                            var inviting = results.data().inviting;
-                                            // 刪除自己
-                                            inviting.splice(inviting.indexOf(StuID),1);
-                                            // 取消邀請
-                                            db.collection("分組").doc(ClassID).collection("group").doc(groupID)
-                                            .update({
-                                                inviting: inviting
-                                            })
-                                            .then(function(data) {
-                                                console.log("更新inviting成功");
-                                            })
-                                            .catch(function(error) {
-                                                console.error("更新inviting失敗：", error);
-                                            });
-                                        }).catch(function(error) { 
-                                            console.log("檢查小組是否還存在，可能小組已解散：", error); 
-                                        });
-                                    })
-                                    .catch(function(error) {
-                                        console.error("更新回應狀態失敗：", error);
-                                    });
-                                }
-                            }, {
-                                text: '接受',
-                                type: 'button-positive',
-                                onTap: function(e) {
-                                    console.log('選擇接受');
-                                    // 更新回應狀態
-                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
-                                    .update({
-                                        respond: true
-                                    })
-                                    .then(function(data) {
-                                        console.log("更新回應狀態成功");
-                                        // 創立小組 - 更新入組狀態
-                                        db.collection("分組").doc(ClassID).collection("student").doc(StuID)
-                                        .update({
-                                            grouped: true
-                                        })
-                                        .then(function(data) {
-                                            console.log("更新入組狀態成功");
-                                            // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
-                                            db.collection("分組").doc(ClassID).collection("group").doc(groupID)
-                                            .get().then(function(results) {
-                                                var inviting = results.data().inviting;
-                                                var members = results.data().members;
-                                                // 刪除自己
-                                                inviting.splice(inviting.indexOf(StuID),1);
-                                                // 新增自己
-                                                members.push(StuID);
-                                                // 取消邀請
-                                                db.collection("分組").doc(ClassID).collection("group").doc(groupID)
-                                                .update({
-                                                    inviting: inviting,
-                                                    members: members
-                                                })
-                                                .then(function(data) {
-                                                    console.log("更新inviting成功");
-                                                })
-                                                .catch(function(error) {
-                                                    console.error("更新inviting失敗：", error);
-                                                });
-                                            }).catch(function(error) { 
-                                                console.log("檢查小組是否還存在，可能小組已解散：", error); 
-                                            });
-                                        })
-                                        .catch(function(error) {
-                                            console.error("更新入組狀態失敗：", error);
-                                        });
-                                    })
-                                    .catch(function(error) {
-                                        console.error("更新回應狀態失敗：", error);
-                                    });
-                                }
-                            }]
-                        });
-                    }).catch(function(error) { 
-                        console.log("查詢姓名發生錯誤：", error); 
-                    });
-                });
-            },function(error) {
-                console.log("搜尋是否有人邀請發生錯誤：", error); 
-            });
+            
 
             // 創立小組 or 邀請小組
             $scope.addGroup = function(InviteOrAdd) {
@@ -783,101 +669,84 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var StuName = localStorage.getItem("StuName");
             var ClassID = localStorage.getItem("ClassID");
+            var GroupID = localStorage.getItem("GroupID");
             $scope.brainstormingAlertShow = true;
             $scope.brainstormingShow = false;
 
-            // 監聽 - 取得小組ID
-            db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
-            .onSnapshot(function(results) {
-                // 確認是否有小組
-                if (results.empty == false) {
-                    results.forEach(function (doc) {
-                        var groupID = doc.id;
-                        $scope.brainstormingAlertShow = false;
-                        $scope.brainstormingShow = true;
-
-                        $scope.items = [];
-                        // 監聽 - 腦力激盪內容
-                        db.collection("腦力激盪").doc(ClassID).collection(groupID).orderBy("time","asc")
-                        .onSnapshot({
-                            includeMetadataChanges: true
-                        }, function(querySnapshot) {
-                            querySnapshot.docChanges().forEach(function(change) {
-                                if (change.type === "added") {
-                                    console.log("新增: ", change.doc.data());
-                                    $scope.items.push(change.doc.data());
-                                    $state.go($state.current, {}, {reload: true}); //重新載入view
-                                    $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-                                }
-                                if (change.type === "modified") {
-                                    console.log("修改: ", change.doc.data());
-                                }
-                                if (change.type === "removed") {
-                                    console.log("刪除: ", change.doc.data());
-                                    // 用findIndex找出要刪除的位置
-                                    var indexNum = $scope.items.findIndex((element)=>{
-                                        return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
-                                    });
-                                    if (indexNum!=-1) {
-                                        $scope.items.splice(indexNum,1);
-                                        console.log("刪除列表成功");
-                                    }else{
-                                        console.log("刪除列表不成功");
-                                    }
-                                    $state.go($state.current, {}, {reload: true}); //重新載入view
-                                    $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-                                }
-                            });
-
+            $scope.items = [];
+            // 監聽 - 腦力激盪內容
+            db.collection("腦力激盪").doc(ClassID).collection(GroupID).orderBy("time","asc")
+            .onSnapshot({
+                includeMetadataChanges: true
+            }, function(querySnapshot) {
+                console.log("監聽測試");
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        console.log("新增: ", change.doc.data());
+                        $scope.items.push(change.doc.data());
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                    }
+                    if (change.type === "modified") {
+                        console.log("修改: ", change.doc.data());
+                    }
+                    if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                        // 用findIndex找出要刪除的位置
+                        var indexNum = $scope.items.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
                         });
-                        
-                        // 新增腦力激盪
-                        $scope.add = function() {
-                            $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
-                            if ($scope.input!=undefined && $scope.input!="") {
-                                db.collection("腦力激盪").doc(ClassID).collection(groupID)
-                                .add({
-                                    StuID: StuID,
-                                    StuName: StuName,
-                                    msg: $scope.input,
-                                    time: new Date()
-                                })
-                                .then(function(data) {
-                                    console.log("新增腦力激盪成功");
-                                })
-                                .catch(function(error) {
-                                    console.error("新增腦力激盪失敗：", error);
-                                });
-                                $scope.input = "";
-                            }
-                            $ionicLoading.hide();
-                        };
+                        if (indexNum!=-1) {
+                            $scope.items.splice(indexNum,1);
+                            console.log("刪除列表成功");
+                        }else{
+                            console.log("刪除列表不成功");
+                        }
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                    }
+                });
 
-                        // 刪除腦力激盪
-                        $scope.Delete = function(item) {
-                            $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>刪除中...</p>'});
-                            var query = db.collection("腦力激盪").doc(ClassID).collection(groupID).where("time", "==", item.time);
-                            query.get().then(function (querySnapshot) {
-                                querySnapshot.forEach(function (doc) {
-                                    db.collection("腦力激盪").doc(ClassID).collection(groupID).doc(doc.id)
-                                    .delete().then(function () {
-                                        console.log("刪除腦力激盪成功");
-                                    }).catch(function(error) {
-                                        console.error("刪除腦力激盪失敗：", error);
-                                    });
-                                });
-                            });
-                            $ionicLoading.hide();
-                        };
+            });
+            
+            // 新增腦力激盪
+            $scope.add = function() {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
+                if ($scope.input!=undefined && $scope.input!="") {
+                    db.collection("腦力激盪").doc(ClassID).collection(GroupID)
+                    .add({
+                        StuID: StuID,
+                        StuName: StuName,
+                        msg: $scope.input,
+                        time: new Date()
+                    })
+                    .then(function(data) {
+                        console.log("新增腦力激盪成功");
+                    })
+                    .catch(function(error) {
+                        console.error("新增腦力激盪失敗：", error);
                     });
-                } else {
-                    console.log("未加入小組");
-                    $scope.brainstormingAlertShow = true;
-                    $scope.brainstormingShow = false;
+                    $scope.input = "";
                 }
-            },function(error) {
-                console.log("檢查小組狀態發生錯誤：", error); 
-            }); 
+                $ionicLoading.hide();
+            };
+
+            // 刪除腦力激盪
+            $scope.Delete = function(item) {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>刪除中...</p>'});
+                var query = db.collection("腦力激盪").doc(ClassID).collection(GroupID).where("time", "==", item.time);
+                query.get().then(function (querySnapshot) {
+                    querySnapshot.forEach(function (doc) {
+                        db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(doc.id)
+                        .delete().then(function () {
+                            console.log("刪除腦力激盪成功");
+                        }).catch(function(error) {
+                            console.error("刪除腦力激盪失敗：", error);
+                        });
+                    });
+                });
+                $ionicLoading.hide();
+            };
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -886,17 +755,50 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
 }])
 
 // ----------------------------------------提案聚焦頁面----------------------------------------
-.controller('proposalCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
+.controller('proposalCtrl', ['$scope', '$stateParams', '$state',
+function ($scope, $stateParams, $state) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuName = localStorage.getItem("StuName");
             var ClassID = localStorage.getItem("ClassID");
+            var GroupID = localStorage.getItem("GroupID");
+            $scope.proposalAlertShow = true;
+            $scope.proposalShow = false;
 
-            // ...
+            // 監聽 - 取得小組ID
+            db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
+            .onSnapshot(function(results) {
+                // 確認是否有小組
+                if (results.empty == false) {
+                    console.log("提案聚焦 - 已加入小組");
+                    results.forEach(function (doc) {
+                        // 設定小組ID
+                        localStorage.setItem("GroupID",doc.id);
+                        GroupID = doc.id;
+                        // 開關顯示
+                        $scope.proposalAlertShow = false;
+                        $scope.proposalShow = true;
+                    });
+                } else {
+                    console.log("提案聚焦 - 未加入小組");
+                    // 設定小組ID
+                    localStorage.setItem("GroupID","none");
+                    GroupID = "none";
+                    // 開關顯示
+                    $scope.proposalAlertShow = true;
+                    $scope.proposalShow = false;
+                }
+                $state.go($state.current, {}, {reload: true}); //重新載入view
+            },function(error) {
+                console.log("檢查小組狀態發生錯誤：", error); 
+            }); 
+
+
+
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -1033,8 +935,8 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
 }])
 
 // ----------------------------------------選單頁面----------------------------------------
-.controller('menuCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
+.controller('menuCtrl', ['$scope', '$stateParams', '$ionicPopup',
+function ($scope, $stateParams, $ionicPopup) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -1080,6 +982,149 @@ function ($scope, $stateParams) {
               
             // 設定授權文字位置
             $('#menu-heading2').css('top', window.innerHeight-620+'px');
+
+            // 監聽 - 搜尋是否有人邀請
+            db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    console.log("有人邀請");
+                    // 查詢姓名
+                    var groupID = doc.data().groupID;
+                    var inviteID = doc.id;
+                    var leaderID = doc.data().leader;
+                    db.collection("帳號").doc(leaderID)
+                    .get().then(function(results) {
+                        var leaderName = results.data().Name;
+                        //跳出邀請訊息
+                        var confirmPopup = $ionicPopup.show({
+                            title: '小組邀請',
+                            subTitle: leaderID+' '+leaderName+' 邀請你加入小組。',
+                            template: 
+                                '<img class="inviteImg" src="img/invite.jpg">',
+                            scope: $scope,
+                            buttons: [{
+                                text: '拒絕',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇拒絕');
+                                    // 更新回應狀態
+                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
+                                    .update({
+                                        respond: true
+                                    })
+                                    .then(function(data) {
+                                        console.log("更新回應狀態成功");
+                                        // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
+                                        db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                        .get().then(function(results) {
+                                            var inviting = results.data().inviting;
+                                            // 刪除自己
+                                            inviting.splice(inviting.indexOf(StuID),1);
+                                            // 取消邀請
+                                            db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                            .update({
+                                                inviting: inviting
+                                            })
+                                            .then(function(data) {
+                                                console.log("更新inviting成功");
+                                            })
+                                            .catch(function(error) {
+                                                console.error("更新inviting失敗：", error);
+                                            });
+                                        }).catch(function(error) { 
+                                            console.log("檢查小組是否還存在，可能小組已解散：", error); 
+                                        });
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新回應狀態失敗：", error);
+                                    });
+                                }
+                            }, {
+                                text: '接受',
+                                type: 'button-positive',
+                                onTap: function(e) {
+                                    console.log('選擇接受');
+                                    // 更新回應狀態
+                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
+                                    .update({
+                                        respond: true
+                                    })
+                                    .then(function(data) {
+                                        console.log("更新回應狀態成功");
+                                        // 創立小組 - 更新入組狀態
+                                        db.collection("分組").doc(ClassID).collection("student").doc(StuID)
+                                        .update({
+                                            grouped: true
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新入組狀態成功");
+                                            // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
+                                            db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                            .get().then(function(results) {
+                                                var inviting = results.data().inviting;
+                                                var members = results.data().members;
+                                                // 刪除自己
+                                                inviting.splice(inviting.indexOf(StuID),1);
+                                                // 新增自己
+                                                members.push(StuID);
+                                                // 取消邀請
+                                                db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                                .update({
+                                                    inviting: inviting,
+                                                    members: members
+                                                })
+                                                .then(function(data) {
+                                                    console.log("更新inviting成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("更新inviting失敗：", error);
+                                                });
+                                            }).catch(function(error) { 
+                                                console.log("檢查小組是否還存在，可能小組已解散：", error); 
+                                            });
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新入組狀態失敗：", error);
+                                        });
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新回應狀態失敗：", error);
+                                    });
+                                }
+                            }]
+                        });
+                    }).catch(function(error) { 
+                        console.log("查詢姓名發生錯誤：", error); 
+                    });
+                });
+            },function(error) {
+                console.log("搜尋是否有人邀請發生錯誤：", error); 
+            });
+
+            // 監聽 - 是否有小組
+            db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
+            .onSnapshot(function(results) {
+                // 確認是否有小組
+                if (results.empty == false) {
+                    console.log("選單 - 已加入小組");
+                    results.forEach(function (doc) {
+                        // 設定小組ID
+                        localStorage.setItem("GroupID",doc.id);
+                        GroupID = doc.id;
+                        // 開關顯示
+                        $scope.needGroup = true;
+                    });
+                } else {
+                    console.log("選單 - 未加入小組");
+                    // 設定小組ID
+                    localStorage.setItem("GroupID","none");
+                    GroupID = "none";
+                    // 開關顯示
+                    $scope.needGroup = false;
+                }
+            },function(error) {
+                console.log("取得小組ID發生錯誤：", error); 
+            }); 
         }else{
             console.log("尚未登入");
             $state.go("login");
