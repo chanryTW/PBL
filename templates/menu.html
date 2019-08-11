@@ -20,7 +20,7 @@
       <div class="spacer" style="height: 20px;"></div>
       <ion-list id="menu-list1">
         <ion-item id="menu-list-item1" class="menu-list-item" ui-sref="menu.pbl()" menu-close="">首頁</ion-item>
-        <div ng-show="needGroup">
+        <div ng-if="needGroup">
           <ion-item id="menu-list-item3" class="menu-list-item" ui-sref="menu.irs()" menu-close="">IRS互動</ion-item>
           <ion-item id="menu-list-item4" class="menu-list-item" ui-sref="menu.brainstorming()" menu-close="">Step 1 腦力激盪</ion-item>
           <ion-item id="menu-list-item5" class="menu-list-item" ui-sref="menu.proposal()" menu-close="">Step 2 提案聚焦</ion-item>
@@ -31,7 +31,7 @@
         <ion-item id="menu-list-item8" class="menu-list-item" ui-sref="login()" menu-close="">登出</ion-item>
       </ion-list>
       <div class="spacer" style="height: 10px;"></div>
-      <h5 id="menu-heading2" style="color:#FFFFFF;font-weight:400;text-align:center;">Copyright © 2019</h5>
+      <h5 id="menu-heading2"></h5>
     </ion-content>
   </ion-side-menu>
 </ion-side-menus>
