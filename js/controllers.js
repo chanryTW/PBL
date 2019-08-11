@@ -730,8 +730,8 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
     });
 }])
 
-// ----------------------------------------課程任務頁面----------------------------------------
-.controller('missionCtrl', ['$scope', '$stateParams', 
+// ----------------------------------------投票系統頁面----------------------------------------
+.controller('voteCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
     var db = firebase.firestore();
     // 驗證登入
@@ -749,8 +749,8 @@ function ($scope, $stateParams) {
     });
 }])
    
-// ----------------------------------------分組頁面----------------------------------------
-.controller('groupCtrl', ['$scope', '$stateParams', 
+// ----------------------------------------IRS互動頁面----------------------------------------
+.controller('irsCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
     var db = firebase.firestore();
     // 驗證登入
@@ -769,8 +769,8 @@ function ($scope, $stateParams) {
 }])
 
 // ----------------------------------------腦力激盪頁面----------------------------------------
-.controller('brainstormingCtrl', ['$scope', '$stateParams', '$state', '$ionicScrollDelegate', '$ionicLoading',
-function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading) {
+.controller('brainstormingCtrl', ['$scope', '$stateParams', '$state', '$ionicScrollDelegate', '$ionicLoading', '$ionicPopup',
+function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $ionicPopup) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -778,6 +778,28 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading) {
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
+
+            // 取得小組ID
+            db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
+            .get().then(function(results) {
+                // 確認是否有小組
+                if (results.exists) {
+                    results.forEach(function (doc) {
+                        console.log(doc.id);
+                    });
+                } else {
+                    console.log("未加入小組");
+                    var alertPopup = $ionicPopup.alert({
+                        title: '未加入小組',
+                        template: '請至首頁組隊'
+                    });
+                    alertPopup.then(function(res) {
+                        $state.go("pbl");
+                    });
+                }
+            },function(error) {
+                console.log("檢查小組狀態發生錯誤：", error); 
+            }); 
 
             $scope.items = [];
             // 監聽 - 腦力激盪內容
@@ -878,7 +900,7 @@ function ($scope, $stateParams) {
     });
 }])
 
-// ----------------------------------------分組評分頁面----------------------------------------
+// ----------------------------------------評分頁面----------------------------------------
 .controller('scoreCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
     var db = firebase.firestore();
