@@ -1,7 +1,8 @@
-@import url(https://fonts.googleapis.com/css?family=Roboto);
+/* @import url(https://fonts.googleapis.com/css?family=Roboto); */
+@import url(https://fonts.googleapis.com/earlyaccess/notosanstc.css);
 
 html,body{
-    font-family: 微軟正黑體, Arial, sans-serif;
+    font-family:"Noto Sans TC", "微軟正黑體", Arial, sans-serif;
 }
 a{text-decoration:none}
 /* -----------------------------------------------登入頁面----------------------------------------------- */
@@ -120,6 +121,17 @@ a{text-decoration:none}
 }
 
 /* -----------------------------------------------腦力激盪頁面----------------------------------------------- */
+/* alert */
+.brainstorming_alert{
+    position: absolute;
+    top:45vh;
+    left:50vw;
+    transform: translate(-50%,-50%);
+    width: 80vw;
+    text-align: center;
+    font-size: 10vw;
+    color: #fff;
+}
 /* 對話框 */
 .list-inset{
     background-color: rgba(255, 255, 255, 0.342);
@@ -185,7 +197,6 @@ a{text-decoration:none}
 #menu-list-item1 a,#menu-list-item2 a,#menu-list-item3 a,#menu-list-item4 a,#menu-list-item5 a,#menu-list-item6 a,#menu-list-item7 a,#menu-list-item8 a{
     background-color: rgba(255, 255, 255, 0.281);
     font-size: 24px;
-    font-family: "微軟正黑體";
     font-weight:bold;
     text-align: center;
     padding: 10px;
