@@ -123,7 +123,7 @@ angular.module('app.routes', [])
         controller: 'root_groupCtrl'
       }
     }
-  })
+  });
 
-$urlRouterProvider.otherwise('/login')
+$urlRouterProvider.otherwise('/login');
 });
