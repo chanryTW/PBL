@@ -330,7 +330,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         // 顯示已選數
                         $scope.maxMember = {now:a+$scope.checkStus.length,maxMember:maxData.data().maxMembers};
                         console.log($scope.checkStus);
-                    }
+                    };
                 }).catch(function(error) { 
                     console.log("查詢組員上限發生錯誤：", error); 
                 });
@@ -715,7 +715,6 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                             console.log("修改列表不成功");
                         }
                         $state.go($state.current, {}, {reload: true}); //重新載入view
-                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                         console.log("修改: ", change.doc.data());
                     }
                     if (change.type === "removed") {
@@ -731,10 +730,8 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                             console.log("刪除列表不成功");
                         }
                         $state.go($state.current, {}, {reload: true}); //重新載入view
-                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                     }
                 });
-
             });
             
             // 新增腦力激盪
@@ -745,8 +742,9 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     .add({
                         StuID: StuID,
                         StuName: StuName,
-                        msg: "匿名："+$scope.input,
+                        msg: $scope.input,
                         like: [],
+                        invited: false,
                         time: new Date()
                     })
                     .then(function(data) {
@@ -807,7 +805,58 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     });
                 }
                 $state.go($state.current, {}, {reload: true}); //重新載入view
-            };  
+            };
+
+            // 判斷組長
+            db.collection("分組").doc(ClassID).collection("group").where("leader", "==", StuID)
+            .get().then(function(results) {
+                if(results.empty) {
+                    console.log("你非組長"); 
+                    $scope.DelAllBtnShow = false;
+                } else {
+                    console.log("你是組長");
+                    $scope.DelAllBtnShow = true;
+                }
+            }).catch(function(error) { 
+                console.log("判斷組長發生錯誤：", error); 
+            });
+
+            // 清空按鈕
+            $scope.DelAllBtn = function() {
+                var confirmPopup = $ionicPopup.confirm({
+                    title: '清空腦力激盪資料',
+                    template: '確定要清空嗎?',
+                    subTitle: '注意：清空會刪除全體組員腦力激盪資料。',
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '確定',
+                        type: 'button-positive',
+                        onTap: function(e) {
+                            console.log('選擇清空');
+                            // 取得全部訊息
+                            db.collection("腦力激盪").doc(ClassID).collection(GroupID)
+                            .get().then(function(results) {
+                                results.forEach(function (doc) {
+                                    db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(doc.id)
+                                    .delete().then(function () {
+                                        console.log("刪除腦力激盪成功");
+                                    }).catch(function(error) {
+                                        console.error("刪除腦力激盪失敗：", error);
+                                    });
+                                });
+                            }).catch(function(error) { 
+                                console.log("查詢全部訊息發生錯誤：", error); 
+                            });
+                        }
+                    }]
+                });
+            };
+
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -816,8 +865,8 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
 }])
 
 // ----------------------------------------提案聚焦頁面----------------------------------------
-.controller('proposalCtrl', ['$scope', '$stateParams', '$state',
-function ($scope, $stateParams, $state) {
+.controller('proposalCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading',
+function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -827,37 +876,163 @@ function ($scope, $stateParams, $state) {
             var StuName = localStorage.getItem("StuName");
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
-            $scope.proposalAlertShow = true;
-            $scope.proposalShow = false;
+            
+            $scope.items = [];
+            // 監聽 - 提案聚焦內容
+            db.collection("提案聚焦").doc(ClassID).collection(GroupID).orderBy("time","asc")
+            .onSnapshot({
+                includeMetadataChanges: true
+            }, function(querySnapshot) {
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        // 判斷有無按過讚
+                        var a = change.doc.data();
+                        // a.ID = change.doc.id;
+                        // if (a.like.indexOf(StuID)!=-1) {
+                        //     a.likeBtn = true;
+                        // } else {
+                        //     a.likeBtn = false;  
+                        // }
+                        // $scope.items.push(a);
+                        // $state.go($state.current, {}, {reload: true}); //重新載入view
+                        // $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                        console.log("新增: ", a);
+                    }
+                    if (change.type === "modified") {
+                        // 判斷有無按過讚
+                        // var a = change.doc.data();
+                        // a.ID = change.doc.id;
+                        // if (a.like.indexOf(StuID)!=-1) {
+                        //     a.likeBtn = true;
+                        // } else {
+                        //     a.likeBtn = false;  
+                        // }
+                        // // 用findIndex找出要刪除的位置
+                        // var indexNum = $scope.items.findIndex((element)=>{
+                        //     return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        // });
+                        // if (indexNum!=-1) {
+                        //     // 刪掉舊的 並插入新的
+                        //     $scope.items.splice(indexNum,1,a);
+                        //     console.log("修改列表成功");
+                        // }else{
+                        //     console.log("修改列表不成功");
+                        // }
+                        // $state.go($state.current, {}, {reload: true}); //重新載入view
+                        console.log("修改: ", change.doc.data());
+                    }
+                    if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                        // // 用findIndex找出要刪除的位置
+                        // var indexNum = $scope.items.findIndex((element)=>{
+                        //     return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        // });
+                        // if (indexNum!=-1) {
+                        //     $scope.items.splice(indexNum,1);
+                        //     console.log("刪除列表成功");
+                        // }else{
+                        //     console.log("刪除列表不成功");
+                        // }
+                        // $state.go($state.current, {}, {reload: true}); //重新載入view
+                    }
+                });
+            });
 
-            // 監聽 - 取得小組ID
-            db.collection("分組").doc(ClassID).collection("group").where("members", "array-contains", StuID)
-            .onSnapshot(function(results) {
-                // 確認是否有小組
-                if (results.empty == false) {
-                    console.log("提案聚焦 - 已加入小組");
-                    results.forEach(function (doc) {
-                        // 設定小組ID
-                        localStorage.setItem("GroupID",doc.id);
-                        GroupID = doc.id;
-                        // 開關顯示
-                        $scope.proposalAlertShow = false;
-                        $scope.proposalShow = true;
-                    });
-                } else {
-                    console.log("提案聚焦 - 未加入小組");
-                    // 設定小組ID
-                    localStorage.setItem("GroupID","none");
-                    GroupID = "none";
-                    // 開關顯示
-                    $scope.proposalAlertShow = true;
-                    $scope.proposalShow = false;
-                }
-                $state.go($state.current, {}, {reload: true}); //重新載入view
-            },function(error) {
-                console.log("檢查小組狀態發生錯誤：", error); 
-            }); 
+            // 新增提案
+            $scope.AddBall = function() {
+                $scope.proposals = [];
+                // 新增提案 - 取得未新增名單
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入腦力激盪中...</p>'});
+                db.collection("腦力激盪").doc(ClassID).collection(GroupID).where("invited", "==", false)
+                .get().then(function(results) {
+                    if(results.empty) {
+                        console.log("全都已新增"); 
+                    } else {
+                        var a = results.docs.length;
+                        var count = 0;
+                        results.forEach(function (doc) {
+                            $scope.proposals.push({ID:doc.id,msg:doc.data().msg,like:doc.data().like});
+                            // 判斷最後一筆關閉轉圈圈
+                            count++;
+                            if (count==a) {
+                                $ionicLoading.hide();
+                            }
+                        });
+                        console.log($scope.proposals);
+                    }
+                    console.log("取得未分組名單："); 
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                }).catch(function(error) { 
+                    console.log("取得未分組名單發生錯誤：", error); 
+                });
 
+                $scope.checkProposals = [];
+                // 新增提案 - 偵測勾選
+                $scope.proposalBtn = function(proposalID) {
+                    // 判斷有無在陣列中，無則增加、有則刪除
+                    if ($scope.checkProposals.indexOf(proposalID) === -1) {
+                        $scope.checkProposals.push(proposalID);
+                    } else {
+                        $scope.checkProposals.splice($scope.checkProposals.indexOf(proposalID),1);
+                    }
+                    console.log($scope.checkProposals);
+                };
+
+                $scope.proposalInput = [];
+                // 新增提案 - 跳出泡泡
+                var confirmPopup = $ionicPopup.show({
+                    title: '新增提案',
+                    subTitle: '請選擇加入提案之腦力激盪。',
+                    template: 
+                        '<input type="text" ng-model="proposalInput.content" placeholder="輸入提案標題（限15字內）..." maxlength="15" style="margin-bottom:10px; padding:8px;">'+
+                        '<div ng-repeat="proposal in proposals">'+
+                        '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.msg}}</ion-checkbox>'+
+                        '</div>',
+                    scope: $scope,
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '新增',
+                        type: 'button-positive',
+                        onTap: function(e) {
+                            console.log('選擇邀請');
+                            // 判斷是否必填未填
+                            if ($scope.proposalInput.content==""||$scope.proposalInput.content==undefined) {
+                                console.log("請填寫提案標題");
+                                $ionicPopup.alert({
+                                    title: '錯誤',
+                                    template: '請填寫提案標題。'
+                                });
+                            } else if($scope.checkProposals.length == 0) {
+                                console.log("請勾選腦力激盪");
+                                $ionicPopup.alert({
+                                    title: '錯誤',
+                                    template: '請勾選至少一項腦力激盪。'
+                                });
+                            } else {
+                                // 新增提案
+                                db.collection("提案聚焦").doc(ClassID).collection(GroupID)
+                                .add({
+                                    ProposalName: $scope.proposalInput.content,
+                                    brainstorming: $scope.checkProposals,
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("新增提案成功");
+                                    // ...
+                                })
+                                .catch(function(error) {
+                                    console.error("新增提案失敗：", error);
+                                });
+                            }
+                        }
+                    }]
+                });
+            };
 
 
         }else{
