@@ -865,8 +865,8 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
 }])
 
 // ----------------------------------------提案聚焦頁面----------------------------------------
-.controller('proposalCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading',
-function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
+.controller('proposalCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading', '$ionicScrollDelegate',
+function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScrollDelegate) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -885,55 +885,39 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             }, function(querySnapshot) {
                 querySnapshot.docChanges().forEach(function(change) {
                     if (change.type === "added") {
-                        // 判斷有無按過讚
                         var a = change.doc.data();
-                        // a.ID = change.doc.id;
-                        // if (a.like.indexOf(StuID)!=-1) {
-                        //     a.likeBtn = true;
-                        // } else {
-                        //     a.likeBtn = false;  
-                        // }
-                        // $scope.items.push(a);
-                        // $state.go($state.current, {}, {reload: true}); //重新載入view
-                        // $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-                        console.log("新增: ", a);
+                        var b = [];
+                        // 找出腦力激盪內容
+                        a.brainstorming.forEach(function(brainstormingID) {
+                            db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                            .get().then(function(results) {
+                                b.push(results.data());
+                                $state.go($state.current, {}, {reload: true}); //重新載入view
+                            }).catch(function(error) { 
+                                console.log("腦力激盪內容發生錯誤：", error); 
+                            });
+                        });
+                        $scope.items.push({ProposalName:a.ProposalName,brainstorming:b,time:a.time});
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                        console.log("新增: ", $scope.items);
                     }
                     if (change.type === "modified") {
-                        // 判斷有無按過讚
-                        // var a = change.doc.data();
-                        // a.ID = change.doc.id;
-                        // if (a.like.indexOf(StuID)!=-1) {
-                        //     a.likeBtn = true;
-                        // } else {
-                        //     a.likeBtn = false;  
-                        // }
-                        // // 用findIndex找出要刪除的位置
-                        // var indexNum = $scope.items.findIndex((element)=>{
-                        //     return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
-                        // });
-                        // if (indexNum!=-1) {
-                        //     // 刪掉舊的 並插入新的
-                        //     $scope.items.splice(indexNum,1,a);
-                        //     console.log("修改列表成功");
-                        // }else{
-                        //     console.log("修改列表不成功");
-                        // }
-                        // $state.go($state.current, {}, {reload: true}); //重新載入view
                         console.log("修改: ", change.doc.data());
                     }
                     if (change.type === "removed") {
                         console.log("刪除: ", change.doc.data());
-                        // // 用findIndex找出要刪除的位置
-                        // var indexNum = $scope.items.findIndex((element)=>{
-                        //     return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
-                        // });
-                        // if (indexNum!=-1) {
-                        //     $scope.items.splice(indexNum,1);
-                        //     console.log("刪除列表成功");
-                        // }else{
-                        //     console.log("刪除列表不成功");
-                        // }
-                        // $state.go($state.current, {}, {reload: true}); //重新載入view
+                        // 用findIndex找出要刪除的位置
+                        var indexNum = $scope.items.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        if (indexNum!=-1) {
+                            $scope.items.splice(indexNum,1);
+                            console.log("刪除列表成功");
+                        }else{
+                            console.log("刪除列表不成功");
+                        }
+                        $state.go($state.current, {}, {reload: true}); //重新載入view
                     }
                 });
             });
@@ -1023,7 +1007,19 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                 })
                                 .then(function(data) {
                                     console.log("新增提案成功");
-                                    // ...
+                                    // 標記提案已加入
+                                    $scope.checkProposals.forEach(function (brainstormingID) {
+                                        db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                                        .update({
+                                            invited: true
+                                        })
+                                        .then(function(data) {
+                                            console.log("標記提案成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("標記提案失敗：", error);
+                                        });
+                                    });
                                 })
                                 .catch(function(error) {
                                     console.error("新增提案失敗：", error);
@@ -1034,6 +1030,53 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                 });
             };
 
+            // 刪除提案
+            $scope.DelProposal = function(time) {
+                var confirmPopup = $ionicPopup.confirm({
+                    title: '刪除提案',
+                    template: '確定要刪除此提案嗎?',
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '確定',
+                        type: 'button-positive',
+                        onTap: function(e) {
+                            console.log('選擇刪除');
+                            // 取得提案ID
+                            db.collection("提案聚焦").doc(ClassID).collection(GroupID).where("time", "==", time)
+                            .get().then(function(results) {
+                                results.forEach(function (doc) {
+                                    db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(doc.id)
+                                    .delete().then(function () {
+                                        console.log("刪除提案聚焦成功");
+                                        // 標記提案未加入
+                                        doc.data().brainstorming.forEach(function (brainstormingID) {
+                                            db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                                            .update({
+                                                invited: false
+                                            })
+                                            .then(function(data) {
+                                                console.log("標記提案成功");
+                                            })
+                                            .catch(function(error) {
+                                                console.error("標記提案失敗：", error);
+                                            });
+                                        });
+                                    }).catch(function(error) {
+                                        console.error("刪除提案聚焦失敗：", error);
+                                    });
+                                });
+                            }).catch(function(error) { 
+                                console.log("查詢全部訊息發生錯誤：", error); 
+                            });
+                        }
+                    }]
+                });
+            };
 
         }else{
             console.log("尚未登入");
