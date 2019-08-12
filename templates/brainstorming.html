@@ -3,15 +3,14 @@
     <!-- main -->
     <div id="brainstorming_list" class="list list-inset" ng-repeat="item in items">
       <div id="brainstorming_item" class="item">
-        <!-- <h2>{{item.name}}</h2> -->
-        <!-- <p>{{item.msg}}</p> -->
-        <!-- <h2>{{item.msg}}<i class="icon ion-minus-circled" ng-click="Delete(item)"></i><i class="icon ion-android-favorite-outline"></i></h2> -->
-        <h2>{{item.msg}}<i ng-class="{true: 'likeBtnOn', false: 'likeBtnOff'}[{{item.likeBtn}}]" ng-click="like(item)"></i></h2>
+        <!-- <h2>{{item.StuName}}</h2> -->
+        <h2>匿名：{{item.msg}}<i ng-class="{true: 'likeBtnOn', false: 'likeBtnOff'}[{{item.likeBtn}}]" ng-click="like(item)"></i></h2>
       </div>
     </div>
+    
   </ion-content>
-
   <!-- 文字輸入 -->
+  <button class = "button button-block button-small brainstorming_DelAllBtn" ng-if="DelAllBtnShow" ng-click="DelAllBtn()">清空訊息</button>
   <ion-footer-bar class="bar bar-footer">
     <label class="item-input-wrapper">
       <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && add()" ng-model="input" type="text" placeholder="輸入想法（限15字內）..." maxlength="15">
