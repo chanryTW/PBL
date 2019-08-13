@@ -4,10 +4,10 @@
     <div class="col proposal_card" ng-repeat="item in items">
       <div class="item item-divider">
         提案：【{{item.ProposalName}}】
-        <i class="proposal_AddProposalBtn" ng-click="AddProposal(item.time)"></i>
+        <i class="proposal_AddProposalBtn" ng-click="AddProposal('Invite',item.time)"></i>
         <i class="proposal_DelProposalBtn" ng-click="DelProposal(item.time)"></i>
       </div>
-      <div ng-repeat="brainstorming in item.brainstorming" class="item item-text-wrap">
+      <div ng-repeat="brainstorming in item.brainstorming" class="item item-text-wrap proposal_item">
           {{brainstorming.msg}}
           <i class="proposal_DelBrainstormingBtn" ng-click=""></i>
       </div>
@@ -17,6 +17,6 @@
     <div class="spacer" style="height: 135px;"></div>
   </ion-content>
 
-    <div class="AddBall" ng-click="AddBall()">+</div>
+    <div class="AddBall" ng-click="AddProposal('Add')">+</div>
 
 </ion-view>
