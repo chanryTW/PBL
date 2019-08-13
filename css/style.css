@@ -246,13 +246,22 @@ a{text-decoration:none}
 .proposal_DelBrainstormingBtn{
     display: inline-block;
     position: absolute;
-    top: 14px;
+    top: 11px;
     right: 5px;
     width: 25px;
     height: 25px;
     z-index: 2;
     background-image: url(/svg/cancel.svg);
     opacity: 0.6;
+}
+/* 提案卡片 */
+.proposal_card{
+    padding: 10px 10px 0px 10px;
+    opacity: 0.9;
+}
+/* 提案內腦力激盪 */
+.proposal_item{
+    padding: 13px;
 }
 /* -----------------------------------------------分組評分頁面----------------------------------------------- */
 
@@ -293,8 +302,8 @@ a{text-decoration:none}
 #menu-heading2{
     position: fixed;
     bottom: 0px;
-    left:26%;
-    transform: translate(-26%);
+    left:137.5px;
+    transform: translate(-50%);
     color:#FFFFFF;
     font-weight:400;
     text-align:center;
@@ -303,8 +312,6 @@ a{text-decoration:none}
 /* -----------------------------------------------設定頁面----------------------------------------------- */
 /* 存檔按鈕 */
 #page7_savebtn1,#page7_savebtn2,#page7_savebtn3{
-    margin: 10px;
-    width: 94.5%;
     background-color: #1284b8;
 }
 
