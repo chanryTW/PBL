@@ -877,6 +877,20 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
             
+            // 判斷組長
+            db.collection("分組").doc(ClassID).collection("group").where("leader", "==", StuID)
+            .get().then(function(results) {
+                if(results.empty) {
+                    console.log("你非組長"); 
+                    $scope.leaderGroupShow = false;
+                } else {
+                    console.log("你是組長");
+                    $scope.leaderGroupShow = true;
+                }
+            }).catch(function(error) { 
+                console.log("判斷組長發生錯誤：", error); 
+            });
+
             $scope.items = [];
             // 監聽 - 提案聚焦內容
             db.collection("提案聚焦").doc(ClassID).collection(GroupID).orderBy("time","asc")
