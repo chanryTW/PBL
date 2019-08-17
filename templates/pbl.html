@@ -1,37 +1,30 @@
 <ion-view title="首頁" hide-back-button="true" id="pbl">
   <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="false">
     
-    <div ng-repeat="item in items" class="card">
-      <div class="item item-divider">
-        <ion-icon name="notifications"></ion-icon>
-        【{{item.ClassName}}】課程公告：
-      </div>
-      <div class="item item-text-wrap">
-        {{item.ClassContent}}
-      </div>
-    </div>
-
-      <div class="pbl-member" ng-repeat="member in members">
+      <div class="pbl-member" ng-repeat="member in members | orderBy:'memberName'">
         <div ng-class="{true:'pbl-leader pbl-img-div',false:'pbl-img-div'}[{{member.leader}}]">
           <img id="pbl-img" ng-src="{{member.memberImg}}">
         </div>
         <span class="pbl-member-span">{{member.memberName}}</span>
       </div>
 
-      <!-- <div class="pbl-member">
-        <div class="pbl-img-div">
-          <img id="pbl-img">
+      <div ng-repeat="item in items" class="card">
+        <div class="item item-divider">
+          <ion-icon name="notifications"></ion-icon>
+          【{{item.ClassName}}】課程說明：
         </div>
-        <span class="pbl-member-span">邀請</span>
-      </div> -->
+        <div class="item item-text-wrap">
+          {{item.ClassContent}}
+        </div>
+      </div>
        
     <div ng-if="LockGroupShow" >
       <div class="button-bar pbl-button" ng-if="leaderGroupShow">
-        <a class="button button-block button-balanced" ng-click="addGroup('invite')">邀請</a>
-        <a class="button button-block button-assertive" ng-click="delGroup('del')">解散小組</a>
+        <a class="button button-block button-chanry1" ng-click="addGroup('invite')">邀請</a>
+        <a class="button button-block button-chanry2" ng-click="delGroup('del')">解散小組</a>
       </div>
-      <button class = "button button-block button-balanced pbl-button" ng-if="addGroupShow" ng-click="addGroup('add')">創立小組</button>
-      <button class = "button button-block button-assertive pbl-button" ng-if="quitGroupShow" ng-click="delGroup('quit')">退出小組</button>
+      <button class = "button button-block button-chanry1 pbl-button" ng-if="addGroupShow" ng-click="addGroup('add')">創立小組</button>
+      <button class = "button button-block button-chanry2 pbl-button" ng-if="quitGroupShow" ng-click="delGroup('quit')">退出小組</button>
     </div>
   </ion-content>
 </ion-view>

@@ -75,7 +75,7 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
                 }
             }, {
                 text: '送出',
-                type: 'button-positive',
+                type: 'button-chanry1',
                 onTap: function(e) {
                     console.log('選擇送出');
                     firebase.auth().sendPasswordResetEmail($scope.data.forgetInput+"@nkust.edu.tw").then(function() {
@@ -355,7 +355,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             }
                         }, {
                             text: '邀請',
-                            type: 'button-positive',
+                            type: 'button-chanry1',
                             onTap: function(e) {
                                 console.log('選擇邀請');
                                 // 判斷是否沒勾
@@ -416,7 +416,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             }
                         }, {
                             text: '創立',
-                            type: 'button-positive',
+                            type: 'button-chanry1',
                             onTap: function(e) {
                                 console.log('選擇創立');
                                 // 判斷是否沒勾
@@ -490,7 +490,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             }
                         }, {
                             text: '解散',
-                            type: 'button-positive',
+                            type: 'button-chanry1',
                             onTap: function(e) {
                                 console.log('選擇解散');
 
@@ -573,7 +573,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             }
                         }, {
                             text: '退出',
-                            type: 'button-positive',
+                            type: 'button-chanry1',
                             onTap: function(e) {
                                 console.log('選擇解散');
                                 // 退出小組 - 刪除小組members資料
@@ -673,6 +673,96 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
 
+            // 預設在頁籤1
+            $scope.search = 'fkozq65K頁籤：'+1;
+            // 頁籤控制
+            $scope.tabs = function(number) {
+                if (number=='+') {
+                    // 不給新增超過10頁
+                    if ($scope.tabsCounts.length>=10) {
+                        $ionicPopup.confirm({
+                            title: '新增分頁',
+                            template: '分頁已到上限(10頁)。',
+                            buttons: [{
+                                text: '好的',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                }
+                            }]
+                        });
+                    } else {
+                        $ionicPopup.confirm({
+                            title: '新增分頁',
+                            template: '確定要新增嗎?',
+                            subTitle: '注意：新增後無法刪除，上限為10個分頁。',
+                            buttons: [{
+                                text: '取消',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇取消');
+                                }
+                            }, {
+                                text: '確定',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇新增');
+                                    // 新增分頁
+                                    db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc("頁籤")
+                                    .update({
+                                        count: $scope.tabsCounts.length+1
+                                    })
+                                    .then(function() {
+                                        console.log("新增分頁成功");
+                                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                                    })
+                                    .catch(function(error) {
+                                        console.error("新增分頁失敗", error);
+                                    });
+                                }
+                            }]
+                        });
+                    }
+                    
+                } else {
+                    // 設定filters
+                    $scope.search = 'fkozq65K頁籤：'+number;
+                    // 用findIndex找出要刪除的位置
+                    var indexNum = $scope.tabsCounts.findIndex((element)=>{
+                        return (element.active === true);
+                    });
+                    $scope.tabsCounts.splice(indexNum,1,{num:indexNum+1,active:false});
+                    // 替換class
+                    $scope.tabsCounts.splice(number-1,1,{num:number,active:true});
+                }
+            }
+            // 監聽 - 頁籤數
+            db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc("頁籤")
+            .onSnapshot(function(doc) {
+                if (doc.exists) {
+                    $scope.tabsCounts = [];
+                    for (let index = 1; index <= doc.data().count; index++) {
+                        if (index==1) {
+                            $scope.tabsCounts.push({num:index,active:true});
+                        } else {
+                            $scope.tabsCounts.push({num:index,active:false});
+                        }
+                    }
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                } else {
+                    // 初始化分頁
+                    db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc("頁籤")
+                    .set({
+                        count: 3
+                    })
+                    .then(function() {
+                        console.log("初始化分頁成功");
+                    })
+                    .catch(function(error) {
+                        console.error("初始化分頁失敗", error);
+                    });
+                }
+            });
+
             $scope.items = [];
             // 監聽 - 腦力激盪內容
             db.collection("腦力激盪").doc(ClassID).collection(GroupID).orderBy("time","asc")
@@ -745,6 +835,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                         msg: $scope.input,
                         like: [],
                         invited: false,
+                        search: $scope.search,
                         time: new Date()
                     })
                     .then(function(data) {
@@ -835,7 +926,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                         }
                     }, {
                         text: '確定',
-                        type: 'button-positive',
+                        type: 'button-chanry1',
                         onTap: function(e) {
                             console.log('選擇清空');
                             // 取得全部訊息
@@ -945,25 +1036,39 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 db.collection("腦力激盪").doc(ClassID).collection(GroupID).where("invited", "==", false)
                 .get().then(function(results) {
                     if(results.empty) {
-                        console.log("全都已新增"); 
+                        console.log("全都已新增or無腦力激盪");
+                        $ionicLoading.hide();
                     } else {
                         var a = results.docs.length;
                         var count = 0;
                         results.forEach(function (doc) {
-                            $scope.proposals.push({ID:doc.id,msg:doc.data().msg,like:doc.data().like});
+                            $scope.proposals.push({ID:doc.id,msg:doc.data().msg,like:doc.data().like.length,search:Number(doc.data().search.substr(11))});
                             // 判斷最後一筆關閉轉圈圈
                             count++;
                             if (count==a) {
                                 $ionicLoading.hide();
                             }
                         });
-                        console.log($scope.proposals);
+                        console.log("取得未分組名單：",$scope.proposals);
                     }
-                    console.log("取得未分組名單："); 
                     $state.go($state.current, {}, {reload: true}); //重新載入view
                 }).catch(function(error) { 
                     console.log("取得未分組名單發生錯誤：", error); 
                 });
+
+                // 分類器 依分頁分類
+                var indexedsearch = [];
+                $scope.proposalsForFilter = function() {
+                    indexedsearch = [];
+                    return $scope.proposals;
+                };
+                $scope.searchFilter = function(proposals) {
+                    var newsearch = indexedsearch.indexOf(proposals.search) == -1;
+                    if(newsearch) {
+                      indexedsearch.push(proposals.search);     
+                    }
+                    return newsearch;
+                };
 
                 $scope.checkProposals = [];
                 // 新增提案 - 偵測勾選
@@ -976,7 +1081,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                     }
                     console.log($scope.checkProposals);
                 };
-
+                
                 $scope.proposalInput = [];
                 // 判斷新增還是加入提案
                 if (InviteOrAdd=="Add") {
@@ -986,8 +1091,11 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         subTitle: '請選擇加入提案之腦力激盪。',
                         template: 
                             '<input type="text" ng-model="proposalInput.content" placeholder="輸入提案標題（限15字內）..." maxlength="15" style="margin-bottom:10px; padding:8px;">'+
-                            '<div ng-repeat="proposal in proposals">'+
-                            '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.msg}}</ion-checkbox>'+
+                            '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+'">'+
+                                '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
+                                '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'-like'"+' ">'+
+                                    '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.like}}票：{{proposal.msg}}</ion-checkbox>'+
+                                '</div>'+
                             '</div>',
                         scope: $scope,
                         buttons: [{
@@ -998,7 +1106,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             }
                         }, {
                             text: '新增',
-                            type: 'button-positive',
+                            type: 'button-chanry1',
                             onTap: function(e) {
                                 console.log('選擇新增');
                                 // 判斷是否必填未填
@@ -1051,9 +1159,12 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         title: '加入腦力激盪',
                         subTitle: '請選擇加入此提案之腦力激盪。',
                         template: 
-                            '<div ng-repeat="proposal in proposals">'+
-                            '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.msg}}</ion-checkbox>'+
-                            '</div>',
+                        '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+' ">'+
+                            '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
+                            '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'like'"+' ">'+
+                                '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.msg}}</ion-checkbox>'+
+                            '</div>'+
+                        '</div>',
                         scope: $scope,
                         buttons: [{
                             text: '取消',
@@ -1063,7 +1174,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             }
                         }, {
                             text: '加入',
-                            type: 'button-positive',
+                            type: 'button-chanry1',
                             onTap: function(e) {
                                 console.log('選擇加入');
                                 // 判斷是否必填未填
@@ -1133,7 +1244,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         }
                     }, {
                         text: '確定',
-                        type: 'button-positive',
+                        type: 'button-chanry1',
                         onTap: function(e) {
                             console.log('選擇刪除');
                             // 取得提案ID
@@ -1410,7 +1521,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                                 }
                             }, {
                                 text: '接受',
-                                type: 'button-positive',
+                                type: 'button-chanry1',
                                 onTap: function(e) {
                                     console.log('選擇接受');
                                     // 更新回應狀態

@@ -1,10 +1,28 @@
 /* @import url(https://fonts.googleapis.com/css?family=Roboto); */
 @import url(https://fonts.googleapis.com/earlyaccess/notosanstc.css);
 
-html,body{
+html, body, .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, button, input, select, textarea{
     font-family:"Noto Sans TC", "微軟正黑體", Arial, sans-serif;
 }
 a{text-decoration:none}
+.popup-container .popup{
+    width: 80%;
+}
+.card{
+    border-radius: 5px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    -webkit-box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    margin: 10px 10px 20px 10px;
+}
+.button.button-chanry1{
+    background-color: #1284b8;
+    color: #fff;
+}
+.button.button-chanry2{
+    background-color: #0D5B80;
+    color: #fff;
+}
 /* -----------------------------------------------登入頁面----------------------------------------------- */
 .login_LOGO{
     display: block;
@@ -64,8 +82,8 @@ a{text-decoration:none}
     display: inline-block;
     position: relative;
     width: 24vw;
-    height: 30vw;
     text-align: center;
+    margin-top: 10px;
 }
 /* 組長圖示 */
 .pbl-leader:after{
@@ -87,9 +105,9 @@ a{text-decoration:none}
     border-radius: 50%;
     border:3px solid #fff;
     margin: 0 2vw 0 2vw;
-    -moz-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
-    -webkit-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
-    box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -moz-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -webkit-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
     overflow: hidden; 
 }
 #pbl-img{
@@ -119,8 +137,14 @@ a{text-decoration:none}
     position: fixed;
     bottom: 0px;
 }
+.button.button-block, .button.button-full{
+    margin-bottom: 0px;
+}
 
 /* -----------------------------------------------腦力激盪頁面----------------------------------------------- */
+.tab-item{
+    font-size: 25px;
+}
 /* 清空按鈕 */
 .deleteBtn{
     display: inline-block;
@@ -146,10 +170,10 @@ a{text-decoration:none}
 /* 清空按鈕 */
 .brainstorming_DelAllBtn,.brainstorming_DelAllBtn:hover{
     position: fixed;
-    bottom: 34px;
+    bottom: 45px;
     display: block;
     height: 10px;
-    background-color: #1284b8;
+    background-color: #0D5B80;
     color: #fff;
     border-radius: 0px;
 }
@@ -256,7 +280,6 @@ a{text-decoration:none}
 }
 /* 提案卡片 */
 .proposal_card{
-    padding: 10px 10px 0px 10px;
     opacity: 0.9;
 }
 /* 提案內腦力激盪 */
@@ -275,9 +298,9 @@ a{text-decoration:none}
     border-radius: 50%;
     border:4px solid #fff;
     margin: 0 auto;
-    -moz-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
-    -webkit-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
-    box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -moz-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -webkit-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
     overflow: hidden; 
 }
 #menu-img{
@@ -310,18 +333,15 @@ a{text-decoration:none}
 }
 
 /* -----------------------------------------------設定頁面----------------------------------------------- */
-/* 存檔按鈕 */
-#page7_savebtn1,#page7_savebtn2,#page7_savebtn3{
-    background-color: #1284b8;
-}
+
 
 /* -----------------------------------------------關於我們頁面----------------------------------------------- */
 /* 成員大頭照 */
 .imgradius{
     border-radius: 20%;
-    -moz-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
-    -webkit-box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
-    box-shadow:6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -moz-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -webkit-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
 }
 /* -----------------------------------------------教師版分組狀態頁面----------------------------------------------- */
 /* 環形圖 */
