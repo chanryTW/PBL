@@ -1,5 +1,6 @@
 /*jshint esversion: 6 */
-var verson = "1.0.0";// 版本編號
+var verson = "1.0.0";
+// 1.0.0 => 正式版發佈 2019.00.00
 angular.module('app.controllers', [])
 
 // ----------------------------------------登入頁面----------------------------------------
@@ -61,7 +62,7 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
     // 忘記密碼
     $scope.forgetBtn = function() {
         $scope.data = {};
-        var confirmPopup = $ionicPopup.show({
+        $ionicPopup.show({
             title: '忘記密碼',
             subTitle: '請輸入學號，重設信件將寄送至nkust信箱',
             template: 
@@ -338,7 +339,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                 // 判斷是跳出邀請泡泡還是創立泡泡
                 if (InviteOrAdd == "invite") {
                     // 邀請小組 - 跳出泡泡
-                    var confirmPopup = $ionicPopup.show({
+                    $ionicPopup.show({
                         title: '選擇組員',
                         subTitle: '邀請後需等待對方同意加入才會加入。',
                         template: 
@@ -399,7 +400,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     });
                 } else {
                     // 創立小組 - 跳出泡泡
-                    var confirmPopup = $ionicPopup.show({
+                    $ionicPopup.show({
                         title: '選擇組員',
                         subTitle: '創立後需等待對方同意加入才會加入。',
                         template: 
@@ -478,7 +479,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             $scope.delGroup = function(DelOrQuit) {
                 if (DelOrQuit == "del") {
                     // 解散小組 - 跳出泡泡
-                    var confirmPopup = $ionicPopup.confirm({
+                    $ionicPopup.confirm({
                         title: '解散小組',
                         template: '確定要解散小組嗎?',
                         subTitle: '注意：解散後會刪除所有小組資料，包括討論紀錄、上傳作業、分組評分...等。',
@@ -562,7 +563,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     });
                 } else if(DelOrQuit == "quit") {
                     // 退出小組 - 跳出泡泡
-                    var confirmPopup = $ionicPopup.confirm({
+                    $ionicPopup.confirm({
                         title: '退出小組',
                         template: '確定要退出小組嗎?',
                         buttons: [{
@@ -641,8 +642,8 @@ function ($scope, $stateParams) {
     });
 }])
    
-// ----------------------------------------IRS互動頁面----------------------------------------
-.controller('irsCtrl', ['$scope', '$stateParams', 
+// ----------------------------------------課程任務頁面----------------------------------------
+.controller('missionCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
     var db = firebase.firestore();
     // 驗證登入
@@ -914,7 +915,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
 
             // 清空按鈕
             $scope.DelAllBtn = function() {
-                var confirmPopup = $ionicPopup.confirm({
+                $ionicPopup.confirm({
                     title: '清空腦力激盪資料',
                     template: '確定要清空嗎?',
                     subTitle: '注意：清空會刪除全體組員腦力激盪資料。',
@@ -1086,7 +1087,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 // 判斷新增還是加入提案
                 if (InviteOrAdd=="Add") {
                     // 新增提案 - 跳出泡泡
-                    var confirmPopup = $ionicPopup.show({
+                    $ionicPopup.show({
                         title: '新增提案',
                         subTitle: '請選擇加入提案之腦力激盪。',
                         template: 
@@ -1155,7 +1156,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                     });
                 } else if (InviteOrAdd=="Invite") {
                     // 加入提案 - 跳出泡泡
-                    var confirmPopup = $ionicPopup.show({
+                    $ionicPopup.show({
                         title: '加入腦力激盪',
                         subTitle: '請選擇加入此提案之腦力激盪。',
                         template: 
@@ -1233,7 +1234,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
 
             // 刪除提案
             $scope.DelProposal = function(time) {
-                var confirmPopup = $ionicPopup.confirm({
+                $ionicPopup.confirm({
                     title: '刪除提案',
                     template: '確定要刪除此提案嗎?',
                     buttons: [{
@@ -1476,7 +1477,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                     .get().then(function(results) {
                         var leaderName = results.data().Name;
                         //跳出邀請訊息
-                        var confirmPopup = $ionicPopup.show({
+                        $ionicPopup.show({
                             title: '小組邀請',
                             subTitle: leaderID+' '+leaderName+' 邀請你加入小組。',
                             template: 
@@ -1935,6 +1936,146 @@ function ($scope, $stateParams, $state, $ionicLoading) {
     });
 }])
 
+// ----------------------------------------教師版課程任務----------------------------------------
+.controller('root_missionCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup',
+function ($scope, $stateParams, $state, $ionicPopup) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+            console.log("已登入狀態");
+            $scope.cardShow = false;
+
+            // 列出全部課程
+            db.collection("課程")
+            .get().then(function (querySnapshot) {
+                $scope.AllClass = [];
+                querySnapshot.forEach(function (doc) {
+                    $scope.AllClass.push(doc.data());
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                });
+                console.log($scope.AllClass);
+            });
+
+            // 選擇課程 - 選擇中
+            $scope.hide = function() {
+                $scope.cardShow = false;
+            };
+
+            // 選擇課程 - 選擇完成
+            $scope.SelectBtn = function(value) {
+                if (value!=undefined) {
+                    $scope.cardShow = true;
+                    // 載入所有任務
+                    // $scope.missions = [];
+                    // db.collection("分組").doc(ClassID).collection("group")
+                    // .get().then(function (querySnapshot) {
+                    //     querySnapshot.forEach(function (doc) {
+                    //         $scope.missions.push(doc.data());
+                    //         $state.go($state.current, {}, {reload: true}); //重新載入view
+                    //     });
+                    // });
+                } else {
+                    // 提醒
+                    $ionicPopup.alert({
+                        title: '錯誤',
+                        template: '請選擇課程。'
+                    });
+                }
+            };
+
+            // 新增任務
+            $scope.AddBtn = function(value) {
+                $scope.AddBtnPopup = [];
+                // 新增任務 - 跳出泡泡
+                $ionicPopup.show({
+                    title: '新增任務',
+                    template: 
+                        '<label class="item item-input item-input">'+
+                            '<div class="input-label">任務名稱</div>'+
+                            '<input type="text" ng-model="AddBtnPopup.Name" placeholder="輸入任務名稱（限15字內）..." maxlength="15">'+    
+                        '</label>'+
+                        
+                        '<label class="item item-input item-select">'+
+                            '<div class="input-label">任務類型</div>'+
+                            '<select ng-model="AddBtnPopup.type">'+
+                                '<option value="隨堂測驗">隨堂測驗</option>'+
+                                '<option value="小組討論">小組討論</option>'+
+                                '<option value="加分問卷">加分問卷</option>'+
+                                '<option value="評分">評分</option>'+
+                            '</select>'+
+                        '</label>'+
+
+                        '<label class="item item-input item-select">'+
+                            '<div class="input-label">截止日期</div>'+
+                            '<input type="date" ng-model="AddBtnPopup.TimeOut">'+    
+                        '</label>'+
+
+                        '<ion-toggle ng-model="AddBtnPopup.LeaderOnly">是否僅限組長執行</ion-toggle>'+
+
+                        '<label class="item item-input item-input">'+
+                            '<div class="input-label">HTML</div>'+
+                            '<textarea cols="50" rows="5"></textarea>'+
+                        '</label>',
+                    scope: $scope,
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '新增',
+                        type: 'button-chanry1',
+                        onTap: function(e) {
+                            console.log('選擇新增');
+                            // 判斷是否必填未填
+                            if ($scope.AddBtnPopup.Name==""||$scope.AddBtnPopup.type=="") {
+                                console.log("請填寫提案標題");
+                                $ionicPopup.alert({
+                                    title: '錯誤',
+                                    template: '請填寫提案標題。'
+                                });
+                            } else {
+                                // 新增任務
+                                // db.collection("提案聚焦").doc(ClassID).collection(GroupID)
+                                // .add({
+                                //     ProposalName: $scope.proposalInput.content,
+                                //     brainstorming: $scope.checkProposals,
+                                //     time: new Date()
+                                // })
+                                // .then(function(data) {
+                                //     console.log("新增提案成功");
+                                //     // 標記提案已加入
+                                //     $scope.checkProposals.forEach(function (brainstormingID) {
+                                //         db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                                //         .update({
+                                //             invited: true
+                                //         })
+                                //         .then(function(data) {
+                                //             console.log("標記提案成功");
+                                //         })
+                                //         .catch(function(error) {
+                                //             console.error("標記提案失敗：", error);
+                                //         });
+                                //     });
+                                // })
+                                // .catch(function(error) {
+                                //     console.error("新增提案失敗：", error);
+                                // });
+                            }
+                        }
+                    }]
+                });
+            };
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+        }
+    });
+}])
+
 // ----------------------------------------教師版選單頁面----------------------------------------
 .controller('rootmenuCtrl', ['$scope', '$stateParams', 
 function ($scope, $stateParams) {
@@ -1981,8 +2122,8 @@ function ($scope, $stateParams) {
                 console.log("查詢圖片檔名發生錯誤：", error); 
             });
               
-            // 設定授權文字位置
-            $('#menu-heading2').css('top', window.innerHeight-620+'px');
+            // 設定授權文字
+            document.getElementById("menu-heading2").innerText="Copyright © 2019 ver "+verson;
         }else{
             console.log("尚未登入");
             $state.go("login");
