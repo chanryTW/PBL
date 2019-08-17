@@ -1,20 +1,35 @@
 <ion-view title="腦力激盪" hide-back-button="true" id="brainstorming" >
+
+  <div class="tabs-striped tabs-top tabs-background-light tabs-color-calm">
+    <div class="tabs">
+      <a class="tab-item" ng-class="{true:'active',false:''}[{{tabsCount.active}}]" ng-repeat="tabsCount in tabsCounts" ng-click="tabs(tabsCount.num)">
+        {{tabsCount.num}}
+      </a>
+      <a class="tab-item" ng-click="tabs('+')" ng-if="DelAllBtnShow">
+        +
+      </a>
+    </div>
+  </div>
+
   <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
+    <div class="spacer" style="height: 40px;"></div>
     <!-- main -->
-    <div id="brainstorming_list" class="list list-inset" ng-repeat="item in items">
+    <div id="brainstorming_list" class="list list-inset" ng-repeat="item in items | filter:search">
       <div id="brainstorming_item" class="item">
         <!-- <h2>{{item.StuName}}</h2> -->
         <h2>匿名：{{item.msg}}<i ng-class="{true: 'likeBtnOn', false: 'likeBtnOff'}[{{item.likeBtn}}]" ng-click="like(item)"></i></h2>
       </div>
     </div>
-    
+    <div class="spacer" style="height: 40px;"></div>
   </ion-content>
+
   <!-- 文字輸入 -->
   <button class = "button button-block button-small brainstorming_DelAllBtn" ng-if="DelAllBtnShow" ng-click="DelAllBtn()">清空訊息</button>
   <ion-footer-bar class="bar bar-footer">
     <label class="item-input-wrapper">
       <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && add()" ng-model="input" type="text" placeholder="輸入想法（限15字內）..." maxlength="15">
     </label>
-    <button class="button button-small" ng-click="add()">送出</button>
+    <button class="button button-small button-chanry1" ng-click="add()">送出</button>
   </ion-footer-bar>
+
 </ion-view>

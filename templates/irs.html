@@ -1,5 +1,15 @@
-<ion-view title="測驗" id="irs">
+<ion-view title="課程任務" id="irs">
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header">
+
+    <div ng-repeat="item in items" class="card">
+      <div class="item item-divider">
+        <ion-icon name="notifications"></ion-icon>
+        【{{item.ClassName}}】：
+      </div>
+      <div class="item item-text-wrap">
+        {{item.ClassContent}}
+      </div>
+    </div>
 
   </ion-content>
 </ion-view>
