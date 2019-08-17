@@ -42,12 +42,12 @@ angular.module('app.routes', [])
     }
   })
 
-  .state('menu.irs', {
-    url: '/irs',
+  .state('menu.mission', {
+    url: '/mission',
     views: {
       'side-menu21': {
-        templateUrl: 'templates/irs.html',
-        controller: 'irsCtrl'
+        templateUrl: 'templates/mission.html',
+        controller: 'missionCtrl'
       }
     }
   })
@@ -121,6 +121,16 @@ angular.module('app.routes', [])
       'side-menu21': {
         templateUrl: 'templates/root/root_group.html',
         controller: 'root_groupCtrl'
+      }
+    }
+  })
+
+  .state('rootmenu.root_mission', {
+    url: '/root_mission',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/root/root_mission.html',
+        controller: 'root_missionCtrl'
       }
     }
   });
