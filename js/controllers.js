@@ -1987,6 +1987,9 @@ function ($scope, $stateParams, $state, $ionicPopup) {
             // 新增任務
             $scope.AddBtn = function(value) {
                 $scope.AddBtnPopup = [];
+                $scope.AddBtnPopup.LeaderOnly = false;
+                var ClassID = value.ClassID;
+
                 // 新增任務 - 跳出泡泡
                 $ionicPopup.show({
                     title: '新增任務',
@@ -2015,7 +2018,7 @@ function ($scope, $stateParams, $state, $ionicPopup) {
 
                         '<label class="item item-input item-input">'+
                             '<div class="input-label">HTML</div>'+
-                            '<textarea cols="50" rows="5"></textarea>'+
+                            '<textarea cols="50" rows="5" ng-model="AddBtnPopup.HTML"></textarea>'+
                         '</label>',
                     scope: $scope,
                     buttons: [{
@@ -2030,7 +2033,7 @@ function ($scope, $stateParams, $state, $ionicPopup) {
                         onTap: function(e) {
                             console.log('選擇新增');
                             // 判斷是否必填未填
-                            if ($scope.AddBtnPopup.Name==""||$scope.AddBtnPopup.type=="") {
+                            if ($scope.AddBtnPopup.Name==undefined||$scope.AddBtnPopup.type==undefined||$scope.AddBtnPopup.TimeOut==undefined||$scope.AddBtnPopup.LeaderOnly==undefined||$scope.AddBtnPopup.HTML==undefined) {
                                 console.log("請填寫提案標題");
                                 $ionicPopup.alert({
                                     title: '錯誤',
@@ -2038,31 +2041,20 @@ function ($scope, $stateParams, $state, $ionicPopup) {
                                 });
                             } else {
                                 // 新增任務
-                                // db.collection("提案聚焦").doc(ClassID).collection(GroupID)
-                                // .add({
-                                //     ProposalName: $scope.proposalInput.content,
-                                //     brainstorming: $scope.checkProposals,
-                                //     time: new Date()
-                                // })
-                                // .then(function(data) {
-                                //     console.log("新增提案成功");
-                                //     // 標記提案已加入
-                                //     $scope.checkProposals.forEach(function (brainstormingID) {
-                                //         db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
-                                //         .update({
-                                //             invited: true
-                                //         })
-                                //         .then(function(data) {
-                                //             console.log("標記提案成功");
-                                //         })
-                                //         .catch(function(error) {
-                                //             console.error("標記提案失敗：", error);
-                                //         });
-                                //     });
-                                // })
-                                // .catch(function(error) {
-                                //     console.error("新增提案失敗：", error);
-                                // });
+                                db.collection("課程任務").doc(ClassID).collection("任務列表")
+                                .add({
+                                    Name: $scope.AddBtnPopup.Name,
+                                    type: $scope.AddBtnPopup.type,
+                                    TimeOut: $scope.AddBtnPopup.TimeOut,
+                                    LeaderOnly: $scope.AddBtnPopup.LeaderOnly,
+                                    HTML: $scope.AddBtnPopup.HTML
+                                })
+                                .then(function(data) {
+                                    console.log("新增提案成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("新增提案失敗：", error);
+                                });
                             }
                         }
                     }]
