@@ -171,6 +171,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             },function(error) {
                 console.error("讀取課程發生錯誤：", error);
                 $state.go("login");
+                window.location.reload();
             });
 
             // 監聽 - 是否開放分組
@@ -619,6 +620,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -638,13 +640,14 @@ function ($scope, $stateParams) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
    
 // ----------------------------------------課程任務頁面----------------------------------------
-.controller('missionCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
+.controller('missionCtrl', ['$scope', '$stateParams', '$sce', '$state',
+function ($scope, $stateParams, $sce, $state) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -653,10 +656,20 @@ function ($scope, $stateParams) {
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
 
-            // ...
+            // 監聽 - 載入所有任務
+            $scope.missions = [];
+            db.collection("課程任務").doc(ClassID).collection("任務列表")
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.forEach(function (doc) {
+                    // $sce轉換格式為HTML
+                    $scope.missions.push({Name:doc.data().Name,TimeOut:doc.data().TimeOut,LeaderOnly:doc.data().LeaderOnly,type:doc.data().type,finished:doc.data().finished,HTML:$sce.trustAsHtml(doc.data().HTML)});
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                });
+            });
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -953,6 +966,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -1301,6 +1315,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -1320,6 +1335,7 @@ function ($scope, $stateParams) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -1339,6 +1355,7 @@ function ($scope, $stateParams) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -1429,6 +1446,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -1627,6 +1645,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -1813,6 +1832,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
         }else{
             console.log("非管理員");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -1950,6 +1970,7 @@ function ($scope, $stateParams, $state, $ionicLoading) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
@@ -2085,13 +2106,14 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }])
 
 // ----------------------------------------教師版選單頁面----------------------------------------
-.controller('rootmenuCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
+.controller('rootmenuCtrl', ['$scope', '$stateParams', '$state',
+function ($scope, $stateParams, $state) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -2140,6 +2162,7 @@ function ($scope, $stateParams) {
         }else{
             console.log("尚未登入");
             $state.go("login");
+            window.location.reload();
         }
     });
 }]);

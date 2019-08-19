@@ -1,13 +1,14 @@
 <ion-view title="課程任務" id="mission">
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header">
 
-    <div ng-repeat="item in items" class="card">
+    <div ng-repeat="mission in missions" class="card">
       <div class="item item-divider">
-        <ion-icon name="notifications"></ion-icon>
-        【{{item.ClassName}}】：
+        <span ng-class="{'MissionType1': mission.type == '隨堂測驗', 'MissionType2': mission.type == '小組討論', 'MissionType3': mission.type == '加分問卷', 'MissionType4': mission.type == '評分'}">{{mission.type}}</span>：{{mission.Name}}
       </div>
-      <div class="item item-text-wrap">
-        {{item.ClassContent}}
+      <div class="item item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
+        <p>上課成果的小測驗，請憑直覺填寫 下課前繳交</p>
+        <div ng-bind-html="mission.HTML"></div>
+        <button class="button button-small button-chanry1" ng-click="">查看更多</button>
       </div>
     </div>
 

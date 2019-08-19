@@ -22,7 +22,7 @@
 
     <div ng-show="cardShow" ng-repeat="mission in missions" class="card">
       <div class="item item-divider">
-        <span class="MissionType1">{{mission.type}}</span>：{{mission.Name}}
+        <span ng-class="{'MissionType1': mission.type == '隨堂測驗', 'MissionType2': mission.type == '小組討論', 'MissionType3': mission.type == '加分問卷', 'MissionType4': mission.type == '評分'}">{{mission.type}}</span>：{{mission.Name}}
       </div>
       <div class="item item-text-wrap">
         <p>上課成果的小測驗，請憑直覺填寫 下課前繳交</p>
