@@ -714,7 +714,6 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                                     })
                                     .then(function() {
                                         console.log("新增分頁成功");
-                                        $state.go($state.current, {}, {reload: true}); //重新載入view
                                     })
                                     .catch(function(error) {
                                         console.error("新增分頁失敗", error);
@@ -731,9 +730,12 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     var indexNum = $scope.tabsCounts.findIndex((element)=>{
                         return (element.active === true);
                     });
-                    $scope.tabsCounts.splice(indexNum,1,{num:indexNum+1,active:false});
-                    // 替換class
-                    $scope.tabsCounts.splice(number-1,1,{num:number,active:true});
+                    // 替換class - 原頁面
+                    $scope.tabsCounts[indexNum].num = indexNum+1;
+                    $scope.tabsCounts[indexNum].active = false;
+                    // 替換class - 新頁面
+                    $scope.tabsCounts[number-1].num = number;
+                    $scope.tabsCounts[number-1].active = true;
                 }
             }
             // 監聽 - 頁籤數
@@ -748,7 +750,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                             $scope.tabsCounts.push({num:index,active:false});
                         }
                     }
-                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                    $scope.$apply(); //重新監聽view
                 } else {
                     // 初始化分頁
                     db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc("頁籤")
