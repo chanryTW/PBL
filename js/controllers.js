@@ -1937,8 +1937,8 @@ function ($scope, $stateParams, $state, $ionicLoading) {
 }])
 
 // ----------------------------------------教師版課程任務----------------------------------------
-.controller('root_missionCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup',
-function ($scope, $stateParams, $state, $ionicPopup) {
+.controller('root_missionCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$sce',
+function ($scope, $stateParams, $state, $ionicPopup, $sce) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -1965,16 +1965,18 @@ function ($scope, $stateParams, $state, $ionicPopup) {
             // 選擇課程 - 選擇完成
             $scope.SelectBtn = function(value) {
                 if (value!=undefined) {
+                    var ClassID = value.ClassID;
                     $scope.cardShow = true;
                     // 載入所有任務
-                    // $scope.missions = [];
-                    // db.collection("分組").doc(ClassID).collection("group")
-                    // .get().then(function (querySnapshot) {
-                    //     querySnapshot.forEach(function (doc) {
-                    //         $scope.missions.push(doc.data());
-                    //         $state.go($state.current, {}, {reload: true}); //重新載入view
-                    //     });
-                    // });
+                    $scope.missions = [];
+                    db.collection("課程任務").doc(ClassID).collection("任務列表")
+                    .get().then(function (querySnapshot) {
+                        querySnapshot.forEach(function (doc) {
+                            // $sce轉換格式為HTML
+                            $scope.missions.push({Name:doc.data().Name,TimeOut:doc.data().TimeOut,LeaderOnly:doc.data().LeaderOnly,type:doc.data().type,finished:doc.data().finished,HTML:$sce.trustAsHtml(doc.data().HTML)});
+                            $state.go($state.current, {}, {reload: true}); //重新載入view
+                        });
+                    });
                 } else {
                     // 提醒
                     $ionicPopup.alert({
@@ -2034,10 +2036,10 @@ function ($scope, $stateParams, $state, $ionicPopup) {
                             console.log('選擇新增');
                             // 判斷是否必填未填
                             if ($scope.AddBtnPopup.Name==undefined||$scope.AddBtnPopup.type==undefined||$scope.AddBtnPopup.TimeOut==undefined||$scope.AddBtnPopup.LeaderOnly==undefined||$scope.AddBtnPopup.HTML==undefined) {
-                                console.log("請填寫提案標題");
+                                console.log("請填寫完整");
                                 $ionicPopup.alert({
                                     title: '錯誤',
-                                    template: '請填寫提案標題。'
+                                    template: '請填寫完整。'
                                 });
                             } else {
                                 // 新增任務
@@ -2047,13 +2049,14 @@ function ($scope, $stateParams, $state, $ionicPopup) {
                                     type: $scope.AddBtnPopup.type,
                                     TimeOut: $scope.AddBtnPopup.TimeOut,
                                     LeaderOnly: $scope.AddBtnPopup.LeaderOnly,
-                                    HTML: $scope.AddBtnPopup.HTML
+                                    HTML: $scope.AddBtnPopup.HTML,
+                                    finished: []
                                 })
                                 .then(function(data) {
-                                    console.log("新增提案成功");
+                                    console.log("新增任務成功");
                                 })
                                 .catch(function(error) {
-                                    console.error("新增提案失敗：", error);
+                                    console.error("新增任務失敗：", error);
                                 });
                             }
                         }
