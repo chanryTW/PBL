@@ -781,7 +781,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                             a.likeBtn = false;  
                         }
                         $scope.items.push(a);
-                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $scope.$apply(); //重新監聽view
                         $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                         console.log("新增: ", a);
                     }
@@ -805,7 +805,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                         }else{
                             console.log("修改列表不成功");
                         }
-                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $scope.$apply(); //重新監聽view
                         console.log("修改: ", change.doc.data());
                     }
                     if (change.type === "removed") {
@@ -820,7 +820,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                         }else{
                             console.log("刪除列表不成功");
                         }
-                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $scope.$apply(); //重新監聽view
                     }
                 });
             });
@@ -896,7 +896,6 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                         console.error("更新按讚狀態失敗：", error);
                     });
                 }
-                $state.go($state.current, {}, {reload: true}); //重新載入view
             };
 
             // 判斷組長
@@ -998,19 +997,36 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
                             .get().then(function(results) {
                                 b.push(results.data());
-                                $state.go($state.current, {}, {reload: true}); //重新載入view
+                                $scope.$apply(); //重新監聽view
                             }).catch(function(error) { 
                                 console.log("腦力激盪內容發生錯誤：", error); 
                             });
                         });
                         $scope.items.push({ProposalName:a.ProposalName,brainstorming:b,time:a.time});
-                        $state.go($state.current, {}, {reload: true}); //重新載入view
                         $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                         console.log("新增: ", $scope.items);
                     }
                     if (change.type === "modified") {
                         console.log("修改: ", change.doc.data());
-                        // ...待更新
+                        var a = change.doc.data();
+                        var b = [];
+                        // 找出腦力激盪內容
+                        a.brainstorming.forEach(function(brainstormingID) {
+                            db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                            .get().then(function(results) {
+                                b.push(results.data());
+                                $scope.$apply(); //重新監聽view
+                            }).catch(function(error) { 
+                                console.log("腦力激盪內容發生錯誤：", error); 
+                            });
+                        });
+                        // 用findIndex找出要修改的位置
+                        var indexNum = $scope.items.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        // 修改
+                        $scope.items[indexNum].brainstorming = b;
+                        $scope.$apply(); //重新監聽view
                     }
                     if (change.type === "removed") {
                         console.log("刪除: ", change.doc.data());
@@ -1018,13 +1034,14 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         var indexNum = $scope.items.findIndex((element)=>{
                             return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
                         });
+                        // 刪除
                         if (indexNum!=-1) {
                             $scope.items.splice(indexNum,1);
                             console.log("刪除列表成功");
                         }else{
                             console.log("刪除列表不成功");
                         }
-                        $state.go($state.current, {}, {reload: true}); //重新載入view
+                        $scope.$apply(); //重新監聽view
                     }
                 });
             });
@@ -1052,7 +1069,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         });
                         console.log("取得未分組名單：",$scope.proposals);
                     }
-                    $state.go($state.current, {}, {reload: true}); //重新載入view
                 }).catch(function(error) { 
                     console.log("取得未分組名單發生錯誤：", error); 
                 });
