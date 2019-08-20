@@ -660,10 +660,34 @@ function ($scope, $stateParams, $sce, $state) {
             $scope.missions = [];
             db.collection("課程任務").doc(ClassID).collection("任務列表")
             .onSnapshot(function(querySnapshot) {
-                querySnapshot.forEach(function (doc) {
-                    // $sce轉換格式為HTML
-                    $scope.missions.push({Name:doc.data().Name,TimeOut:doc.data().TimeOut,LeaderOnly:doc.data().LeaderOnly,type:doc.data().type,finished:doc.data().finished,HTML:$sce.trustAsHtml(doc.data().HTML)});
-                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        console.log("新增: ", change.doc.data());
+                        // 判斷是否 關閉3 完成1 過期2
+                        var lock = 0;
+                        if (change.doc.data().lock == true){
+                            lock = 3;
+                        } else if (change.doc.data().TimeOut.toDate() < new Date()){
+                            lock = 2;
+                        }
+                        // $sce轉換格式為HTML
+                        $scope.missions.push({Name:change.doc.data().Name,TimeOut:change.doc.data().TimeOut,LeaderOnly:change.doc.data().LeaderOnly,type:change.doc.data().type,finished:change.doc.data().finished,HTML:$sce.trustAsHtml(change.doc.data().HTML),time:change.doc.data().time,lock:lock});
+                        $scope.$apply(); //重新監聽view
+                    } else if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                        // 用findIndex找出要刪除的位置
+                        var indexNum = $scope.missions.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        // 刪除
+                        if (indexNum!=-1) {
+                            $scope.missions.splice(indexNum,1);
+                            console.log("刪除任務成功");
+                        }else{
+                            console.log("刪除任務不成功");
+                        }
+                        $scope.$apply(); //重新監聽view
+                    }
                 });
             });
         }else{
@@ -1021,8 +1045,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         $scope.items.push({ProposalName:a.ProposalName,brainstorming:b,time:a.time});
                         $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                         console.log("新增: ", $scope.items);
-                    }
-                    if (change.type === "modified") {
+                    } else if (change.type === "modified") {
                         console.log("修改: ", change.doc.data());
                         var a = change.doc.data();
                         var b = [];
@@ -1043,8 +1066,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         // 修改
                         $scope.items[indexNum].brainstorming = b;
                         $scope.$apply(); //重新監聽view
-                    }
-                    if (change.type === "removed") {
+                    } else if (change.type === "removed") {
                         console.log("刪除: ", change.doc.data());
                         // 用findIndex找出要刪除的位置
                         var indexNum = $scope.items.findIndex((element)=>{
@@ -2089,7 +2111,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                     TimeOut: $scope.AddBtnPopup.TimeOut,
                                     LeaderOnly: $scope.AddBtnPopup.LeaderOnly,
                                     HTML: $scope.AddBtnPopup.HTML,
-                                    finished: []
+                                    finished: [],
+                                    lock: false,
+                                    time: new Date()
                                 })
                                 .then(function(data) {
                                     console.log("新增任務成功");
