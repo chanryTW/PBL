@@ -664,7 +664,7 @@ function ($scope, $stateParams, $sce, $state) {
                     if (change.type === "added") {
                         console.log("新增: ", change.doc.data());
                         // 判斷是否 關閉3 完成1 過期2
-                        var lock = 0;
+                        var lock = 1;
                         if (change.doc.data().lock == true){
                             lock = 3;
                         } else if (change.doc.data().TimeOut.toDate() < new Date()){
