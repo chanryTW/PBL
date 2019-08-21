@@ -5,7 +5,12 @@
       <div class="item item-divider">
         <span ng-class="{'MissionType1': mission.type == '隨堂測驗', 'MissionType2': mission.type == '小組討論', 'MissionType3': mission.type == '加分問卷', 'MissionType4': mission.type == '評分'}">
           {{mission.type}}
-        </span>：{{mission.Name}}
+        </span>
+        ：{{mission.Name}}
+        <span class="timeOutSpan">
+          <i class="timeOut"></i>
+          {{mission.TimeOut}} 截止
+        </span>
       </div>
       <div class="item item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
         <p>上課成果的小測驗，請憑直覺填寫 下課前繳交</p>
