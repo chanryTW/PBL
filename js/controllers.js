@@ -670,8 +670,23 @@ function ($scope, $stateParams, $sce, $state) {
                         } else if (change.doc.data().TimeOut.toDate() < new Date()){
                             lock = 2;
                         }
-                        // $sce轉換格式為HTML
-                        $scope.missions.push({Name:change.doc.data().Name,TimeOut:change.doc.data().TimeOut,LeaderOnly:change.doc.data().LeaderOnly,type:change.doc.data().type,finished:change.doc.data().finished,HTML:$sce.trustAsHtml(change.doc.data().HTML),time:change.doc.data().time,lock:lock});
+                        // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
+                        var pushMonth = Number(change.doc.data().TimeOut.toDate().getMonth())+1;
+                        var pushDate = change.doc.data().TimeOut.toDate().getDate();
+                        if (change.doc.data().TimeOut.toDate().getDate()<=9) {
+                            pushDate = '0'+change.doc.data().TimeOut.toDate().getDate();
+                        }
+                        $scope.missions.push({
+                            Name:change.doc.data().Name,
+                            TimeOut:change.doc.data().TimeOut.toDate().getUTCFullYear()+'/'+
+                                    pushMonth+'/'+
+                                    pushDate,
+                            LeaderOnly:change.doc.data().LeaderOnly,
+                            type:change.doc.data().type,
+                            finished:change.doc.data().finished,
+                            HTML:$sce.trustAsHtml(change.doc.data().HTML),
+                            time:change.doc.data().time,lock:lock
+                        });
                         $scope.$apply(); //重新監聽view
                     } else if (change.type === "removed") {
                         console.log("刪除: ", change.doc.data());
