@@ -687,7 +687,9 @@ function ($scope, $stateParams, $sce, $state) {
                             type:change.doc.data().type,
                             finished:change.doc.data().finished,
                             HTML:$sce.trustAsHtml(change.doc.data().HTML),
-                            time:change.doc.data().time,lock:lock
+                            time:change.doc.data().time,lock:lock,
+                            show:false,
+                            showMsg:'查看更多'
                         });
                         $scope.$apply(); //重新監聽view
                     } else if (change.type === "removed") {
@@ -707,6 +709,27 @@ function ($scope, $stateParams, $sce, $state) {
                     }
                 });
             });
+
+            // 查看更多按鈕
+            $scope.missionShow = function(doc){
+                // 用findIndex找出要修改的位置
+                var indexNum = $scope.missions.findIndex((element)=>{
+                    return (element.$$hashKey === doc.$$hashKey);
+                });
+                // 修改
+                if (indexNum!=-1) {
+                    if ($scope.missions[indexNum].show) {
+                        $scope.missions[indexNum].show = false;
+                        $scope.missions[indexNum].showMsg = '查看更多';
+                    } else {
+                        $scope.missions[indexNum].show = true;
+                        $scope.missions[indexNum].showMsg = '收合內容';
+                    }
+                    console.log("修改顯示成功");
+                }else{
+                    console.log("修改顯示不成功");
+                }
+            };
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -1166,7 +1189,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+'">'+
                                 '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
                                 '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'-like'"+' ">'+
-                                    '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.like}}票：{{proposal.msg}}</ion-checkbox>'+
+                                    '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.like}}讚：{{proposal.msg}}</ion-checkbox>'+
                                 '</div>'+
                             '</div>',
                         scope: $scope,
@@ -1226,80 +1249,159 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         }]
                     });
                 } else if (InviteOrAdd=="Invite") {
-                    // 加入提案 - 跳出泡泡
-                    $ionicPopup.show({
-                        title: '加入腦力激盪',
-                        subTitle: '請選擇加入此提案之腦力激盪。',
-                        template: 
-                        '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+' ">'+
-                            '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
-                            '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'like'"+' ">'+
-                                '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.msg}}</ion-checkbox>'+
-                            '</div>'+
-                        '</div>',
-                        scope: $scope,
-                        buttons: [{
-                            text: '取消',
-                            type: 'button-default',
-                            onTap: function(e) {
-                                console.log('選擇取消');
-                            }
-                        }, {
-                            text: '加入',
-                            type: 'button-chanry1',
-                            onTap: function(e) {
-                                console.log('選擇加入');
-                                // 判斷是否必填未填
-                                if($scope.checkProposals.length == 0) {
-                                    console.log("請勾選腦力激盪");
-                                    $ionicPopup.alert({
-                                        title: '錯誤',
-                                        template: '請勾選至少一項腦力激盪。'
-                                    });
-                                } else {
-                                    // 取得提案ID
-                                    db.collection("提案聚焦").doc(ClassID).collection(GroupID).where("time", "==", time)
-                                    .get().then(function(results) {
-                                        results.forEach(function (doc) {
-                                            var proposalID = doc.id;
-                                            // 取得提案聚焦內腦力激盪陣列
-                                            db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
-                                            .get().then(function(doc) {
-                                                // 更新提案
-                                                db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
-                                                .update({
-                                                    brainstorming: doc.data().brainstorming.concat($scope.checkProposals)
-                                                })
-                                                .then(function(data) {
-                                                    console.log("更新提案成功");
-                                                    // 標記提案已加入
-                                                    $scope.checkProposals.forEach(function (brainstormingID) {
-                                                        db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
-                                                        .update({
-                                                            invited: true
-                                                        })
-                                                        .then(function(data) {
-                                                            console.log("標記提案成功");
-                                                        })
-                                                        .catch(function(error) {
-                                                            console.error("標記提案失敗：", error);
-                                                        });
-                                                    });
-                                                })
-                                                .catch(function(error) {
-                                                    console.error("更新提案失敗：", error);
-                                                });
-                                            }).catch(function(error) { 
-                                                console.log("取得提案聚焦內腦力激盪陣列發生錯誤：", error); 
-                                            });
-                                        });
-                                    }).catch(function(error) { 
-                                        console.log("查詢全部訊息發生錯誤：", error); 
-                                    });
+                    // 判斷是否是組長
+                    if ($scope.leaderGroupShow) {
+                        // 加入提案 - 跳出泡泡(組長)
+                        $ionicPopup.show({
+                            title: '加入腦力激盪',
+                            subTitle: '請選擇加入此提案之腦力激盪。',
+                            template: 
+                            '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+'">'+
+                                '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
+                                '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'-like'"+' ">'+
+                                    '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.like}}讚：{{proposal.msg}}</ion-checkbox>'+
+                                '</div>'+
+                            '</div>',
+                            scope: $scope,
+                            buttons: [{
+                                text: '取消',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇取消');
                                 }
-                            }
-                        }]
-                    });
+                            }, {
+                                text: '加入',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇加入');
+                                    // 判斷是否必填未填
+                                    if($scope.checkProposals.length == 0) {
+                                        console.log("請勾選腦力激盪");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請勾選至少一項腦力激盪。'
+                                        });
+                                    } else {
+                                        // 取得提案ID
+                                        db.collection("提案聚焦").doc(ClassID).collection(GroupID).where("time", "==", time)
+                                        .get().then(function(results) {
+                                            results.forEach(function (doc) {
+                                                var proposalID = doc.id;
+                                                // 取得提案聚焦內腦力激盪陣列
+                                                db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
+                                                .get().then(function(doc) {
+                                                    // 更新提案
+                                                    db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
+                                                    .update({
+                                                        brainstorming: doc.data().brainstorming.concat($scope.checkProposals)
+                                                    })
+                                                    .then(function(data) {
+                                                        console.log("更新提案成功");
+                                                        // 標記提案已加入
+                                                        $scope.checkProposals.forEach(function (brainstormingID) {
+                                                            db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                                                            .update({
+                                                                invited: true
+                                                            })
+                                                            .then(function(data) {
+                                                                console.log("標記提案成功");
+                                                            })
+                                                            .catch(function(error) {
+                                                                console.error("標記提案失敗：", error);
+                                                            });
+                                                        });
+                                                    })
+                                                    .catch(function(error) {
+                                                        console.error("更新提案失敗：", error);
+                                                    });
+                                                }).catch(function(error) { 
+                                                    console.log("取得提案聚焦內腦力激盪陣列發生錯誤：", error); 
+                                                });
+                                            });
+                                        }).catch(function(error) { 
+                                            console.log("查詢全部訊息發生錯誤：", error); 
+                                        });
+                                    }
+                                }
+                            }]
+                        });
+                    } else {
+                        // 加入提案 - 跳出泡泡(非組長)
+                        $ionicPopup.show({
+                            title: '提議加入之腦力激盪',
+                            subTitle: '提議後需等組長同意才可加入。',
+                            template: 
+                            '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+'">'+
+                                '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
+                                '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'-like'"+' ">'+
+                                    '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.like}}讚：{{proposal.msg}}</ion-checkbox>'+
+                                '</div>'+
+                            '</div>',
+                            scope: $scope,
+                            buttons: [{
+                                text: '取消',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇取消');
+                                }
+                            }, {
+                                text: '提議',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇提議');
+                                    // 判斷是否必填未填
+                                    if($scope.checkProposals.length == 0) {
+                                        console.log("請勾選腦力激盪");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請勾選至少一項腦力激盪。'
+                                        });
+                                    } else {
+                                        // 取得提案ID
+                                        db.collection("提案聚焦").doc(ClassID).collection(GroupID).where("time", "==", time)
+                                        .get().then(function(results) {
+                                            results.forEach(function (doc) {
+                                                var proposalID = doc.id;
+                                                // // 取得提案聚焦內腦力激盪陣列
+                                                // db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
+                                                // .get().then(function(doc) {
+                                                //     // 更新提案
+                                                //     db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
+                                                //     .update({
+                                                //         brainstorming: doc.data().brainstorming.concat($scope.checkProposals)
+                                                //     })
+                                                //     .then(function(data) {
+                                                //         console.log("更新提案成功");
+                                                //         // 標記提案已加入
+                                                //         $scope.checkProposals.forEach(function (brainstormingID) {
+                                                //             db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                                                //             .update({
+                                                //                 invited: true
+                                                //             })
+                                                //             .then(function(data) {
+                                                //                 console.log("標記提案成功");
+                                                //             })
+                                                //             .catch(function(error) {
+                                                //                 console.error("標記提案失敗：", error);
+                                                //             });
+                                                //         });
+                                                //     })
+                                                //     .catch(function(error) {
+                                                //         console.error("更新提案失敗：", error);
+                                                //     });
+                                                // }).catch(function(error) { 
+                                                //     console.log("取得提案聚焦內腦力激盪陣列發生錯誤：", error); 
+                                                // });
+                                            });
+                                        }).catch(function(error) { 
+                                            console.log("查詢全部訊息發生錯誤：", error); 
+                                        });
+                                    }
+                                }
+                            }]
+                        });
+                    }
+                    
                 }
             };
 
