@@ -207,6 +207,10 @@ a{text-decoration:none}
 .missionLock3::before{
     background-image: url(/svg/expired.svg);
 }
+/* 查看更多按鈕 */
+.button-margin{
+    margin: 10px 0px 0px 0px;
+}
 
 /* -----------------------------------------------腦力激盪頁面----------------------------------------------- */
 .tab-item{
@@ -310,40 +314,38 @@ a{text-decoration:none}
     z-index: 20;
 }
 /* 刪除提案圖示 */
-.proposal_DelProposalBtn{
-    display: inline-block;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 25px;
-    height: 25px;
-    z-index: 2;
-    background-image: url(/svg/delete.svg);
-    opacity: 0.6;
+.right{
+    display:inline-block;
+    float: right;
+    text-align: right;
+    position: relative;
+    right: -8px;
+    width:30% ;
 }
-/* 新增提案圖示 */
-.proposal_AddProposalBtn{
+.proposal_DelProposalBtn,.proposal_AddProposalBtn,.proposal_bellProposalBtn,.proposal_DelBrainstormingBtn{
     display: inline-block;
-    position: absolute;
-    top: 5px;
-    right: 40px;
     width: 25px;
     height: 25px;
     z-index: 2;
+    margin: 0 2px 0 2px;
+    opacity: 0.7;
+}
+.proposal_DelProposalBtn{
+    background-image: url(/svg/delete.svg);
+}
+.proposal_AddProposalBtn{
     background-image: url(/svg/add.svg);
-    opacity: 0.6;
+}
+.proposal_bellProposalBtn{
+    background-image: url(/svg/bell.svg);
+    margin: 0 5px 0 5px;
 }
 /* 刪除腦力激盪圖示 */
 .proposal_DelBrainstormingBtn{
-    display: inline-block;
     position: absolute;
     top: 11px;
     right: 5px;
-    width: 25px;
-    height: 25px;
-    z-index: 2;
     background-image: url(/svg/cancel.svg);
-    opacity: 0.6;
 }
 /* 提案卡片 */
 .proposal_card{

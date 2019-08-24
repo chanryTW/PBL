@@ -5,8 +5,11 @@
       <div class="card">
         <div class="item item-divider">
           提案：【{{item.ProposalName}}】
-          <i class="proposal_AddProposalBtn" ng-click="AddProposal('Invite',item.time)" ng-if="leaderGroupShow"></i>
-          <i class="proposal_DelProposalBtn" ng-click="DelProposal(item.time)" ng-if="leaderGroupShow"></i>
+          <div class="right">
+            <i class="proposal_bellProposalBtn" ng-click="bellProposal(item.time)"></i>
+            <i class="proposal_AddProposalBtn" ng-click="AddProposal('Invite',item.time)"></i>
+            <i class="proposal_DelProposalBtn" ng-click="DelProposal(item.time)" ng-if="leaderGroupShow"></i>
+          </div>
         </div>
         <div ng-repeat="brainstorming in item.brainstorming" class="item item-text-wrap proposal_item">
           {{brainstorming.msg}}
