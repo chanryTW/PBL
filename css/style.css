@@ -355,6 +355,47 @@ a{text-decoration:none}
 .proposal_item{
     padding: 13px;
 }
+/* 提議的投票 */
+.vote{
+    background-color: rgb(163, 245, 184);
+    line-height: 0px;
+}
+.voteN{
+    content: "";
+    background-color: rgb(245, 163, 163);
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    text-align: right
+}
+/* 贊成反對文字 */
+.votespan{
+    position: absolute;
+    color: #0D5B80;
+}
+/* 贊成反對按鈕 */
+.voteNbtn,.voteYbtn{
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    position: relative;
+    left: 50%;
+    transform: translate(-50%);
+    opacity: 0.7;
+}
+.voteNbtn{
+    background-image: url(/svg/voteN.svg);
+}
+.voteYbtn{
+    background-image: url(/svg/voteY.svg);
+}
+/* 選擇狀態 */
+.voteChooseN,.voteChooseY{
+    background-color: #c0ebff;
+    border-radius: 35px;
+}
 /* -----------------------------------------------分組評分頁面----------------------------------------------- */
 
 /* -----------------------------------------------選單頁面----------------------------------------------- */
