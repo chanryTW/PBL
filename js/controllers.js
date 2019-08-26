@@ -1124,7 +1124,314 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 });
             });
 
-            // 新增提案
+            $scope.bells = []; // 宣告全域
+            var unsubscribe;
+            var proposalID = "";
+            // 點擊bell
+            $scope.bellProposal = function(time) {
+                $scope.bells = []; // 清空重載
+                // 載入提議 
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入提議中...</p>'});
+                // 取得提案ID
+                db.collection("提案聚焦").doc(ClassID).collection(GroupID).where("time", "==", time)
+                .get().then(function(results) {
+                    results.forEach(function (doc) {
+                        proposalID = doc.id;
+                        // 監聽 - 取得提議
+                        unsubscribe = db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").where("solve", "==", false)
+                        .onSnapshot(function(results) {
+                            if (results.empty) {
+                                console.log("目前無提議");
+                                $scope.bells = [];
+                                // ................................
+                                $ionicLoading.hide();
+                            } else {
+                                var a = results.docs.length;
+                                var count = 0;
+                                results.docChanges().forEach(function(change) {
+                                    // 新增
+                                    if (change.type === "added") {
+                                        var bellBrainstorming = [];
+                                        // 取得腦力激盪內容
+                                        change.doc.data().brainstorming.forEach(function (doc) {
+                                            var brainstormingID = doc;
+                                            // 取得腦力激盪內容
+                                            db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                                            .get().then(function(doc) {
+                                                bellBrainstorming.push({
+                                                    brainstormingID:doc.id,
+                                                    msg:doc.data().msg
+                                                });
+                                                $scope.$apply(); //重新監聽view
+                                            }).catch(function(error) { 
+                                                console.log("取得腦力激盪內容發生錯誤：", error); 
+                                            });
+                                        });
+
+                                        // 初始化選擇
+                                        var voteChooseN = false;
+                                        var voteChooseY = false;
+                                        // 如果自己有在voteN裡面 or在voteY裡面
+                                        if (change.doc.data().voteN.indexOf(StuID)!=-1) {
+                                            voteChooseN = true;
+                                        } else if (change.doc.data().voteY.indexOf(StuID)!=-1) {
+                                            voteChooseY = true;
+                                        }
+                                        
+                                        // 放入提案ID和腦力激盪內容
+                                        $scope.bells.push({
+                                            bellID:change.doc.id,
+                                            bellTime:change.doc.data().time,
+                                            voteN:change.doc.data().voteN,
+                                            voteY:change.doc.data().voteY,
+                                            voteChooseN:voteChooseN,
+                                            voteChooseY:voteChooseY,
+                                            time:change.doc.data().time,
+                                            bellBrainstorming:bellBrainstorming
+                                        });
+
+                                        // 判斷最後一筆關閉轉圈圈
+                                        count++;
+                                        if (count==a) {
+                                            $ionicLoading.hide();
+                                        }
+                                        $scope.$apply(); //重新監聽view
+                                        console.log("新增：", change.doc.data());
+                                    }
+                                    // 修改 - 更新票數
+                                    if (change.type === "modified") {
+                                        // 初始化選擇
+                                        var voteChooseN = false;
+                                        var voteChooseY = false;
+                                        // 如果自己有在voteN裡面 or在voteY裡面
+                                        if (change.doc.data().voteN.indexOf(StuID)!=-1) {
+                                            voteChooseN = true;
+                                        } else if (change.doc.data().voteY.indexOf(StuID)!=-1) {
+                                            voteChooseY = true;
+                                        }
+                                        
+                                        // 用findIndex找出位置
+                                        var indexNum = $scope.bells.findIndex((element)=>{
+                                            return (element.bellID === change.doc.id);
+                                        });
+
+                                        // 更新票數
+                                        $scope.bells[indexNum].voteN = change.doc.data().voteN;
+                                        $scope.bells[indexNum].voteY = change.doc.data().voteY;
+                                        $scope.bells[indexNum].voteChooseN = voteChooseN;
+                                        $scope.bells[indexNum].voteChooseY = voteChooseY;
+
+                                        $scope.$apply(); //重新監聽view
+                                        console.log("修改：", change.doc.data());
+                                    }
+                                    // 刪除
+                                    if (change.type === "removed") {
+                                        // 用findIndex找出要刪除的位置
+                                        var indexNum = $scope.bells.findIndex((element)=>{
+                                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                                        });
+                                        // 刪除
+                                        if (indexNum!=-1) {
+                                            $scope.bells.splice(indexNum,1);
+                                            console.log("刪除列表成功");
+                                        }else{
+                                            console.log("刪除列表不成功");
+                                        }
+                                        $scope.$apply(); //重新監聽view
+                                        console.log("刪除：", change.doc.data());
+                                    }
+                                });
+                            }
+                        },function(error) {
+                            console.log("取得提議發生錯誤：", error); 
+                        });
+                    });  
+                }).catch(function(error) { 
+                    console.log("取得提案ID發生錯誤：", error); 
+                });
+
+                // 跳出泡泡
+                $ionicPopup.show({
+                    title: '組員提議之腦力激盪',
+                    subTitle: '請進行投票，贊成過半自動成立，反之否決提議。',
+                    template: 
+                    '<div ng-repeat="bell in bells">'+
+                        '<div class="item item-divider">【匿名】提議加入以下腦力激盪</div>'+
+                        '<div ng-repeat="bellBrainstorming in bell.bellBrainstorming">'+
+                            '<div class="item">{{$index+1}}.{{bellBrainstorming.msg}}</div>'+
+                        '</div>'+
+                        '<div class="item vote">'+
+                            '<div class="voteN" style="width:{{bell.voteN.length / (bell.voteN.length + bell.voteY.length) * 100}}%"></div>'+
+                            '<span class="votespan" style="left:16px;">反對：{{bell.voteN.length}}</span>'+
+                            '<span class="votespan" style="right:16px;">贊成：{{bell.voteY.length}}</span>'+
+                        '</div>'+
+                        '<div class="item row">'+
+                            '<div class="col col-50" ng-class="{true:'+"'voteChooseN'"+',false:'+"''"+'}[bell.voteChooseN]" >'+
+                                '<i ng-click="votebtn('+"'N'"+',bell.bellID)" class="voteNbtn"></i>'+
+                            '</div>'+
+                            '<div class="col col-50" ng-class="{true:'+"'voteChooseY'"+',false:'+"''"+'}[bell.voteChooseY]" >'+
+                                '<i ng-click="votebtn('+"'Y'"+',bell.bellID)" class="voteYbtn"></i>'+
+                            '</div>'+
+                        '</div>'+
+                        '<div class="spacer" style="height: 20px;"></div>'+
+                    '</div>',
+                    scope: $scope,
+                    buttons: [{
+                        text: '關閉',
+                        type: 'button-chanry1',
+                        onTap: function(e) {
+                            console.log('選擇關閉');
+                            // 關閉監聽
+                            unsubscribe();
+                        }
+                    }]
+                });
+            };
+
+            // 點擊votebtn
+            $scope.votebtn = function(NorY,bellID) {
+                // 用findIndex找出位置
+                var indexNum = $scope.bells.findIndex((element)=>{
+                    return (element.bellID === bellID);
+                });
+                if (indexNum!=-1) {
+                    // 判斷按鈕  
+                    if (NorY=='N') {
+                        // 判斷N是否投過
+                        if ($scope.bells[indexNum].voteN.indexOf(StuID)!=-1) {
+                            // 有投過 刪除自己
+                            $scope.bells[indexNum].voteN.splice($scope.bells[indexNum].voteN.indexOf(StuID),1);
+                            $scope.bells[indexNum].voteChooseN = false;
+                        } else {
+                            // 沒投過 新增自己
+                            $scope.bells[indexNum].voteN.push(StuID);
+                            $scope.bells[indexNum].voteChooseN = true;
+                            // 如果Y有自己就刪除
+                            if ($scope.bells[indexNum].voteY.indexOf(StuID)!=-1) {
+                                // 清除Y的自己
+                                $scope.bells[indexNum].voteY.splice($scope.bells[indexNum].voteY.indexOf(StuID),1);
+                                $scope.bells[indexNum].voteChooseY = false;
+                            }
+                        }
+                    } else if (NorY=='Y') {
+                        // 判斷Y是否投過
+                        if ($scope.bells[indexNum].voteY.indexOf(StuID)!=-1) {
+                            // 有投過 刪除自己
+                            $scope.bells[indexNum].voteY.splice($scope.bells[indexNum].voteY.indexOf(StuID),1);
+                            $scope.bells[indexNum].voteChooseY = false;
+                        } else {
+                            // 沒投過 新增自己
+                            $scope.bells[indexNum].voteY.push(StuID);
+                            $scope.bells[indexNum].voteChooseY = true;
+                            // 如果N有自己就刪除
+                            if ($scope.bells[indexNum].voteN.indexOf(StuID)!=-1) {
+                                // 清除N的自己
+                                $scope.bells[indexNum].voteN.splice($scope.bells[indexNum].voteN.indexOf(StuID),1);
+                                $scope.bells[indexNum].voteChooseN = false;
+                            }
+                        }
+                    }
+
+                    // 判斷是否過半數
+                    // 取得組員人數
+                    db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+                    .get().then(function(doc) {
+                        var membersLength = doc.data().members.length;
+                        if ($scope.bells[indexNum].voteN.length > membersLength/2) {
+                            console.log("否決提議");
+                            // 關閉提議
+                            db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").doc(bellID)
+                            .update({
+                                solve: true,
+                            })
+                            .then(function(data) {
+                                console.log("關閉提議成功");
+                                $scope.$apply(); //重新監聽view
+                            })
+                            .catch(function(error) {
+                                console.error("關閉提議失敗：", error);
+                            });
+                        } else if ($scope.bells[indexNum].voteY.length > membersLength/2) {
+                            console.log("提議成立");
+                            // 取得提案聚焦內腦力激盪陣列
+                            db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
+                            .get().then(function(doc) {
+                                // 整理bell內的腦力激盪陣列
+                                var bellBrainstorming = [];
+                                $scope.bells[indexNum].bellBrainstorming.forEach(function (doc) {
+                                    bellBrainstorming.push(doc.brainstormingID);
+                                });
+                                // 相加兩陣列 不重複
+                                var a = doc.data().brainstorming.concat(bellBrainstorming).concat();//使用concat()再複製一份陣列，避免影響原陣列
+                                for(var i=0; i<a.length; ++i) {
+                                    for(var j=i+1; j<a.length; ++j) {
+                                        if(a[i] === a[j])
+                                            a.splice(j, 1);
+                                    }
+                                }
+                                // 更新提案
+                                db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
+                                .update({
+                                    brainstorming: a
+                                })
+                                .then(function(data) {
+                                    console.log("更新提案成功");
+                                    // 標記提案已加入
+                                    bellBrainstorming.forEach(function (brainstormingID) {
+                                        db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
+                                        .update({
+                                            invited: true
+                                        })
+                                        .then(function(data) {
+                                            console.log("標記提案成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("標記提案失敗：", error);
+                                        });
+                                        // 關閉提議
+                                        db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").doc(bellID)
+                                        .update({
+                                            solve: true,
+                                        })
+                                        .then(function(data) {
+                                            console.log("關閉提議成功");
+                                            $scope.$apply(); //重新監聽view
+                                        })
+                                        .catch(function(error) {
+                                            console.error("關閉提議失敗：", error);
+                                        });
+                                    });
+                                })
+                                .catch(function(error) {
+                                    console.error("更新提案失敗：", error);
+                                });
+                            }).catch(function(error) { 
+                                console.log("取得提案聚焦內腦力激盪陣列發生錯誤：", error); 
+                            });
+                        }
+                    }).catch(function(error) { 
+                        console.log("取得組員人數發生錯誤：", error); 
+                    });
+
+                    // 更新伺服器
+                    db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").doc(bellID)
+                    .update({
+                        voteN: $scope.bells[indexNum].voteN,
+                        voteY: $scope.bells[indexNum].voteY
+                    })
+                    .then(function(data) {
+                        console.log("更新伺服器成功");
+                    })
+                    .catch(function(error) {
+                        console.error("更新伺服器失敗：", error);
+                    });
+
+                }else{
+                    console.log("取得該bell失敗");
+                }
+            };
+
+            // 新增,加入,提議提案
             $scope.AddProposal = function(InviteOrAdd,time) {
                 $scope.proposals = [];
                 // 新增提案 - 取得未新增名單
@@ -1138,7 +1445,11 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                         var a = results.docs.length;
                         var count = 0;
                         results.forEach(function (doc) {
-                            $scope.proposals.push({ID:doc.id,msg:doc.data().msg,like:doc.data().like.length,search:Number(doc.data().search.substr(11))});
+                            $scope.proposals.push({
+                                ID:doc.id,msg:doc.data().msg,
+                                like:doc.data().like.length,
+                                search:Number(doc.data().search.substr(11))
+                            });
                             // 判斷最後一筆關閉轉圈圈
                             count++;
                             if (count==a) {
@@ -1180,7 +1491,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 $scope.proposalInput = [];
                 // 判斷新增還是加入提案
                 if (InviteOrAdd=="Add") {
-                    // 新增提案 - 跳出泡泡
+                    // 新增提案 - 跳出泡泡(組長)新增
                     $ionicPopup.show({
                         title: '新增提案',
                         subTitle: '請選擇加入提案之腦力激盪。',
@@ -1251,7 +1562,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 } else if (InviteOrAdd=="Invite") {
                     // 判斷是否是組長
                     if ($scope.leaderGroupShow) {
-                        // 加入提案 - 跳出泡泡(組長)
+                        // 加入提案 - 跳出泡泡(組長)加入
                         $ionicPopup.show({
                             title: '加入腦力激盪',
                             subTitle: '請選擇加入此提案之腦力激盪。',
@@ -1326,12 +1637,12 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             }]
                         });
                     } else {
-                        // 加入提案 - 跳出泡泡(非組長)
+                        // 加入提案 - 跳出泡泡(非組長)提議
                         $ionicPopup.show({
                             title: '提議加入之腦力激盪',
                             subTitle: '提議後需等組長同意才可加入。',
                             template: 
-                            '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+'">'+
+                            '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | orderBy:'+"'search'"+'">'+
                                 '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
                                 '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'-like'"+' ">'+
                                     '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.like}}讚：{{proposal.msg}}</ion-checkbox>'+
@@ -1362,36 +1673,22 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                         .get().then(function(results) {
                                             results.forEach(function (doc) {
                                                 var proposalID = doc.id;
-                                                // // 取得提案聚焦內腦力激盪陣列
-                                                // db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
-                                                // .get().then(function(doc) {
-                                                //     // 更新提案
-                                                //     db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
-                                                //     .update({
-                                                //         brainstorming: doc.data().brainstorming.concat($scope.checkProposals)
-                                                //     })
-                                                //     .then(function(data) {
-                                                //         console.log("更新提案成功");
-                                                //         // 標記提案已加入
-                                                //         $scope.checkProposals.forEach(function (brainstormingID) {
-                                                //             db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(brainstormingID)
-                                                //             .update({
-                                                //                 invited: true
-                                                //             })
-                                                //             .then(function(data) {
-                                                //                 console.log("標記提案成功");
-                                                //             })
-                                                //             .catch(function(error) {
-                                                //                 console.error("標記提案失敗：", error);
-                                                //             });
-                                                //         });
-                                                //     })
-                                                //     .catch(function(error) {
-                                                //         console.error("更新提案失敗：", error);
-                                                //     });
-                                                // }).catch(function(error) { 
-                                                //     console.log("取得提案聚焦內腦力激盪陣列發生錯誤：", error); 
-                                                // });
+                                                // 新增bell
+                                                db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議")
+                                                .add({
+                                                    StuID: StuID,
+                                                    brainstorming: $scope.checkProposals,
+                                                    voteY: [StuID],
+                                                    voteN: [],
+                                                    solve: false,
+                                                    time: new Date() 
+                                                })
+                                                .then(function(data) {
+                                                    console.log("新增bell成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("新增bell失敗：", error);
+                                                });
                                             });
                                         }).catch(function(error) { 
                                             console.log("查詢全部訊息發生錯誤：", error); 
