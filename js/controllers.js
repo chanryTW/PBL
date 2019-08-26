@@ -1456,7 +1456,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                 $ionicLoading.hide();
                             }
                         });
-                        console.log("取得未分組名單：",$scope.proposals);
+                        console.log("取得腦力激盪名單：",$scope.proposals);
                     }
                 }).catch(function(error) { 
                     console.log("取得未分組名單發生錯誤：", error); 
@@ -1642,7 +1642,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             title: '提議加入之腦力激盪',
                             subTitle: '提議後需等組長同意才可加入。',
                             template: 
-                            '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | orderBy:'+"'search'"+'">'+
+                            '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+'">'+
                                 '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
                                 '<div ng-repeat="proposal in proposals | filter:{search:proposalsPerSearch.search} | orderBy:'+"'-like'"+' ">'+
                                     '<ion-checkbox ng-click="proposalBtn(proposal.ID)">{{proposal.like}}讚：{{proposal.msg}}</ion-checkbox>'+
