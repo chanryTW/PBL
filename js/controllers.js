@@ -730,6 +730,26 @@ function ($scope, $stateParams, $sce, $state) {
                     console.log("修改顯示不成功");
                 }
             };
+
+            // 回傳填答結果
+            $scope.response = [];
+            $scope.responseBtn = function(missionID){
+                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果").doc(StuID)
+                .add({
+                    StuID: StuID,
+                    missionID: missionID,
+                    response: $scope.response,
+                    time: new Date()
+                })
+                .then(function(data) {
+                    console.log("回傳填答結果成功");
+                })
+                .catch(function(error) {
+                    console.error("回傳填答結果失敗：", error);
+                });
+            };
+
+
         }else{
             console.log("尚未登入");
             $state.go("login");
@@ -1809,6 +1829,19 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
             
+            // 修改密碼
+            $scope.Passward = function() {
+                firebase.auth().sendPasswordResetEmail(StuID+"@nkust.edu.tw").then(function() {
+                    console.log("寄送密碼重置信成功");
+                    var alertPopup = $ionicPopup.alert({
+                        title: '成功',
+                        template: '寄送密碼重置信成功，請至 '+StuID+"@nkust.edu.tw"+" 收信"
+                    });
+                }).catch(function(error) {
+                    console.log("寄送密碼重置信失敗：",error);
+                });
+            };
+
             // 上傳大頭照功能
             var SaveBtn2 = document.getElementById("page7_savebtn2");    
             var uploadFileInput2 = document.getElementById("uploadFileInput2");
