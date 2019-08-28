@@ -679,6 +679,7 @@ function ($scope, $stateParams, $sce, $state) {
                             pushDate = '0'+change.doc.data().TimeOut.toDate().getDate();
                         }
                         $scope.missions.push({
+                            missionID:change.doc.id,
                             Name:change.doc.data().Name,
                             TimeOut:change.doc.data().TimeOut.toDate().getUTCFullYear()+'/'+
                                     pushMonth+'/'+
@@ -734,7 +735,7 @@ function ($scope, $stateParams, $sce, $state) {
             // 回傳填答結果
             $scope.response = [];
             $scope.responseBtn = function(missionID){
-                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果").doc(StuID)
+                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
                 .add({
                     StuID: StuID,
                     missionID: missionID,
@@ -2476,17 +2477,191 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
             $scope.SelectBtn = function(value) {
                 if (value!=undefined) {
                     var ClassID = value.ClassID;
+                    var StuID = "教師版";
                     $scope.cardShow = true;
-                    // 載入所有任務
+
+                    // 監聽 - 載入所有任務
                     $scope.missions = [];
                     db.collection("課程任務").doc(ClassID).collection("任務列表")
-                    .get().then(function (querySnapshot) {
-                        querySnapshot.forEach(function (doc) {
-                            // $sce轉換格式為HTML
-                            $scope.missions.push({Name:doc.data().Name,TimeOut:doc.data().TimeOut,LeaderOnly:doc.data().LeaderOnly,type:doc.data().type,finished:doc.data().finished,HTML:$sce.trustAsHtml(doc.data().HTML)});
-                            $state.go($state.current, {}, {reload: true}); //重新載入view
+                    .onSnapshot(function(querySnapshot) {
+                        querySnapshot.docChanges().forEach(function(change) {
+                            if (change.type === "added") {
+                                console.log("新增: ", change.doc.data());
+                                // 判斷是否 關閉3 完成1 過期2
+                                var lock = 0;
+                                if (change.doc.data().lock == true){
+                                    lock = 3;
+                                } else if (change.doc.data().finished.indexOf(StuID)!=-1){
+                                    lock = 1;
+                                } else if (change.doc.data().TimeOut.toDate() < new Date()){
+                                    lock = 2;
+                                }
+                                // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
+                                var pushMonth = Number(change.doc.data().TimeOut.toDate().getMonth())+1;
+                                var pushDate = change.doc.data().TimeOut.toDate().getDate();
+                                if (change.doc.data().TimeOut.toDate().getDate()<=9) {
+                                    pushDate = '0'+change.doc.data().TimeOut.toDate().getDate();
+                                }
+                                $scope.missions.push({
+                                    missionID:change.doc.id,
+                                    Name:change.doc.data().Name,
+                                    TimeOut:change.doc.data().TimeOut.toDate().getUTCFullYear()+'/'+
+                                            pushMonth+'/'+
+                                            pushDate,
+                                    LeaderOnly:change.doc.data().LeaderOnly,
+                                    type:change.doc.data().type,
+                                    finished:change.doc.data().finished,
+                                    HTML:$sce.trustAsHtml(change.doc.data().HTML),
+                                    time:change.doc.data().time,lock:lock,
+                                    show:false,
+                                    showMsg:'查看更多'
+                                });
+                                $scope.$apply(); //重新監聽view
+                            } else if (change.type === "removed") {
+                                console.log("刪除: ", change.doc.data());
+                                // 用findIndex找出要刪除的位置
+                                var indexNum = $scope.missions.findIndex((element)=>{
+                                    return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                                });
+                                // 刪除
+                                if (indexNum!=-1) {
+                                    $scope.missions.splice(indexNum,1);
+                                    console.log("刪除任務成功");
+                                }else{
+                                    console.log("刪除任務不成功");
+                                }
+                                $scope.$apply(); //重新監聽view
+                            }
                         });
                     });
+
+                    // 新增任務
+                    $scope.AddBtn = function(value) {
+                        $scope.AddBtnPopup = [];
+                        $scope.AddBtnPopup.LeaderOnly = false;
+                        var ClassID = value.ClassID;
+
+                        // 新增任務 - 跳出泡泡
+                        $ionicPopup.show({
+                            title: '新增任務',
+                            template: 
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">任務名稱</div>'+
+                                    '<input type="text" ng-model="AddBtnPopup.Name" placeholder="輸入任務名稱（限15字內）..." maxlength="15">'+    
+                                '</label>'+
+
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">任務簡介</div>'+
+                                    '<input type="text" ng-model="AddBtnPopup.Content" placeholder="輸入任務簡介（不限字數）..." maxlength="15">'+    
+                                '</label>'+
+                                
+                                '<label class="item item-input item-select">'+
+                                    '<div class="input-label">任務類型</div>'+
+                                    '<select ng-model="AddBtnPopup.type">'+
+                                        '<option value="隨堂測驗">隨堂測驗</option>'+
+                                        '<option value="小組討論">小組討論</option>'+
+                                        '<option value="加分問卷">加分問卷</option>'+
+                                        '<option value="評分">評分</option>'+
+                                    '</select>'+
+                                '</label>'+
+
+                                '<label class="item item-input item-select">'+
+                                    '<div class="input-label">截止日期</div>'+
+                                    '<input type="date" ng-model="AddBtnPopup.TimeOut">'+    
+                                '</label>'+
+
+                                '<ion-toggle ng-model="AddBtnPopup.LeaderOnly">是否僅限組長執行</ion-toggle>'+
+
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">HTML</div>'+
+                                    '<textarea cols="50" rows="5" ng-model="AddBtnPopup.HTML"></textarea>'+
+                                '</label>',
+                            scope: $scope,
+                            buttons: [{
+                                text: '取消',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇取消');
+                                }
+                            }, {
+                                text: '新增',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇新增');
+                                    // 判斷是否必填未填
+                                    if ($scope.AddBtnPopup.Name==undefined||$scope.AddBtnPopup.type==undefined||$scope.AddBtnPopup.TimeOut==undefined||$scope.AddBtnPopup.LeaderOnly==undefined||$scope.AddBtnPopup.HTML==undefined) {
+                                        console.log("請填寫完整");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請填寫完整。'
+                                        });
+                                    } else {
+                                        // 新增任務
+                                        db.collection("課程任務").doc(ClassID).collection("任務列表")
+                                        .add({
+                                            Name: $scope.AddBtnPopup.Name,
+                                            Content: $scope.AddBtnPopup.Content,
+                                            type: $scope.AddBtnPopup.type,
+                                            TimeOut: $scope.AddBtnPopup.TimeOut,
+                                            LeaderOnly: $scope.AddBtnPopup.LeaderOnly,
+                                            HTML: $scope.AddBtnPopup.HTML,
+                                            finished: [],
+                                            lock: false,
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("新增任務成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("新增任務失敗：", error);
+                                        });
+                                    }
+                                }
+                            }]
+                        });
+                    };
+
+                    // 查看更多按鈕
+                    $scope.missionShow = function(doc){
+                        // 用findIndex找出要修改的位置
+                        var indexNum = $scope.missions.findIndex((element)=>{
+                            return (element.$$hashKey === doc.$$hashKey);
+                        });
+                        // 修改
+                        if (indexNum!=-1) {
+                            if ($scope.missions[indexNum].show) {
+                                $scope.missions[indexNum].show = false;
+                                $scope.missions[indexNum].showMsg = '查看更多';
+                            } else {
+                                $scope.missions[indexNum].show = true;
+                                $scope.missions[indexNum].showMsg = '收合內容';
+                            }
+                            console.log("修改顯示成功");
+                        }else{
+                            console.log("修改顯示不成功");
+                        }
+                    };
+
+                    // 回傳填答結果
+                    $scope.response = {};
+                    $scope.responseBtn = function(missionID){
+                        // 回傳伺服器
+                        db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
+                        .add({
+                            StuID: StuID,
+                            missionID: missionID,
+                            response: $scope.response,
+                            time: new Date()
+                        })
+                        .then(function(data) {
+                            console.log("回傳填答結果成功");
+                        })
+                        .catch(function(error) {
+                            console.error("回傳填答結果失敗：", error);
+                        });
+                    };
+
+
                 } else {
                     // 提醒
                     $ionicPopup.alert({
@@ -2496,85 +2671,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                 }
             };
 
-            // 新增任務
-            $scope.AddBtn = function(value) {
-                $scope.AddBtnPopup = [];
-                $scope.AddBtnPopup.LeaderOnly = false;
-                var ClassID = value.ClassID;
-
-                // 新增任務 - 跳出泡泡
-                $ionicPopup.show({
-                    title: '新增任務',
-                    template: 
-                        '<label class="item item-input item-input">'+
-                            '<div class="input-label">任務名稱</div>'+
-                            '<input type="text" ng-model="AddBtnPopup.Name" placeholder="輸入任務名稱（限15字內）..." maxlength="15">'+    
-                        '</label>'+
-                        
-                        '<label class="item item-input item-select">'+
-                            '<div class="input-label">任務類型</div>'+
-                            '<select ng-model="AddBtnPopup.type">'+
-                                '<option value="隨堂測驗">隨堂測驗</option>'+
-                                '<option value="小組討論">小組討論</option>'+
-                                '<option value="加分問卷">加分問卷</option>'+
-                                '<option value="評分">評分</option>'+
-                            '</select>'+
-                        '</label>'+
-
-                        '<label class="item item-input item-select">'+
-                            '<div class="input-label">截止日期</div>'+
-                            '<input type="date" ng-model="AddBtnPopup.TimeOut">'+    
-                        '</label>'+
-
-                        '<ion-toggle ng-model="AddBtnPopup.LeaderOnly">是否僅限組長執行</ion-toggle>'+
-
-                        '<label class="item item-input item-input">'+
-                            '<div class="input-label">HTML</div>'+
-                            '<textarea cols="50" rows="5" ng-model="AddBtnPopup.HTML"></textarea>'+
-                        '</label>',
-                    scope: $scope,
-                    buttons: [{
-                        text: '取消',
-                        type: 'button-default',
-                        onTap: function(e) {
-                            console.log('選擇取消');
-                        }
-                    }, {
-                        text: '新增',
-                        type: 'button-chanry1',
-                        onTap: function(e) {
-                            console.log('選擇新增');
-                            // 判斷是否必填未填
-                            if ($scope.AddBtnPopup.Name==undefined||$scope.AddBtnPopup.type==undefined||$scope.AddBtnPopup.TimeOut==undefined||$scope.AddBtnPopup.LeaderOnly==undefined||$scope.AddBtnPopup.HTML==undefined) {
-                                console.log("請填寫完整");
-                                $ionicPopup.alert({
-                                    title: '錯誤',
-                                    template: '請填寫完整。'
-                                });
-                            } else {
-                                // 新增任務
-                                db.collection("課程任務").doc(ClassID).collection("任務列表")
-                                .add({
-                                    Name: $scope.AddBtnPopup.Name,
-                                    type: $scope.AddBtnPopup.type,
-                                    TimeOut: $scope.AddBtnPopup.TimeOut,
-                                    LeaderOnly: $scope.AddBtnPopup.LeaderOnly,
-                                    HTML: $scope.AddBtnPopup.HTML,
-                                    finished: [],
-                                    lock: false,
-                                    time: new Date()
-                                })
-                                .then(function(data) {
-                                    console.log("新增任務成功");
-                                })
-                                .catch(function(error) {
-                                    console.error("新增任務失敗：", error);
-                                });
-                            }
-                        }
-                    }]
-                });
-            };
+            
 
         }else{
             console.log("尚未登入");
