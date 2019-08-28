@@ -35,10 +35,39 @@
         <p>{{mission.content}}</p>
         <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
         <!-- 測試區-Start -->
-        <label class="item item-input item-input">
+          
+        <label class="item item-input">
             <div class="input-label">輸入文字</div>
             <input type="text" ng-model="response.text" placeholder="輸入文字（限15字內）..." maxlength="15">   
         </label>
+
+        <li class="item item-toggle">
+          HTML5
+          <label class="toggle toggle-assertive">
+            <input type="checkbox">
+            <div class="track">
+              <div class="handle"></div>
+            </div>
+          </label>
+        </li>
+
+        <div class="item range range-positive">
+          <i class="icon ion-ios-sunny-outline"></i>
+          <input type="range" name="volume" min="0" max="100" value="33">
+          <i class="icon ion-ios-sunny"></i>
+        </div>
+
+        <label class="item item-input item-select">
+          <div class="input-label">
+            Lightsaber
+          </div>
+          <select>
+            <option>Blue</option>
+            <option selected>Green</option>
+            <option>Red</option>
+          </select>
+        </label>
+
         <button class = "button button-block button-chanry2" ng-click="responseBtn(mission.missionID)">確定送出</button>
         <!-- 測試區-End -->
         <button class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
