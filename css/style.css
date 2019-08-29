@@ -96,6 +96,7 @@ a{text-decoration:none}
     height: 8vw;
     z-index: 2;
     background: url(/svg/medal.svg);
+    background-image: url(/svg/medal.svg), none;
 }
 /* 大頭照 */
 .pbl-img-div{
