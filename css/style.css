@@ -99,6 +99,10 @@ a{text-decoration:none}
     background-size:7vw;
     background-repeat:no-repeat;
 }
+.svgimg{
+    width: 8vw;
+    height: 8vw;
+}
 /* 大頭照 */
 .pbl-img-div{
     display: inline-block;
