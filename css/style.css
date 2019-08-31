@@ -95,13 +95,7 @@ a{text-decoration:none}
     width: 8vw;
     height: 8vw;
     z-index: 2;
-    background: url(/svg/medal.svg);
-    background-size:7vw;
-    background-repeat:no-repeat;
-}
-.svgimg{
-    width: 80vw;
-    height: 80vw;
+    background: url(https://chanrytw.github.io/PBL/svg/medal.svg);
 }
 /* 大頭照 */
 .pbl-img-div{
