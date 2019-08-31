@@ -2,9 +2,9 @@
   <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="false">
     
       <div class="pbl-member" ng-repeat="member in members | orderBy:'memberName'">
-        <div type="image/svg+xml" ng-class="{true:'pbl-leader pbl-img-div',false:'pbl-img-div'}[{{member.leader}}]">
+        <object id="object" type="image/svg+xml" ng-class="{true:'pbl-leader pbl-img-div',false:'pbl-img-div'}[{{member.leader}}]">
           <img id="pbl-img" ng-src="{{member.memberImg}}">
-        </div>
+        </object>
         <span class="pbl-member-span">{{member.memberName}}</span>
       </div>
 
