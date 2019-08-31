@@ -95,12 +95,9 @@ a{text-decoration:none}
     width: 8vw;
     height: 8vw;
     z-index: 2;
-    /* background: url(/svg/medal.svg); */
-    -webkit-mask-image: url(/svg/medal.svg);
-    mask-image: url(/svg/medal.svg);
-    mask-repeat: repeat;
-    mask-size: 100%;
-
+    background: url(/svg/medal.svg);
+    background-size:7vw;
+    background-repeat:no-repeat;
 }
 /* 大頭照 */
 .pbl-img-div{
