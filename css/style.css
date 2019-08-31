@@ -174,7 +174,7 @@ a{text-decoration:none}
     left: -34px;
     width: 26px;
     height: 26px;
-    background-image: url(/svg/timeOut.svg);
+    background: url(../svg/timeOut.svg);
 }
 /* 鎖住任務 */
 .missionLock1::after,.missionLock2::after,.missionLock3::after{
@@ -199,13 +199,13 @@ a{text-decoration:none}
     z-index: 9;
 }
 .missionLock1::before{
-    background-image: url(/svg/complete.svg);
+    background: url(../svg/complete.svg);
 }
 .missionLock2::before{
-    background-image: url(/svg/remind.svg);
+    background: url(../svg/remind.svg);
 }
 .missionLock3::before{
-    background-image: url(/svg/expired.svg);
+    background: url(../svg/expired.svg);
 }
 /* 查看更多按鈕 */
 .button-margin{
@@ -225,7 +225,7 @@ a{text-decoration:none}
     width: 30px;
     height: 30px;
     z-index: 2;
-    background-image: url(/svg/delete.svg);
+    background: url(../svg/delete.svg);
 }
 /* alert */
 /* .brainstorming_alert{
@@ -269,7 +269,7 @@ a{text-decoration:none}
     width: 30px;
     height: 30px;
     z-index: 2;
-    background-image: url(/svg/likeOn.svg);
+    background: url(../svg/likeOn.svg);
     opacity: 0.6;
 }
 .likeBtnOff{
@@ -280,7 +280,7 @@ a{text-decoration:none}
     width: 30px;
     height: 30px;
     z-index: 2;
-    background-image: url(/svg/likeOff.svg);
+    background: url(../svg/likeOff.svg);
     opacity: 0.5;
 }
 /* 文字輸入框 */
@@ -331,13 +331,13 @@ a{text-decoration:none}
     opacity: 0.7;
 }
 .proposal_DelProposalBtn{
-    background-image: url(/svg/delete.svg);
+    background: url(../svg/delete.svg);
 }
 .proposal_AddProposalBtn{
-    background-image: url(/svg/add.svg);
+    background: url(../svg/add.svg);
 }
 .proposal_bellProposalBtn{
-    background-image: url(/svg/bell.svg);
+    background: url(../svg/bell.svg);
     margin: 0 5px 0 5px;
 }
 /* 刪除腦力激盪圖示 */
@@ -345,7 +345,7 @@ a{text-decoration:none}
     position: absolute;
     top: 11px;
     right: 5px;
-    background-image: url(/svg/cancel.svg);
+    background: url(../svg/cancel.svg);
 }
 /* 提案卡片 */
 .proposal_card{
@@ -386,10 +386,10 @@ a{text-decoration:none}
     opacity: 0.7;
 }
 .voteNbtn{
-    background-image: url(/svg/voteN.svg);
+    background: url(../svg/voteN.svg);
 }
 .voteYbtn{
-    background-image: url(/svg/voteY.svg);
+    background: url(../svg/voteY.svg);
 }
 /* 選擇狀態 */
 .voteChooseN,.voteChooseY{
