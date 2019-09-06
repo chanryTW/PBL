@@ -6,16 +6,89 @@
         <span ng-class="{'MissionType1': mission.type == '隨堂測驗', 'MissionType2': mission.type == '小組討論', 'MissionType3': mission.type == '加分問卷', 'MissionType4': mission.type == '評分'}">
           {{mission.type}}
         </span>
-        ：{{mission.Name}}
         <span class="timeOutSpan">
           <i class="timeOut"></i>
           {{mission.TimeOut}} 截止
         </span>
       </div>
       <div class="item item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
+        <li class="item">
+            {{mission.Name}}
+            <span class="missionPointSpan">
+              <i class="missionPoint"></i>
+              +{{mission.Point}}
+            </span>
+        </li>
         <p>{{mission.content}}</p>
         <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
         <button class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="item item-divider">
+        <span class="MissionType5">
+          加分小任務
+        </span>
+        <span class="timeOutSpan">
+          <i class="timeOut"></i>
+          2020/1/6 截止
+        </span>
+      </div>
+      <div class="item item_padding0 item-text-wrap">
+        <h2>{{mission.Name}}</h2>
+        <p>{{mission.content}}</p>
+        <ul class="list">
+          <li class="item">
+              擁有小組 (0/1)
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +15
+              </span>
+          </li>
+          <li class="item">
+              參與腦力激盪討論 (0/5)
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +20
+              </span>
+          </li>
+          <li class="item">
+              參與腦力激盪討論 (0/15)
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +20
+              </span>
+          </li>
+          <li class="item">
+              按讚腦力激盪 (0/10)
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +10
+              </span>
+          </li>
+          <li class="item">
+              參與投票 (0/1)
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +10
+              </span>
+          </li>
+          <li class="item">
+              (限組員)建議提案聚焦 (0/1)
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +10
+              </span>
+          </li>
+          <li class="item">
+              (限組長)擔任組長 (0/1)
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +20
+              </span>
+          </li>
+        </ul>
       </div>
     </div>
 

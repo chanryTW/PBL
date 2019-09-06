@@ -138,12 +138,12 @@ a{text-decoration:none}
     bottom: 0px;
 }
 .button.button-block, .button.button-full{
-    margin-bottom: 0px;
+    margin: 0px;
 }
 
 /* -----------------------------------------------課程任務頁面----------------------------------------------- */
 /* 任務類別 */
-.MissionType1, .MissionType2, .MissionType3, .MissionType4{
+.MissionType1, .MissionType2, .MissionType3, .MissionType4, .MissionType5{
     color: #FFFFFF;
     border-radius: 20px;
     padding: 2px 10px 2px 10px;
@@ -161,20 +161,44 @@ a{text-decoration:none}
 .MissionType4{
     background-color: #ffce00;
 }
+.MissionType5{
+    background-color: #0084ff;
+}
 /* 繳交期限 */
 .timeOutSpan{
     position: absolute;
-    right: 4px;
-    line-height: 26px;
+    right: 0px;
+    line-height: 28px;
     width: 120px;
-    opacity: 0.7;
+    opacity: 0.6;
 }
 .timeOut{
     position: absolute;
+    top: 2px;
     left: -34px;
     width: 26px;
     height: 26px;
     background: url(../svg/timeOut.svg);
+}
+/* 點數 */
+.missionPointSpan{
+    position: absolute;
+    right: 0px;
+    line-height: 20px;
+    width: 40px;
+    opacity: 0.7;
+}
+.missionPoint{
+    position: absolute;
+    top: -2px;
+    left: -28px;
+    width: 26px;
+    height: 26px;
+    background: url(../svg/point.svg);
+}
+/* 小任務padding */
+.item.item_padding0{
+    padding: 0px 16px 0px 16px;
 }
 /* 鎖住任務 */
 .missionLock1::after,.missionLock2::after,.missionLock3::after{
@@ -419,13 +443,30 @@ a{text-decoration:none}
     background-position:center center;
     height: 100%;
 }
+/* 點數顯示 */
+.pointDiv{
+    text-align: center;
+    font-size: 20px;
+    padding: 0;
+    color: #fff;
+}
+.point{
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    position: relative;
+    top: 5.5px;
+    margin-right: 5px;
+    opacity: 0.8;
+    background: url(../svg/point.svg);
+}
 /* 列表按鈕 */
 #menu-list-item1 a,#menu-list-item2 a,#menu-list-item3 a,#menu-list-item4 a,#menu-list-item5 a,#menu-list-item6 a,#menu-list-item7 a,#menu-list-item8 a{
     background-color: rgba(255, 255, 255, 0.281);
     font-size: 24px;
     font-weight:bold;
     text-align: center;
-    padding: 10px;
+    padding: 8px;
     color: #ffffff;
 }
 .menu-list-item{
