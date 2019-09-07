@@ -626,8 +626,8 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
 }])
 
 // ----------------------------------------投票系統頁面----------------------------------------
-.controller('voteCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
+.controller('voteCtrl', ['$scope', '$stateParams', '$ionicPopup',
+function ($scope, $stateParams, $ionicPopup) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -635,8 +635,264 @@ function ($scope, $stateParams) {
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
+            var GroupID = localStorage.getItem("GroupID");
 
-            // ...
+            // 監聽 - 投票
+            $scope.votes = []; // 宣告全域
+            db.collection("投票").doc(ClassID).collection(GroupID).orderBy("solve","asc")
+            .onSnapshot(function(results) {
+                if (results.empty) {
+                    console.log("目前無投票");
+                    $scope.votes = [];
+                } else {
+                    results.docChanges().forEach(function(change) {
+                        // 新增
+                        if (change.type === "added") {
+                            // 初始化選擇
+                            var voteChooseN = false;
+                            var voteChooseY = false;
+                            // 如果自己有在voteN裡面 or在voteY裡面
+                            if (change.doc.data().voteN.indexOf(StuID)!=-1) {
+                                voteChooseN = true;
+                            } else if (change.doc.data().voteY.indexOf(StuID)!=-1) {
+                                voteChooseY = true;
+                            }
+                            // 判斷是否結案
+                            if (change.doc.data().solve == false) {
+                                var type = "投票中";
+                            } else {
+                                var type = "已結案";                                
+                            }
+
+                            // 查詢姓名
+                            db.collection("帳號").doc(change.doc.data().StuID)
+                            .get().then(function(results) {
+                                var voteName = results.data().Name;
+                                // 查詢圖片檔名
+                                db.collection("帳號").doc(change.doc.data().StuID)
+                                .get().then(function(results) {
+                                    var storage = firebase.storage();
+                                    var storageRef = storage.ref();
+                                    storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                        var voteImg = url;
+
+                                        // 放入投票內容
+                                        $scope.votes.push({
+                                            voteID:change.doc.id,
+                                            voteName:change.doc.data().StuID + ' ' + voteName,
+                                            voteImg:voteImg,
+                                            title:change.doc.data().title,
+                                            type:type,
+                                            content:change.doc.data().content,
+                                            voteN:change.doc.data().voteN,
+                                            voteY:change.doc.data().voteY,
+                                            voteChooseN:voteChooseN,
+                                            voteChooseY:voteChooseY,
+                                            time:change.doc.data().time
+                                        });
+
+                                        $scope.$apply(); //重新監聽view
+                                        console.log("新增：", $scope.votes);
+                                    })
+                                }).catch(function(error) { 
+                                    console.log("查詢圖片檔名發生錯誤：", error); 
+                                });
+                            }).catch(function(error) { 
+                                console.log("查詢姓名發生錯誤：", error); 
+                            });
+                        }
+                        // 修改 - 更新票數
+                        if (change.type === "modified") {
+                            // 初始化選擇
+                            var voteChooseN = false;
+                            var voteChooseY = false;
+                            // 如果自己有在voteN裡面 or在voteY裡面
+                            if (change.doc.data().voteN.indexOf(StuID)!=-1) {
+                                voteChooseN = true;
+                            } else if (change.doc.data().voteY.indexOf(StuID)!=-1) {
+                                voteChooseY = true;
+                            }
+                            
+                            // 用findIndex找出位置
+                            var indexNum = $scope.votes.findIndex((element)=>{
+                                return (element.voteID === change.doc.id);
+                            });
+
+                            // 更新票數
+                            $scope.votes[indexNum].voteN = change.doc.data().voteN;
+                            $scope.votes[indexNum].voteY = change.doc.data().voteY;
+                            $scope.votes[indexNum].voteChooseN = voteChooseN;
+                            $scope.votes[indexNum].voteChooseY = voteChooseY;
+
+                            $scope.$apply(); //重新監聽view
+                            console.log("修改：", change.doc.data());
+                        }
+                        // 刪除
+                        if (change.type === "removed") {
+                            // 用findIndex找出要刪除的位置
+                            var indexNum = $scope.votes.findIndex((element)=>{
+                                return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                            });
+                            // 刪除
+                            if (indexNum!=-1) {
+                                $scope.votes.splice(indexNum,1);
+                                console.log("刪除列表成功");
+                            }else{
+                                console.log("刪除列表不成功");
+                            }
+                            $scope.$apply(); //重新監聽view
+                            console.log("刪除：", change.doc.data());
+                        }
+                    });
+                }
+            },function(error) {
+                console.log("取得提議發生錯誤：", error); 
+            });
+
+            // 點擊votebtn
+            $scope.votebtn = function(NorY,voteID) {
+                // 用findIndex找出位置
+                var indexNum = $scope.votes.findIndex((element)=>{
+                    return (element.voteID === voteID);
+                });
+                if (indexNum!=-1) {
+                    // 判斷按鈕  
+                    if (NorY=='N') {
+                        // 判斷N是否投過
+                        if ($scope.votes[indexNum].voteN.indexOf(StuID)!=-1) {
+                            // 有投過 刪除自己
+                            $scope.votes[indexNum].voteN.splice($scope.votes[indexNum].voteN.indexOf(StuID),1);
+                            $scope.votes[indexNum].voteChooseN = false;
+                        } else {
+                            // 沒投過 新增自己
+                            $scope.votes[indexNum].voteN.push(StuID);
+                            $scope.votes[indexNum].voteChooseN = true;
+                            // 如果Y有自己就刪除
+                            if ($scope.votes[indexNum].voteY.indexOf(StuID)!=-1) {
+                                // 清除Y的自己
+                                $scope.votes[indexNum].voteY.splice($scope.votes[indexNum].voteY.indexOf(StuID),1);
+                                $scope.votes[indexNum].voteChooseY = false;
+                            }
+                        }
+                    } else if (NorY=='Y') {
+                        // 判斷Y是否投過
+                        if ($scope.votes[indexNum].voteY.indexOf(StuID)!=-1) {
+                            // 有投過 刪除自己
+                            $scope.votes[indexNum].voteY.splice($scope.votes[indexNum].voteY.indexOf(StuID),1);
+                            $scope.votes[indexNum].voteChooseY = false;
+                        } else {
+                            // 沒投過 新增自己
+                            $scope.votes[indexNum].voteY.push(StuID);
+                            $scope.votes[indexNum].voteChooseY = true;
+                            // 如果N有自己就刪除
+                            if ($scope.votes[indexNum].voteN.indexOf(StuID)!=-1) {
+                                // 清除N的自己
+                                $scope.votes[indexNum].voteN.splice($scope.votes[indexNum].voteN.indexOf(StuID),1);
+                                $scope.votes[indexNum].voteChooseN = false;
+                            }
+                        }
+                    }
+
+                    // 判斷是否過半數
+                    // 取得組員人數
+                    db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+                    .get().then(function(doc) {
+                        var membersLength = doc.data().members.length;
+                        if ($scope.votes[indexNum].voteN.length > membersLength/2 || $scope.votes[indexNum].voteY.length > membersLength/2) {
+                            console.log("關閉投票");
+                            // 關閉投票
+                            db.collection("投票").doc(ClassID).collection(GroupID).doc(voteID)
+                            .update({
+                                solve: true,
+                            })
+                            .then(function(data) {
+                                console.log("關閉投票成功");
+                                $scope.$apply(); //重新監聽view
+                            })
+                            .catch(function(error) {
+                                console.error("關閉投票失敗：", error);
+                            });
+                        }
+                    }).catch(function(error) { 
+                        console.log("取得組員人數發生錯誤：", error); 
+                    });
+
+                    // 更新伺服器
+                    db.collection("投票").doc(ClassID).collection(GroupID).doc(voteID)
+                    .update({
+                        voteN: $scope.votes[indexNum].voteN,
+                        voteY: $scope.votes[indexNum].voteY
+                    })
+                    .then(function(data) {
+                        console.log("更新伺服器成功");
+                    })
+                    .catch(function(error) {
+                        console.error("更新伺服器失敗：", error);
+                    });
+
+                }else{
+                    console.log("取得該vote失敗");
+                }
+            };
+
+            // 發起投票
+            $scope.Addvote = function(){
+                // 發起投票 - 跳出泡泡
+                $scope.voteInput = [];
+                $ionicPopup.show({
+                    title: '發起投票',
+                    template: 
+                        '<input type="text" ng-model="voteInput.title" placeholder="輸入投票標題（限15字內）..." maxlength="15" style="margin-bottom:10px; padding:8px;">'+
+                        '<textarea cols="50" rows="5" ng-model="voteInput.content" placeholder="輸入投票說明（限50字內）..." maxlength="50" style="margin-bottom:10px; padding:8px;"></textarea>',
+                    scope: $scope,
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '發起',
+                        type: 'button-chanry1',
+                        onTap: function(e) {
+                            console.log('選擇發起');
+                            // 判斷是否必填未填
+                            if ($scope.voteInput.title==""||$scope.voteInput.title==undefined) {
+                                console.log("請填寫投票標題");
+                                $ionicPopup.alert({
+                                    title: '錯誤',
+                                    template: '請填寫投票標題。'
+                                });
+                            } else if($scope.voteInput.content==""||$scope.voteInput.content==undefined) {
+                                console.log("請填寫投票說明");
+                                $ionicPopup.alert({
+                                    title: '錯誤',
+                                    template: '請填寫投票說明。'
+                                });
+                            } else {
+                                // 新增投票
+                                db.collection("投票").doc(ClassID).collection(GroupID)
+                                .add({
+                                    StuID: StuID,
+                                    title: $scope.voteInput.title,
+                                    content: $scope.voteInput.content,
+                                    solve: false,
+                                    voteN: [],
+                                    voteY: [StuID],
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("新增投票成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("新增投票失敗：", error);
+                                });
+                            }
+                        }
+                    }]
+                });
+            };
+
         }else{
             console.log("尚未登入");
             $state.go("login");

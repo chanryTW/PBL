@@ -1,5 +1,42 @@
 <ion-view title="投票系統" id="vote">
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header">
 
+    <div class="card" ng-repeat="vote in votes">
+      <div class="item item-divider">
+        <span style="line-height: 30px;">
+        【{{vote.title}}】
+        </span>
+        <span class="complete" ng-class="{'MissionType1': vote.type == '已結案', 'MissionType2': vote.type == '投票中'}">
+          {{vote.type}}
+        </span>
+      </div>
+      <div class="item item_padding0 item-text-wrap">
+        <ul class="list">
+          <li class="item item-avatar">
+            <img ng-src="{{vote.voteImg}}">
+            <h2>發起人：{{vote.voteName}}</h2>
+            <p>說明：{{vote.content}}</p>
+          </li>
+          <li class="item vote">
+            <div class="voteN" style="width:{{vote.voteN.length / (vote.voteN.length + vote.voteY.length) * 100}}%"></div>
+            <span class="votespan" style="left:16px;">反對：{{vote.voteN.length}}</span>
+            <span class="votespan" style="right:16px;">贊成：{{vote.voteY.length}}</span>
+          </li>
+          <li class="row" ng-if="vote.type=='投票中'">
+            <div class="col col-50" ng-class="{true:'voteChooseN',false:''}[vote.voteChooseN]" >
+                <i ng-click="votebtn('N',vote.voteID)" class="voteNbtn"></i>
+            </div>
+            <div class="col col-50" ng-class="{true:'voteChooseY',false:''}[vote.voteChooseY]" >
+                <i ng-click="votebtn('Y',vote.voteID)" class="voteYbtn"></i>
+            </div>
+          </li>
+          <p style="text-align: center;">提示：任一方投票數過半將自動結案。</p>
+        </ul>
+      </div>
+    </div>
+
   </ion-content>
+
+  <div class="AddBall" ng-click="Addvote()">+</div>
+
 </ion-view>

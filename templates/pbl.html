@@ -1,11 +1,25 @@
 <ion-view title="首頁" hide-back-button="true" id="pbl">
   <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
-    
+
       <div class="pbl-member" ng-repeat="member in members | orderBy:'memberName'">
         <div ng-class="{true:'pbl-leader pbl-img-div',false:'pbl-img-div'}[{{member.leader}}]">
           <img id="pbl-img" ng-src="{{member.memberImg}}">
         </div>
         <div class="pbl-member-span">{{member.memberName}}</div>
+      </div>
+
+      <div ng-repeat="item in items" class="card">
+        <div class="item item-divider">
+          成績查詢：
+        </div>
+        <div class="item item-text-wrap">
+          <div class="row">
+            <div class="col">期中考：-</div>
+            <div class="col">期末考：-</div>
+            <div class="col">平時：-</div>
+          </div>
+          <p>計算方式：期中40%+期末40%+平時20%(點數50%)</p>
+        </div>
       </div>
 
       <div ng-repeat="item in items" class="card">
@@ -24,21 +38,7 @@
         <div class="item item-text-wrap">
           <button class = "button button-block button-chanry1" ng-click="">前往留言板</button>          
         </div>
-      </div>
-
-      <div ng-repeat="item in items" class="card">
-        <div class="item item-divider">
-          成績查詢：
-        </div>
-        <div class="item item-text-wrap">
-          <div class="row">
-            <div class="col">期中考：-</div>
-            <div class="col">期末考：-</div>
-            <div class="col">平時：-</div>
-          </div>
-          <p>計算方式：期中40%+期末40%+平時20%(點數50%)</p>
-        </div>
-      </div>
+      </div> 
        
   </ion-content>
 
