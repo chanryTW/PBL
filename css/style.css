@@ -145,6 +145,17 @@ a{text-decoration:none}
 }
 
 /* -----------------------------------------------留言版頁面----------------------------------------------- */
+/* 溫馨提醒 */
+.alertMessage{
+    top: 44px;
+    display: block;
+    position: relative;
+    z-index: 2;
+    background-color: #f8f8f8;
+    color: rgba(0, 0, 0, 0.548);
+    text-align: center;
+    line-height: 30px;
+}
 /* 對話框 */
 .itemMessage{
     background-color: rgba(255, 255, 255, 0);
