@@ -639,7 +639,7 @@ function ($scope, $stateParams, $ionicPopup) {
 
             // 監聽 - 投票
             $scope.votes = []; // 宣告全域
-            db.collection("投票").doc(ClassID).collection(GroupID).orderBy("solve","asc")
+            db.collection("投票").doc(ClassID).collection(GroupID)
             .onSnapshot(function(results) {
                 if (results.empty) {
                     console.log("目前無投票");
@@ -701,7 +701,7 @@ function ($scope, $stateParams, $ionicPopup) {
                                 console.log("查詢姓名發生錯誤：", error); 
                             });
                         }
-                        // 修改 - 更新票數
+                        // 修改 - 更新票數 更新結案
                         if (change.type === "modified") {
                             // 初始化選擇
                             var voteChooseN = false;
@@ -723,6 +723,15 @@ function ($scope, $stateParams, $ionicPopup) {
                             $scope.votes[indexNum].voteY = change.doc.data().voteY;
                             $scope.votes[indexNum].voteChooseN = voteChooseN;
                             $scope.votes[indexNum].voteChooseY = voteChooseY;
+
+                            // 判斷是否結案
+                            if (change.doc.data().solve == false) {
+                                var type = "投票中";
+                            } else {
+                                var type = "已結案";                                
+                            }
+                            // 更新結案
+                            $scope.votes[indexNum].type = type;
 
                             $scope.$apply(); //重新監聽view
                             console.log("修改：", change.doc.data());

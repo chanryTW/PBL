@@ -1,7 +1,7 @@
 <ion-view title="投票系統" id="vote">
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header">
 
-    <div class="card" ng-repeat="vote in votes">
+    <div class="card" ng-repeat="vote in votes | orderBy:'time'">
       <div class="item item-divider">
         <span style="line-height: 30px;">
         【{{vote.title}}】
