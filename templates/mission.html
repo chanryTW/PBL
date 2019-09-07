@@ -11,17 +11,23 @@
           {{mission.TimeOut}} 截止
         </span>
       </div>
-      <div class="item item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
-        <li class="item">
-            {{mission.Name}}
-            <span class="missionPointSpan">
-              <i class="missionPoint"></i>
-              +{{mission.Point}}
-            </span>
-        </li>
-        <p>{{mission.content}}</p>
-        <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
-        <button class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
+      <div class="item item_padding0 item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
+        <ul class="list">
+          <li class="item">
+              {{mission.Name}}
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +{{mission.Point}}
+              </span>
+          </li>
+          <li>
+            <p>{{mission.content}}</p>
+          </li>
+          <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
+          <li class="item">
+            <button class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
+          </li>
+        </ul>
       </div>
     </div>
 

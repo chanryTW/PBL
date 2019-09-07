@@ -32,6 +32,16 @@ angular.module('app.routes', [])
     }
   })
 
+  .state('menu.chatroom', {
+    url: '/chatroom',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/chatroom.html',
+        controller: 'chatroomCtrl'
+      }
+    }
+  })
+
   .state('menu.vote', {
     url: '/vote',
     views: {
@@ -70,22 +80,6 @@ angular.module('app.routes', [])
         controller: 'proposalCtrl'
       }
     }
-  })
-
-  .state('menu.score', {
-    url: '/score',
-    views: {
-      'side-menu21': {
-        templateUrl: 'templates/score.html',
-        controller: 'scoreCtrl'
-      }
-    }
-  })
-
-  .state('ingroup_mutual', {
-    url: '/ingroup_mutual',
-    templateUrl: 'templates/ingroup_mutual.html',
-    controller: 'ingroup_mutualCtrl'
   })
 
   .state('menu.setting', {

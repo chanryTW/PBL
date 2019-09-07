@@ -2,7 +2,6 @@
 var verson = "1.0.0";
 // 1.0.0 => 正式版發佈 2019.00.00
 angular.module('app.controllers', [])
-
 // ----------------------------------------登入頁面----------------------------------------
 .controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state', '$ionicLoading',
 function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
@@ -114,26 +113,107 @@ function ($scope, $stateParams, $state, $ionicLoading, $timeout) {
         querySnapshot.forEach(function (doc) {
             a.push(doc.data());
             $scope.items = a;
+            $scope.$apply(); //重新監聽view
         });
     });
 
     // 定時重整
-    $scope.onTimeout = function(){
-        $state.go($state.current, {}, {reload: true}); //重新載入view
-        mytimeout = $timeout($scope.onTimeout,2000);
-        console.log("重整");
-    };
-    var mytimeout = $timeout($scope.onTimeout,2000);
+    // $scope.onTimeout = function(){
+    //     $state.go($state.current, {}, {reload: true}); //重新載入view
+    //     mytimeout = $timeout($scope.onTimeout,2000);
+    //     console.log("重整");
+    // };
+    // var mytimeout = $timeout($scope.onTimeout,2000);
 
     $ionicLoading.hide();
 
     // 按下課程
     $scope.choose_class = function(ClassID,ClassName) {
-        $timeout.cancel(mytimeout);//停止計時器
+        // $timeout.cancel(mytimeout);//停止計時器
         localStorage.setItem("ClassID",ClassID);
         localStorage.setItem("ClassName",ClassName);
         $state.go("menu.pbl");
     };
+}])
+
+// ----------------------------------------留言版頁面----------------------------------------
+.controller('chatroomCtrl', ['$scope', '$stateParams', '$state', '$ionicLoading', '$ionicScrollDelegate',
+function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
+            var StuName = localStorage.getItem("StuName");
+
+            $scope.messages = [];
+            // 監聽 - 留言版內容
+            db.collection("留言版").doc(ClassID).collection("messages").orderBy("time","asc")
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        // 查詢圖片檔名
+                        db.collection("帳號").doc(change.doc.data().StuID)
+                        .get().then(function(results) {
+                            var storage = firebase.storage();
+                            var storageRef = storage.ref();
+                            storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                // 放入投票內容
+                                $scope.messages.push({
+                                    messageName:change.doc.data().StuID + ' ' + change.doc.data().StuName,
+                                    messageImg:url,
+                                    messageContent:change.doc.data().content,
+                                    time:change.doc.data().time
+                                });
+
+                                $scope.$apply(); //重新監聽view
+                                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                                console.log("新增：", $scope.votes);
+                            })
+                        }).catch(function(error) { 
+                            console.log("查詢圖片檔名發生錯誤：", error); 
+                        });
+                    }
+                    if (change.type === "modified") {
+                        console.log("修改: ", change.doc.data());
+                    }
+                    if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                    }
+                });
+            });
+
+            // 新增留言
+            $scope.addMessage = function() {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
+                if ($scope.inputMessage!=undefined && $scope.inputMessage!="") {
+                    db.collection("留言版").doc(ClassID).collection("messages")
+                    .add({
+                        StuID: StuID,
+                        StuName: StuName,
+                        content: $scope.inputMessage,
+                        time: new Date()
+                    })
+                    .then(function(data) {
+                        console.log("新增留言成功");
+                    })
+                    .catch(function(error) {
+                        console.error("新增留言失敗：", error);
+                    });
+                    $scope.inputMessage = "";
+                }
+                $ionicLoading.hide();
+            };
+
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+            window.location.reload();
+        }
+    });
 }])
 
 // ----------------------------------------主頁面----------------------------------------
@@ -636,6 +716,7 @@ function ($scope, $stateParams, $ionicPopup) {
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
+            var StuName = localStorage.getItem("StuName");
 
             // 監聽 - 投票
             $scope.votes = []; // 宣告全域
@@ -664,42 +745,36 @@ function ($scope, $stateParams, $ionicPopup) {
                                 var type = "已結案";                                
                             }
 
-                            // 查詢姓名
+                            // 查詢圖片檔名
                             db.collection("帳號").doc(change.doc.data().StuID)
                             .get().then(function(results) {
-                                var voteName = results.data().Name;
-                                // 查詢圖片檔名
-                                db.collection("帳號").doc(change.doc.data().StuID)
-                                .get().then(function(results) {
-                                    var storage = firebase.storage();
-                                    var storageRef = storage.ref();
-                                    storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
-                                        var voteImg = url;
+                                var storage = firebase.storage();
+                                var storageRef = storage.ref();
+                                storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                    var voteImg = url;
 
-                                        // 放入投票內容
-                                        $scope.votes.push({
-                                            voteID:change.doc.id,
-                                            voteName:change.doc.data().StuID + ' ' + voteName,
-                                            voteImg:voteImg,
-                                            title:change.doc.data().title,
-                                            type:type,
-                                            content:change.doc.data().content,
-                                            voteN:change.doc.data().voteN,
-                                            voteY:change.doc.data().voteY,
-                                            voteChooseN:voteChooseN,
-                                            voteChooseY:voteChooseY,
-                                            time:change.doc.data().time
-                                        });
+                                    // 放入投票內容
+                                    $scope.votes.push({
+                                        voteID:change.doc.id,
+                                        voteName:change.doc.data().StuID + ' ' + change.doc.data().StuName,
+                                        voteImg:voteImg,
+                                        title:change.doc.data().title,
+                                        type:type,
+                                        content:change.doc.data().content,
+                                        voteN:change.doc.data().voteN,
+                                        voteY:change.doc.data().voteY,
+                                        voteChooseN:voteChooseN,
+                                        voteChooseY:voteChooseY,
+                                        time:change.doc.data().time
+                                    });
 
-                                        $scope.$apply(); //重新監聽view
-                                        console.log("新增：", $scope.votes);
-                                    })
-                                }).catch(function(error) { 
-                                    console.log("查詢圖片檔名發生錯誤：", error); 
-                                });
+                                    $scope.$apply(); //重新監聽view
+                                    console.log("新增：", $scope.votes);
+                                })
                             }).catch(function(error) { 
-                                console.log("查詢姓名發生錯誤：", error); 
+                                console.log("查詢圖片檔名發生錯誤：", error); 
                             });
+                            
                         }
                         // 修改 - 更新票數 更新結案
                         if (change.type === "modified") {
@@ -883,6 +958,7 @@ function ($scope, $stateParams, $ionicPopup) {
                                 db.collection("投票").doc(ClassID).collection(GroupID)
                                 .add({
                                     StuID: StuID,
+                                    StuName: StuName,
                                     title: $scope.voteInput.title,
                                     content: $scope.voteInput.content,
                                     solve: false,
@@ -2036,26 +2112,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 });
             };
 
-        }else{
-            console.log("尚未登入");
-            $state.go("login");
-            window.location.reload();
-        }
-    });
-}])
-
-// ----------------------------------------評分頁面----------------------------------------
-.controller('scoreCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
-    var db = firebase.firestore();
-    // 驗證登入
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user) { //登入成功，取得使用者
-            console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
-            var ClassID = localStorage.getItem("ClassID");
-
-            // ...
         }else{
             console.log("尚未登入");
             $state.go("login");
