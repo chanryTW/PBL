@@ -23,6 +23,9 @@ a{text-decoration:none}
     background-color: #0D5B80;
     color: #fff;
 }
+.item h1, .item h2, .item h3, .item h4, .item h5, .item h6, .item p, .item-content, .item-content h1, .item-content h2, .item-content h3, .item-content h4, .item-content h5, .item-content h6, .item-content p{
+    white-space: normal;
+}
 /* -----------------------------------------------登入頁面----------------------------------------------- */
 .login_LOGO{
     display: block;
@@ -139,6 +142,20 @@ a{text-decoration:none}
 }
 .button.button-block, .button.button-full{
     margin: 0px;
+}
+
+/* -----------------------------------------------留言版頁面----------------------------------------------- */
+/* 對話框 */
+.itemMessage{
+    background-color: rgba(255, 255, 255, 0);
+    border: 0px;
+    padding: 0px 0px 0px 50px;
+    min-height: auto;
+}
+/* 大頭照 */
+#imgMessage{
+    top: 0px;
+    left: 0px;
 }
 
 /* -----------------------------------------------課程任務頁面----------------------------------------------- */
@@ -283,6 +300,9 @@ a{text-decoration:none}
     padding-left: 13px;
     margin: 5px;
     background-color: rgba(255, 255, 255, 0.379);
+}
+.brainstorming_h2{
+    padding-right: 20px;
 }
 /* 按讚圖示 */
 .likeBtnOn{

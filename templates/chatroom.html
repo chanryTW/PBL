@@ -1,0 +1,26 @@
+<ion-view title="留言版" id="chatroom">
+
+    <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
+
+      <div class="list-inset" ng-repeat="message in messages">
+        <div id="brainstorming_item" class="item">
+          <div class="item item-avatar itemMessage">
+              <img id="imgMessage" ng-src="{{message.messageImg}}">
+              <h2>{{message.messageName}}</h2>
+              <p>{{message.messageContent}}</p>
+          </div>
+        </div>
+      </div>
+
+    </ion-content>
+  
+    <!-- 文字輸入 -->
+    <button class = "button button-block button-small brainstorming_DelAllBtn" ng-if="DelAllBtnShow" ng-click="DelAllBtn()">清空訊息</button>
+    <ion-footer-bar class="bar bar-footer">
+      <label class="item-input-wrapper">
+        <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && addMessage()" ng-model="inputMessage" type="text" placeholder="輸入文字（限200字內）..." maxlength="200">
+      </label>
+      <button class="button button-small button-chanry1" ng-click="addMessage()">送出</button>
+    </ion-footer-bar>
+
+</ion-view>
