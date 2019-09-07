@@ -134,7 +134,6 @@ a{text-decoration:none}
 }
 /* 小組按鈕 */
 .pbl-button{
-    z-index: 2;
     position: fixed;
     bottom: 0px;
 }
