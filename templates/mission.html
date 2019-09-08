@@ -14,13 +14,13 @@
       <div class="item item_padding0 item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
         <ul class="list">
           <li class="item">
-              {{mission.Name}}
+              <span style="font-size: 25px;">{{mission.Name}}</span>
               <span class="missionPointSpan">
                 <i class="missionPoint"></i>
                 +{{mission.Point}}
               </span>
           </li>
-          <li>
+          <li class="item">
             <p>{{mission.content}}</p>
           </li>
           <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
