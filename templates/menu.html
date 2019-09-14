@@ -10,7 +10,7 @@
   </ion-side-menu-content>
   <ion-side-menu side="left" id="side-menu21">
     <ion-content padding="false" style="top:0px !important;background: url(img/002.jpg) no-repeat center;background-size:cover;" scroll="false" class="side-menu-left ">
-      <div class="spacer" style="height: 20px;"></div>
+      <div class="spacer" style="height: 10px;"></div>
       <!-- 這裡要加一個圓框的CSS -->
       <div class="menu-img-div">
         <img ui-sref="menu.setting()" menu-close="" id="menu-img">
@@ -21,6 +21,7 @@
         <ion-item id="menu-list-item1" class="menu-list-item" ui-sref="menu.pbl()" menu-close="">首頁</ion-item>
         <div ng-if="needGroup">
           <ion-item id="menu-list-item3" class="menu-list-item" ui-sref="menu.mission()" menu-close="">課程任務</ion-item>
+          <ion-item id="menu-list-item3" class="menu-list-item" ui-sref="menu.chatroom()" menu-close="">課程留言版</ion-item>
           <ion-item id="menu-list-item4" class="menu-list-item" ui-sref="menu.brainstorming()" menu-close="">Step 1 腦力激盪</ion-item>
           <ion-item id="menu-list-item5" class="menu-list-item" ui-sref="menu.proposal()" menu-close="">Step 2 提案聚焦</ion-item>
           <!-- <ion-item id="menu-list-item6" class="menu-list-item" ui-sref="menu.score()" menu-close="">待補</ion-item> -->

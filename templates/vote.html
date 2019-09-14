@@ -22,12 +22,12 @@
             <span class="votespan" style="left:16px;">反對：{{vote.voteN.length}}</span>
             <span class="votespan" style="right:16px;">贊成：{{vote.voteY.length}}</span>
           </li>
-          <li class="row" ng-if="vote.type=='投票中'">
-            <div class="col col-50" ng-class="{true:'voteChooseN',false:''}[vote.voteChooseN]" >
-                <i ng-click="votebtn('N',vote.voteID)" class="voteNbtn"></i>
+          <li class="row VoteHeight" ng-if="vote.type=='投票中'">
+            <div class="col col-50">
+                <i ng-click="votebtn('N',vote.voteID)" ng-class="{true:'voteChooseN',false:'voteNbtn'}[vote.voteChooseN]"></i>
             </div>
-            <div class="col col-50" ng-class="{true:'voteChooseY',false:''}[vote.voteChooseY]" >
-                <i ng-click="votebtn('Y',vote.voteID)" class="voteYbtn"></i>
+            <div class="col col-50">
+                <i ng-click="votebtn('Y',vote.voteID)" ng-class="{true:'voteChooseY',false:'voteYbtn'}[vote.voteChooseY]"></i>
             </div>
           </li>
           <p style="text-align: center;">提示：任一方投票數過半將自動結案。</p>
