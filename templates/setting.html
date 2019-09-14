@@ -11,11 +11,13 @@
       <div class="card">
         <div class="item item-divider">修改照片：</div>
         <div class="padding">
-            <h5>請自行裁切，並上傳正方形圖片。</h5>
             <input id="uploadFileInput2" type="file" accept="image/*">           
         </div>
+        <div class="cropArea">
+          <img-crop image="myImage" result-image="myCroppedImage"></img-crop>
+        </div>
         <div class="item">
-          <button id="page7_savebtn2" class="button button-block button-chanry1">上傳</button>
+          <button ng-click="ChangeImg(myCroppedImage)" class="button button-block button-chanry1">上傳</button>
         </div>
       </div>
 

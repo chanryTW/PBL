@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 var verson = "1.0.0";
 // 1.0.0 => 正式版發佈 2019.00.00
-angular.module('app.controllers', [])
+angular.module('app.controllers', ['ngImgCrop'])
 // ----------------------------------------登入頁面----------------------------------------
 .controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state', '$ionicLoading',
 function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
@@ -2165,15 +2165,26 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
             };
 
             // 上傳大頭照功能
-            var SaveBtn2 = document.getElementById("page7_savebtn2");    
-            var uploadFileInput2 = document.getElementById("uploadFileInput2");
-            SaveBtn2.addEventListener("click",function(){
-                $ionicLoading.show({ // 開始跑圈圈
-                    template: '上傳圖片中...'
-                });
-                var file = uploadFileInput2.files[0];
+            $scope.myImage='';
+            $scope.myCroppedImage='';
+            var handleFileSelect=function(evt) {
+                var file=evt.currentTarget.files[0];
+                var reader = new FileReader();
+                reader.onload = function (evt) {
+                    $scope.$apply(function($scope){
+                        $scope.myImage=evt.target.result;
+                    });
+                };
+                reader.readAsDataURL(file);
+            };
+            angular.element(document.querySelector('#uploadFileInput2')).on('change',handleFileSelect);
+            // 點擊上傳
+            $scope.ChangeImg = function(myCroppedImage) {
+                // $ionicLoading.show({ // 開始跑圈圈
+                //     template: '上傳圖片中...'
+                // });
                 // 判斷是否有上傳
-                if (file == undefined) {
+                if (myCroppedImage == "") {
                     console.log("未選擇檔案");
                     $ionicLoading.hide();
                     var alertPopup = $ionicPopup.alert({
@@ -2185,7 +2196,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                     var storageRef = storage.ref();
                     var now = new Date();
                     var ImgID = now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
-                    var uploadTask = storageRef.child('members/'+ImgID).put(file);
+                    var uploadTask = storageRef.child('members/'+ImgID).putString(myCroppedImage, 'data_url');
                     uploadTask.on('state_changed', function(snapshot){
                         // 取得檔案上傳狀態，並用數字顯示
                         var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -2232,9 +2243,12 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                             template: '更換照片完成。'
                         });
                     });
+                    // 清空
+                    $scope.myImage='';
+                    $scope.myCroppedImage='';
                 }
                 
-            },false);
+            };
 
         }else{
             console.log("尚未登入");
