@@ -882,7 +882,7 @@ function ($scope, $stateParams, $ionicPopup) {
                     db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
                     .get().then(function(doc) {
                         var membersLength = doc.data().members.length;
-                        if ($scope.votes[indexNum].voteN.length > membersLength/2 || $scope.votes[indexNum].voteY.length > membersLength/2) {
+                        if ($scope.votes[indexNum].voteN.length > membersLength/2 || $scope.votes[indexNum].voteY.length > membersLength/2 || ($scope.votes[indexNum].voteN.length == $scope.votes[indexNum].voteY.length && $scope.votes[indexNum].voteY.length == membersLength/2)) {
                             console.log("關閉投票");
                             // 關閉投票
                             db.collection("投票").doc(ClassID).collection(GroupID).doc(voteID)
@@ -1627,12 +1627,12 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             '<span class="votespan" style="left:16px;">反對：{{bell.voteN.length}}</span>'+
                             '<span class="votespan" style="right:16px;">贊成：{{bell.voteY.length}}</span>'+
                         '</div>'+
-                        '<div class="item row">'+
-                            '<div class="col col-50" ng-class="{true:'+"'voteChooseN'"+',false:'+"''"+'}[bell.voteChooseN]" >'+
-                                '<i ng-click="votebtn('+"'N'"+',bell.bellID)" class="voteNbtn"></i>'+
+                        '<div class="item row VoteHeight">'+
+                            '<div class="col col-50">'+
+                                '<i ng-click="votebtn('+"'N'"+',bell.bellID)" ng-class="{true:'+"'voteChooseN'"+',false:'+"'voteNbtn'"+'}[bell.voteChooseN]" ></i>'+
                             '</div>'+
-                            '<div class="col col-50" ng-class="{true:'+"'voteChooseY'"+',false:'+"''"+'}[bell.voteChooseY]" >'+
-                                '<i ng-click="votebtn('+"'Y'"+',bell.bellID)" class="voteYbtn"></i>'+
+                            '<div class="col col-50">'+
+                                '<i ng-click="votebtn('+"'Y'"+',bell.bellID)" ng-class="{true:'+"'voteChooseY'"+',false:'+"'voteYbtn'"+'}[bell.voteChooseY]" ></i>'+
                             '</div>'+
                         '</div>'+
                         '<div class="spacer" style="height: 20px;"></div>'+
@@ -1699,8 +1699,8 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                     db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
                     .get().then(function(doc) {
                         var membersLength = doc.data().members.length;
-                        if ($scope.bells[indexNum].voteN.length > membersLength/2) {
-                            console.log("否決提議");
+                        if ($scope.bells[indexNum].voteN.length > membersLength/2 || ($scope.bells[indexNum].voteN.length == $scope.bells[indexNum].voteY.length && $scope.bells[indexNum].voteY.length == membersLength/2)) {
+                            console.log("否決提議or平手");
                             // 關閉提議
                             db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").doc(bellID)
                             .update({
