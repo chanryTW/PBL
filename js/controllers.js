@@ -2153,14 +2153,37 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
             
             // 修改密碼
             $scope.Passward = function() {
-                firebase.auth().sendPasswordResetEmail(StuID+"@nkust.edu.tw").then(function() {
-                    console.log("寄送密碼重置信成功");
-                    var alertPopup = $ionicPopup.alert({
-                        title: '成功',
-                        template: '寄送密碼重置信成功，請至 '+StuID+"@nkust.edu.tw"+" 收信"
-                    });
-                }).catch(function(error) {
-                    console.log("寄送密碼重置信失敗：",error);
+                // 寄送密碼重置信
+                $ionicPopup.show({
+                    title: '寄送密碼重置信',
+                    template: '確定要寄送密碼重置信嗎?',
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '確定',
+                        type: 'button-chanry1',
+                        onTap: function(e) {
+                            console.log('選擇確定');
+                            $ionicLoading.show({ // 開始跑圈圈
+                                template: '寄送密碼重置信中...'
+                            });
+                            firebase.auth().sendPasswordResetEmail(StuID+"@nkust.edu.tw").then(function() {
+                                console.log("寄送密碼重置信成功");
+                                var alertPopup = $ionicPopup.alert({
+                                    title: '成功',
+                                    template: '寄送密碼重置信成功，請至 '+StuID+"@nkust.edu.tw"+" 收信"
+                                });
+                                $ionicLoading.hide();
+                            }).catch(function(error) {
+                                console.log("寄送密碼重置信失敗：",error);
+                                $ionicLoading.hide();
+                            });
+                        }
+                    }]
                 });
             };
 
@@ -2180,9 +2203,9 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
             angular.element(document.querySelector('#uploadFileInput2')).on('change',handleFileSelect);
             // 點擊上傳
             $scope.ChangeImg = function(myCroppedImage) {
-                // $ionicLoading.show({ // 開始跑圈圈
-                //     template: '上傳圖片中...'
-                // });
+                $ionicLoading.show({ // 開始跑圈圈
+                    template: '上傳圖片中...'
+                });
                 // 判斷是否有上傳
                 if (myCroppedImage == "") {
                     console.log("未選擇檔案");
