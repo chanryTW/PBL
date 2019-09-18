@@ -10,13 +10,13 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
         $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>登入中...</p>'});
         firebase.auth().signInWithEmailAndPassword(accountL.value+"@nkust.edu.tw", pwdL.value).then(function(){
             console.log("登入成功");
-            var StuID = accountL.value;
+            var StuID = accountL.value.toUpperCase();
 
             accountL.value="";
             pwdL.value="";
             $ionicLoading.hide();
             // 判斷教師版
-            if (StuID=="root") {
+            if (StuID=="ROOT") {
                 $state.go("rootmenu.root_pbl",{StuID:StuID});
             } else {
                 $state.go("choose_class",{StuID:StuID});
