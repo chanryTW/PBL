@@ -1102,7 +1102,7 @@ function ($scope, $stateParams, $sce, $state) {
 }])
 
 // ----------------------------------------IRS頁面----------------------------------------
-.controller('irsCtrl', ['$scope', '$stateParams',
+.controller('irsCtrl', ['$scope', '$stateParams', '$sce', '$state',
 function ($scope, $stateParams, $sce, $state) {
     var db = firebase.firestore();
     // 驗證登入
@@ -1112,8 +1112,61 @@ function ($scope, $stateParams, $sce, $state) {
             var StuID = user.email.substring(0,user.email.indexOf("@"));
             var ClassID = localStorage.getItem("ClassID");
 
-            // ...
+            // 監聽 - 取得測驗資料
+            $scope.testStart = false;
+            $scope.testContent = true;
+            $scope.testOver = true;
+            db.collection("IRS").doc(ClassID).collection("測驗列表").doc("utIuBPoinM3vjYTP63eI")
+            .onSnapshot(function(doc) {
+                // 取得測驗時間 (暫訂5分鐘)
+                const second = 1000,
+                    minute = second * 60,
+                    hour = minute * 60;
+                var distance = 300000;
+                $scope.distance = Math.floor(distance / (hour))+":"+Math.floor((distance % (hour)) / (minute))+":"+Math.floor((distance % (minute)) / second);
 
+                if (doc.data().testStart) {
+                    $scope.testStart = true;
+                    $scope.testContent = false;
+                    $scope.$apply(); //重新監聽view
+
+                    // 倒數計時
+                    var x = setInterval(function() {
+                        distance = distance - 1000;
+                        $scope.distance = Math.floor(distance / (hour))+""+Math.floor((distance % (hour)) / (minute))+":"+Math.floor((distance % (minute)) / second);
+                        $scope.$apply(); //重新監聽view
+                        
+                        //判斷時間到
+                        if (distance <= 0) {
+                            // 關閉計時器
+                            clearInterval(x);
+                            // 儲存現有填答結果
+                            // ...
+                            // 隱藏界面
+                            $scope.testStart = true;
+                            $scope.testContent = true;
+                            $scope.testOver = false;
+                            $scope.$apply(); //重新監聽view
+                        }
+                    }, second);
+                } else {
+                    $scope.testStart = false;       
+                    $scope.testContent = true;
+                    $scope.testOver = true;
+                    $ionicScrollDelegate.scrolltop(true); //滑到最下面
+
+                    // 關閉計時器
+                    clearInterval(x);
+                    // 儲存現有填答結果
+                    // ...
+
+                    $scope.$apply(); //重新監聽view
+                }
+            },function(error) {
+                console.error("取得測驗資料發生錯誤：", error);
+            });
+
+            // 假資料
             $scope.questions = [
                 { indexReal:1, question: '本週章節名稱是：', optionA:'資訊管理的基本概念與架構', optionB:'資訊管理的科技觀點', optionC:'資訊管理的應用系統面觀點', optionD:'整合性的企業系統—ERP、CRM與SCM', answer:1 },
                 { indexReal:2, question: '「資訊科技」、「經濟環境」與「產業結構」的關係是：', optionA:'三者有交互影響關係', optionB:'三者之間沒有關係', optionC:'只有資訊科技與經濟環境有關係', optionD:'只有經濟環境與產業結構有關係', answer:1 },
@@ -1133,9 +1186,9 @@ function ($scope, $stateParams, $sce, $state) {
                 // 原本隊伍人越來越少，因此randomIndex需要一直抓$scope.questions.length
                 $scope.questions.splice(randomIndex, 1);
             }
-            console.log(res);
             $scope.questions = res;
 
+            // 每次點選項，更新結果檔和進度條
             $scope.answerChange = function(answer){
                 ary = new Array();
                 for(x in answer) ary[ary.length]=x;
