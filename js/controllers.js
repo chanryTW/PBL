@@ -1102,8 +1102,8 @@ function ($scope, $stateParams, $sce, $state) {
 }])
 
 // ----------------------------------------IRS頁面----------------------------------------
-.controller('irsCtrl', ['$scope', '$stateParams', '$sce', '$state',
-function ($scope, $stateParams, $sce, $state) {
+.controller('irsCtrl', ['$scope', '$stateParams', '$sce', '$state', '$ionicScrollDelegate',
+function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -1153,7 +1153,7 @@ function ($scope, $stateParams, $sce, $state) {
                     $scope.testStart = false;       
                     $scope.testContent = true;
                     $scope.testOver = true;
-                    $ionicScrollDelegate.scrolltop(true); //滑到最下面
+                    $ionicScrollDelegate.scrollTop(true); //滑到最下面
 
                     // 關閉計時器
                     clearInterval(x);
@@ -1165,6 +1165,21 @@ function ($scope, $stateParams, $sce, $state) {
             },function(error) {
                 console.error("取得測驗資料發生錯誤：", error);
             });
+
+            // 按完成按鈕
+            $scope.testFinish = function(){
+                $scope.testStart = false;       
+                $scope.testContent = true;
+                $scope.testOver = true;
+                $ionicScrollDelegate.scrollTop(true); //滑到最下面
+
+                // 關閉計時器
+                clearInterval(x);
+                // 儲存現有填答結果
+                // ...
+
+                $scope.$apply(); //重新監聽view
+            };
 
             // 假資料
             $scope.questions = [
