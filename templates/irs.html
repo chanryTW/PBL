@@ -1,0 +1,45 @@
+<ion-view title="IRS" id="irs">
+
+  <div class="alertMessage">
+    <span style="font-size: 18px;">測驗名稱：前測測驗</span><br>
+    <span>測驗說明：每次5題/5分鐘(共6題/6分鐘)，可提早提交。</span><br>
+  </div>
+
+  <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header">
+    
+    <div class="spacer" style="height: 50px;"></div>
+
+    <div ng-repeat="question in questions | orderBy:'indexFake'" class="card">
+      <div class="item item-divider">
+        {{$index+1}}.{{question.question}}
+      </div>
+      <ion-list>
+        <ion-radio type="radio" ng-value="1" ng-model="$parent.answer[question.indexReal]" ng-click="answerChange($parent.answer)">(A) {{question.optionA}}</ion-radio>
+        <ion-radio type="radio" ng-value="2" ng-model="$parent.answer[question.indexReal]" ng-click="answerChange($parent.answer)">(B) {{question.optionB}}</ion-radio>
+        <ion-radio type="radio" ng-value="3" ng-model="$parent.answer[question.indexReal]" ng-click="answerChange($parent.answer)">(C) {{question.optionC}}</ion-radio>
+        <ion-radio type="radio" ng-value="4" ng-model="$parent.answer[question.indexReal]" ng-click="answerChange($parent.answer)">(D) {{question.optionD}}</ion-radio>
+        <p>已選擇：{{$parent.answer[question.indexReal]}}</p>
+      </ion-list>
+    </div>
+
+    <!-- <div class="card">
+      <div class="item item-divider">
+        2.哪幾天翹課天翹課天翹課天翹課天翹課天翹課天翹課天翹課天翹課天翹課天翹課?
+      </div>
+      <ion-list>
+        <ion-checkbox ng-model="filter.A">9/18</ion-checkbox>
+        <ion-checkbox ng-model="filter.B">9/19</ion-checkbox>
+        <ion-checkbox ng-model="filter.C">9/20</ion-checkbox>
+      </ion-list>
+    </div> -->
+
+  </ion-content>
+
+  <ion-footer-bar class="bar bar-footer">
+    <div class="progress">
+      <div class="progress-bar" style="width:{{answerAry.length / 6 * 100}}%"></div>
+    </div>
+    <div class="RemainingTime">剩餘：00:05:00</div>
+  </ion-footer-bar>
+
+</ion-view>

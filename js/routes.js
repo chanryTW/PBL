@@ -62,6 +62,16 @@ angular.module('app.routes', [])
     }
   })
 
+  .state('menu.irs', {
+    url: '/irs',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/irs.html',
+        controller: 'irsCtrl'
+      }
+    }
+  })
+
   .state('menu.brainstorming', {
     url: '/brainstorming',
     views: {
