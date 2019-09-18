@@ -11,6 +11,7 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
         firebase.auth().signInWithEmailAndPassword(accountL.value+"@nkust.edu.tw", pwdL.value).then(function(){
             console.log("登入成功");
             var StuID = accountL.value;
+
             accountL.value="";
             pwdL.value="";
             $ionicLoading.hide();
@@ -144,7 +145,7 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
             var StuName = localStorage.getItem("StuName");
 
@@ -224,8 +225,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
+            console.log(StuID);
 
             // 記錄登入
             // var db = firebase.database();
@@ -713,7 +715,7 @@ function ($scope, $stateParams, $ionicPopup) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
             var StuName = localStorage.getItem("StuName");
@@ -994,7 +996,7 @@ function ($scope, $stateParams, $sce, $state) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
 
             // 監聽 - 載入所有任務
@@ -1109,7 +1111,7 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
 
             // 監聽 - 取得測驗資料
@@ -1219,6 +1221,7 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
         }
     });
 }])
+
 // ----------------------------------------腦力激盪頁面----------------------------------------
 .controller('brainstormingCtrl', ['$scope', '$stateParams', '$state', '$ionicScrollDelegate', '$ionicLoading', '$ionicPopup',
 function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $ionicPopup) {
@@ -1227,7 +1230,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var StuName = localStorage.getItem("StuName");
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
@@ -1524,7 +1527,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var StuName = localStorage.getItem("StuName");
             var ClassID = localStorage.getItem("ClassID");
             var GroupID = localStorage.getItem("GroupID");
@@ -2247,7 +2250,7 @@ function ($scope, $stateParams) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
 
             // ...
@@ -2267,7 +2270,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
             
             // 修改密碼
@@ -2408,7 +2411,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
 
             // 查詢姓名
@@ -3166,7 +3169,7 @@ function ($scope, $stateParams, $state) {
     firebase.auth().onAuthStateChanged((user) => {
         if (user) { //登入成功，取得使用者
             console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
 
             // 查詢姓名
