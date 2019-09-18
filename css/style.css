@@ -23,8 +23,11 @@ a{text-decoration:none}
     background-color: #0D5B80;
     color: #fff;
 }
-.item h1, .item h2, .item h3, .item h4, .item h5, .item h6, .item p, .item-content, .item-content h1, .item-content h2, .item-content h3, .item-content h4, .item-content h5, .item-content h6, .item-content p{
+.item h1, .item h2, .item h3, .item h4, .item h5, .item h6, .item p, .item-content, .item-content h1, .item-content h2, .item-content h3, .item-content h4, .item-content h5, .item-content h6, .item-content p, .item-divider{
     white-space: normal;
+}
+.item-radio .item-content {
+    padding-right: 40px;
 }
 /* -----------------------------------------------登入頁面----------------------------------------------- */
 .login_LOGO{
@@ -264,6 +267,46 @@ a{text-decoration:none}
     margin: 10px 0px 0px 0px;
 }
 
+/* -----------------------------------------------IRS頁面----------------------------------------------- */
+/* 進度條 */
+.progress {
+    width: 60%;
+
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 6px;
+    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px rgba(255, 255, 255, 0.08);
+}
+.progress-bar {
+    height: 27px;
+    border-radius: 4px;
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+    -webkit-transition: 0.4s linear;
+    -moz-transition: 0.4s linear;
+    -o-transition: 0.4s linear;
+    transition: 0.4s linear;
+    -webkit-transition-property: width, background-color;
+    -moz-transition-property: width, background-color;
+    -o-transition-property: width, background-color;
+    transition-property: width, background-color;
+    -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.25), inset 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.25), inset 0 1px rgba(255, 255, 255, 0.1);
+
+    width: 2%;
+    background-color: #1284b8;
+}
+/* 剩餘時間文字 */
+.RemainingTime{
+    margin: 0 auto;
+    line-height: 30px;
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.548);
+}
+
 /* -----------------------------------------------腦力激盪頁面----------------------------------------------- */
 .tab-item{
     font-size: 25px;
@@ -375,7 +418,7 @@ a{text-decoration:none}
     text-align: right;
     position: relative;
     right: -8px;
-    width:30% ;
+    width:35% ;
 }
 .proposal_DelProposalBtn,.proposal_AddProposalBtn,.proposal_bellProposalBtn,.proposal_DelBrainstormingBtn{
     display: inline-block;

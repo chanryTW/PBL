@@ -1022,6 +1022,7 @@ function ($scope, $stateParams, $sce, $state) {
                         $scope.missions.push({
                             missionID:change.doc.id,
                             Name:change.doc.data().Name,
+                            Content:change.doc.data().Content,
                             TimeOut:change.doc.data().TimeOut.toDate().getUTCFullYear()+'/'+
                                     pushMonth+'/'+
                                     pushDate,
@@ -1100,6 +1101,56 @@ function ($scope, $stateParams, $sce, $state) {
     });
 }])
 
+// ----------------------------------------IRS頁面----------------------------------------
+.controller('irsCtrl', ['$scope', '$stateParams',
+function ($scope, $stateParams, $sce, $state) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@"));
+            var ClassID = localStorage.getItem("ClassID");
+
+            // ...
+
+            $scope.questions = [
+                { indexReal:1, question: '本週章節名稱是：', optionA:'資訊管理的基本概念與架構', optionB:'資訊管理的科技觀點', optionC:'資訊管理的應用系統面觀點', optionD:'整合性的企業系統—ERP、CRM與SCM', answer:1 },
+                { indexReal:2, question: '「資訊科技」、「經濟環境」與「產業結構」的關係是：', optionA:'三者有交互影響關係', optionB:'三者之間沒有關係', optionC:'只有資訊科技與經濟環境有關係', optionD:'只有經濟環境與產業結構有關係', answer:1 },
+                { indexReal:3, question: '在資通訊科技所促成的新經濟體系中，從「人工作業」變成「電腦作業」的典範轉移，一般稱為：', optionA:'資訊化', optionB:'智慧化', optionC:'虛擬化', optionD:'網路化', answer:1 },
+                { indexReal:4, question: '下列何者不是資訊科技演化相關的定律？', optionA:'運動定律', optionB:'摩爾定律', optionC:'吉爾德定律', optionD:'貝爾定律', answer:1 },
+                { indexReal:5, question: '關於MIS的重要性敘述，何者正確？', optionA:'投資大', optionB:'提升生產力', optionC:'創造競爭優勢', optionD:'所述皆是', answer:4 },
+                { indexReal:6, question: '當我們提到硬體、軟體、資料庫或網路時，指的是MIS知識中哪一方面的議題？', optionA:'IT基礎設施', optionB:'企業的資訊應用系統', optionC:'ABIC四大科技', optionD:'資訊管理', answer:1 },
+            ]
+
+            // 亂數排序
+            var res = [];
+            for (var i = 0, len = $scope.questions.length; i < len; i++) {
+                // 隨機找題
+                var randomIndex = Math.floor(Math.random() * $scope.questions.length);
+                // 放到新隊伍
+                res[i] = $scope.questions[randomIndex];
+                // 原本隊伍人越來越少，因此randomIndex需要一直抓$scope.questions.length
+                $scope.questions.splice(randomIndex, 1);
+            }
+            console.log(res);
+            $scope.questions = res;
+
+            $scope.answerChange = function(answer){
+                ary = new Array();
+                for(x in answer) ary[ary.length]=x;
+                $scope.answer = answer;
+                $scope.answerAry = ary;
+                console.log(answer,ary);
+            };
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+            window.location.reload();
+        }
+    });
+}])
 // ----------------------------------------腦力激盪頁面----------------------------------------
 .controller('brainstormingCtrl', ['$scope', '$stateParams', '$state', '$ionicScrollDelegate', '$ionicLoading', '$ionicPopup',
 function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $ionicPopup) {
