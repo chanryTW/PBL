@@ -9,7 +9,16 @@
     
     <div class="spacer" style="height: 50px;"></div>
 
-    <div ng-repeat="question in questions | orderBy:'indexFake'" class="card">
+    <div class="testStart" ng-if="!testStart">等待老師開啟測驗</div>
+    <div class="testOver" ng-if="!testOver">
+      測驗結束<br>
+      <span style="font-size: 5vw;">
+        您的得分是：100<br>
+        資料已上傳雲端
+      </span>
+    </div>
+
+    <div ng-repeat="question in questions | orderBy:'indexFake'" ng-if="!testContent" class="card">
       <div class="item item-divider">
         {{$index+1}}.{{question.question}}
       </div>
@@ -39,7 +48,7 @@
     <div class="progress">
       <div class="progress-bar" style="width:{{answerAry.length / 6 * 100}}%"></div>
     </div>
-    <div class="RemainingTime">剩餘：00:05:00</div>
+    <div class="RemainingTime">剩餘：{{distance}}</div>
   </ion-footer-bar>
 
 </ion-view>
