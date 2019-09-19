@@ -63,6 +63,7 @@ angular.module('app.routes', [])
   })
 
   .state('menu.irs', {
+    params:{"TestID":null,"TestName":null,"TestContent":null},
     url: '/irs',
     views: {
       'side-menu21': {

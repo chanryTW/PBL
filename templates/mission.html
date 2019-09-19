@@ -24,8 +24,11 @@
             <p>{{mission.Content}}</p>
           </li>
           <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
+          <!-- IRS進入按鈕 -->
+          <button ng-if="mission.isIRS" class="button button-block button-chanry2" ng-click="GoIRS(mission.missionID,mission.Name,mission.Content)">進入準備</button>
+          <!-- 收合按鈕 -->
           <li class="item">
-            <button class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
+            <button ng-if="!mission.isIRS" class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
           </li>
         </ul>
       </div>
