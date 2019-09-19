@@ -212,7 +212,7 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -253,7 +253,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             },function(error) {
                 console.error("讀取課程發生錯誤：", error);
                 $state.go("login");
-                window.location.reload();
+                // window.location.reload();
             });
 
             // 監聽 - 是否開放分組
@@ -702,7 +702,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -983,7 +983,7 @@ function ($scope, $stateParams, $ionicPopup) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -1030,10 +1030,12 @@ function ($scope, $stateParams, $sce, $state) {
                                     pushDate,
                             LeaderOnly:change.doc.data().LeaderOnly,
                             type:change.doc.data().type,
+                            Point:change.doc.data().Point,
                             finished:change.doc.data().finished,
                             HTML:$sce.trustAsHtml(change.doc.data().HTML),
                             time:change.doc.data().time,lock:lock,
                             show:false,
+                            isIRS:change.doc.data().isIRS,
                             showMsg:'查看更多'
                         });
                         $scope.$apply(); //重新監聽view
@@ -1054,6 +1056,11 @@ function ($scope, $stateParams, $sce, $state) {
                     }
                 });
             });
+
+            // 進入IRS按鈕
+            $scope.GoIRS = function(missionID,missionName,missionContent){
+                $state.go("menu.irs",{TestID:missionID,TestName:missionName,TestContent:missionContent});
+            };
 
             // 查看更多按鈕
             $scope.missionShow = function(doc){
@@ -1098,7 +1105,7 @@ function ($scope, $stateParams, $sce, $state) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -1109,33 +1116,51 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user) { //登入成功，取得使用者
+        if (user && $stateParams.TestID!=null) { //登入成功，取得使用者
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
+            var TestID = $stateParams.TestID;
+
+            // 放入測驗名稱,說明
+            $scope.test = {};
+            $scope.test.Name = $stateParams.TestName;
+            $scope.test.Content = $stateParams.TestContent;
 
             // 監聽 - 取得測驗資料
             $scope.testStart = false;
             $scope.testContent = true;
             $scope.testOver = true;
-            db.collection("IRS").doc(ClassID).collection("測驗列表").doc("utIuBPoinM3vjYTP63eI")
+            var x,GradeNum=0; //宣告計時器 答對題數
+            db.collection("IRS").doc(ClassID).collection("測驗列表").doc(TestID)
             .onSnapshot(function(doc) {
                 // 取得測驗時間 (暫訂5分鐘)
                 const second = 1000,
                     minute = second * 60,
                     hour = minute * 60;
-                var distance = 300000;
-                $scope.distance = Math.floor(distance / (hour))+":"+Math.floor((distance % (hour)) / (minute))+":"+Math.floor((distance % (minute)) / second);
+                var distance = doc.data().stageTime; //取得每階段測驗時間 ms
 
+                // 補 0 fun
+                function GetZero(num) {
+                    if (num<=9) {
+                        return '0'+String(num);
+                    } else {
+                        return num;
+                    }
+                }
+                // 放入顯示剩餘時間
+                $scope.distance = GetZero(Math.floor(distance / (hour)))+":"+GetZero(Math.floor((distance % (hour)) / (minute)))+":"+GetZero(Math.floor((distance % (minute)) / second));
+
+                // 判斷是否開始測驗
                 if (doc.data().testStart) {
                     $scope.testStart = true;
                     $scope.testContent = false;
                     $scope.$apply(); //重新監聽view
 
                     // 倒數計時
-                    var x = setInterval(function() {
+                    x = setInterval(function() {
                         distance = distance - 1000;
-                        $scope.distance = Math.floor(distance / (hour))+""+Math.floor((distance % (hour)) / (minute))+":"+Math.floor((distance % (minute)) / second);
+                        $scope.distance = GetZero(Math.floor(distance / (hour)))+":"+GetZero(Math.floor((distance % (hour)) / (minute)))+":"+GetZero(Math.floor((distance % (minute)) / second));                
                         $scope.$apply(); //重新監聽view
                         
                         //判斷時間到
@@ -1148,20 +1173,18 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                             $scope.testStart = true;
                             $scope.testContent = true;
                             $scope.testOver = false;
+                            $ionicScrollDelegate.scrollTop(true); //滑到最上面
                             $scope.$apply(); //重新監聽view
                         }
                     }, second);
                 } else {
+                    // 關閉計時器
+                    clearInterval(x);
+                    // 隱藏界面
                     $scope.testStart = false;       
                     $scope.testContent = true;
                     $scope.testOver = true;
-                    $ionicScrollDelegate.scrollTop(true); //滑到最下面
-
-                    // 關閉計時器
-                    clearInterval(x);
-                    // 儲存現有填答結果
-                    // ...
-
+                    $ionicScrollDelegate.scrollTop(true); //滑到最上面
                     $scope.$apply(); //重新監聽view
                 }
             },function(error) {
@@ -1170,17 +1193,31 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
 
             // 按完成按鈕
             $scope.testFinish = function(){
-                $scope.testStart = false;       
-                $scope.testContent = true;
-                $scope.testOver = true;
-                $ionicScrollDelegate.scrollTop(true); //滑到最下面
-
                 // 關閉計時器
                 clearInterval(x);
+                // 對答案算成績
+                for (let index = 1; index <= $scope.questions.length; index++) {
+                    if ($scope.questions[index-1].answer==$scope.answer[index]) {
+                        GradeNum+=1;
+                    }
+                    // 最後一筆結算成績
+                    if (index>=$scope.questions.length) {
+                        // 如果全對 給100分
+                        if (GradeNum==$scope.questions.length) {
+                            $scope.test.Grade = 100;
+                        } else {
+                            // 計算得分
+                            $scope.test.Grade = GradeNum * Math.round(100/$scope.questions.length);
+                        }
+                    }
+                }
                 // 儲存現有填答結果
                 // ...
-
-                $scope.$apply(); //重新監聽view
+                // 隱藏界面
+                $scope.testStart = true;
+                $scope.testContent = true;
+                $scope.testOver = false;
+                $ionicScrollDelegate.scrollTop(true); //滑到最上面
             };
 
             // 假資料
@@ -1211,13 +1248,12 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 for(x in answer) ary[ary.length]=x;
                 $scope.answer = answer;
                 $scope.answerAry = ary;
-                console.log(answer,ary);
             };
 
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -1514,7 +1550,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -2237,7 +2273,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -2257,7 +2293,7 @@ function ($scope, $stateParams) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -2398,7 +2434,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -2597,7 +2633,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -2784,7 +2820,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
         }else{
             console.log("非管理員");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -2922,7 +2958,7 @@ function ($scope, $stateParams, $state, $ionicLoading) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -3156,7 +3192,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }])
@@ -3212,7 +3248,7 @@ function ($scope, $stateParams, $state) {
         }else{
             console.log("尚未登入");
             $state.go("login");
-            window.location.reload();
+            // window.location.reload();
         }
     });
 }]);

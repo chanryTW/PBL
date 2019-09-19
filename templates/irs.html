@@ -1,8 +1,8 @@
 <ion-view title="IRS" id="irs">
 
   <div class="alertMessage">
-    <span style="font-size: 18px;">測驗名稱：前測測驗</span><br>
-    <span>測驗說明：每次5題/5分鐘(共6題/6分鐘)，可提早提交。</span><br>
+    <span style="font-size: 18px;">測驗名稱：{{test.Name}}</span><br>
+    <span>測驗說明：{{test.Content}}</span><br>
   </div>
 
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header">
@@ -13,7 +13,8 @@
     <div class="testOver" ng-if="!testOver">
       測驗結束<br>
       <span style="font-size: 5vw;">
-        您的得分是：100<br>
+        
+        您的分數是：{{test.Grade}}<br>
         資料已上傳雲端
       </span>
     </div>
@@ -31,7 +32,7 @@
       </ion-list>
     </div>
 
-    <a class = "button button-block button-chanry2" ng-if="!testContent" ng-click="testFinish()">完成</a>
+    <a class="button button-block button-chanry1" ng-if="!testContent" ng-click="testFinish()">完成</a>
 
     <!-- <div class="card">
       <div class="item item-divider">
