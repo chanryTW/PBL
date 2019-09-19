@@ -25,52 +25,31 @@
         <span ng-class="{'MissionType1': mission.type == '隨堂測驗', 'MissionType2': mission.type == '小組討論', 'MissionType3': mission.type == '加分問卷', 'MissionType4': mission.type == '評分'}">
           {{mission.type}}
         </span>
-        ：{{mission.Name}}
         <span class="timeOutSpan">
           <i class="timeOut"></i>
           {{mission.TimeOut}} 截止
         </span>
       </div>
-      <div class="item item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
-        <p>{{mission.content}}</p>
-        <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
-        <!-- 測試區-Start -->
-          
-        <label class="item item-input">
-            <div class="input-label">輸入文字</div>
-            <input type="text" ng-model="response.text" placeholder="輸入文字（限15字內）..." maxlength="15">   
-        </label>
-
-        <li class="item item-toggle">
-          HTML5
-          <label class="toggle toggle-assertive">
-            <input type="checkbox">
-            <div class="track">
-              <div class="handle"></div>
-            </div>
-          </label>
-        </li>
-
-        <div class="item range range-positive">
-          <i class="icon ion-ios-sunny-outline"></i>
-          <input type="range" name="volume" min="0" max="100" value="33">
-          <i class="icon ion-ios-sunny"></i>
-        </div>
-
-        <label class="item item-input item-select">
-          <div class="input-label">
-            Lightsaber
-          </div>
-          <select>
-            <option>Blue</option>
-            <option selected>Green</option>
-            <option>Red</option>
-          </select>
-        </label>
-
-        <button class = "button button-block button-chanry2" ng-click="responseBtn(mission.missionID)">確定送出</button>
-        <!-- 測試區-End -->
-        <button class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
+      <div class="item item_padding0 item-text-wrap" ng-class="{'missionLock1': mission.lock == '1', 'missionLock2': mission.lock == '2', 'missionLock3': mission.lock == '3'}">
+        <ul class="list">
+          <li class="item">
+              <span style="font-size: 25px;">{{mission.Name}}</span>
+              <span class="missionPointSpan">
+                <i class="missionPoint"></i>
+                +{{mission.Point}}
+              </span>
+          </li>
+          <li class="item">
+            <p>{{mission.Content}}</p>
+          </li>
+          <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
+          <!-- IRS進入按鈕 -->
+          <button ng-if="mission.isIRS" class="button button-block button-chanry2" ng-click="GoIRS(mission.missionID,mission.Name,mission.Content)">進入準備</button>
+          <!-- 收合按鈕 -->
+          <li class="item">
+            <button ng-if="!mission.isIRS" class="button button-small button-chanry1 button-margin" ng-click="missionShow(mission)">{{mission.showMsg}}</button>
+          </li>
+        </ul>
       </div>
     </div>
 

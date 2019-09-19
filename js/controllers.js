@@ -1033,11 +1033,35 @@ function ($scope, $stateParams, $sce, $state) {
                             Point:change.doc.data().Point,
                             finished:change.doc.data().finished,
                             HTML:$sce.trustAsHtml(change.doc.data().HTML),
-                            time:change.doc.data().time,lock:lock,
+                            time:change.doc.data().time,
+                            lock:lock,
                             show:false,
                             isIRS:change.doc.data().isIRS,
                             showMsg:'查看更多'
                         });
+                        $scope.$apply(); //重新監聽view
+                    } else if (change.type === "modified") {
+                        console.log("修改: ", change.doc.data());
+                        // 用findIndex找出要修改的位置
+                        var indexNum = $scope.missions.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        // 刪除
+                        if (indexNum!=-1) {
+                            // 判斷是否 關閉3 完成1 過期2
+                            var lock = 0;
+                            if (change.doc.data().lock == true){
+                                lock = 3;
+                            } else if (change.doc.data().finished.indexOf(StuID)!=-1){
+                                lock = 1;
+                            } else if (change.doc.data().TimeOut.toDate() < new Date()){
+                                lock = 2;
+                            }
+                            $scope.missions[indexNum].lock = lock;
+                            console.log("修改任務成功");
+                        }else{
+                            console.log("修改任務不成功");
+                        }
                         $scope.$apply(); //重新監聽view
                     } else if (change.type === "removed") {
                         console.log("刪除: ", change.doc.data());
@@ -1122,19 +1146,102 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
             var ClassID = localStorage.getItem("ClassID");
             var TestID = $stateParams.TestID;
 
+            // 防作弊 - 檢查是否已完成
+            db.collection("課程任務").doc(ClassID).collection("任務列表").doc(TestID)
+            .get().then(function(results) {
+                if (results.data().finished.indexOf(StuID)!=-1) {
+                    console.log("已完成過測驗");
+                    $state.go("login");
+                    // window.location.reload();
+                }
+            }).catch(function(error) { 
+                console.log("檢查是否已完成發生錯誤：", error); 
+            });
+
             // 放入測驗名稱,說明
             $scope.test = {};
             $scope.test.Name = $stateParams.TestName;
             $scope.test.Content = $stateParams.TestContent;
 
+            // 宣告計時器 答對題數
+            var x,GradeNum=0; 
+            
+            // 完成測驗 fun
+            function testCallBack(isFinish) {
+                // 關閉計時器
+                clearInterval(x);
+                // 是否全部完成
+                if (isFinish) {
+                    // 對答案算成績
+                    for (let index = 1; index <= $scope.questions.length; index++) {
+                        if ($scope.questions[index-1].answer==$scope.answer[index]) {
+                            GradeNum+=1;
+                        }
+                        // 最後一筆結算成績
+                        if (index>=$scope.questions.length) {
+                            // 如果全對 給100分
+                            if (GradeNum==$scope.questions.length) {
+                                $scope.test.Grade = 100;
+                            } else {
+                                // 計算得分
+                                $scope.test.Grade = GradeNum * Math.round(100/$scope.questions.length);
+                            }
+                        }
+                    }
+                    // 回傳填答結果
+                    $scope.response = [{Grade:$scope.test.Grade,answer:$scope.answer}];
+                    // 標記已完成 - 取得已完成名單
+                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc(TestID)
+                    .get().then(function(results) {
+                        var a = results.data().finished;
+                        a.push(StuID);
+                        // 標記已完成 - 更新已完成名單
+                        db.collection("課程任務").doc(ClassID).collection("任務列表").doc(TestID)
+                        .update({
+                            finished: a
+                        })
+                        .then(function() {
+                            console.log("更新已完成名單成功");
+                            $scope.$apply(); //重新監聽view
+                        })
+                        .catch(function(error) {
+                            console.error("更新已完成名單失敗", error);
+                        });
+                    }).catch(function(error) { 
+                        console.log("取得已完成名單發生錯誤：", error); 
+                    });
+                } else {
+                    // 判斷不是空值才回傳
+                    if (!$scope.answer) {
+                        $scope.response = [];
+                    } else {
+                        // 僅回傳備份
+                        $scope.response = [{answer:$scope.answer}];
+                    }
+                }
+                // 回傳
+                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(TestID).collection("填答結果").doc(StuID)
+                .set({
+                    StuID: StuID,
+                    missionID: TestID,
+                    response: $scope.response,
+                    time: new Date()
+                })
+                .then(function(data) {
+                    console.log("回傳填答結果成功");
+                })
+                .catch(function(error) {
+                    console.error("回傳填答結果失敗：", error);
+                });
+            }
+
             // 監聽 - 取得測驗資料
             $scope.testStart = false;
             $scope.testContent = true;
             $scope.testOver = true;
-            var x,GradeNum=0; //宣告計時器 答對題數
             db.collection("IRS").doc(ClassID).collection("測驗列表").doc(TestID)
             .onSnapshot(function(doc) {
-                // 取得測驗時間 (暫訂5分鐘)
+                // 取得測驗時間
                 const second = 1000,
                     minute = second * 60,
                     hour = minute * 60;
@@ -1153,6 +1260,21 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
 
                 // 判斷是否開始測驗
                 if (doc.data().testStart) {
+                    // 載入題庫
+                    $scope.questions = doc.data().questions;
+                    // 亂數排序
+                    var res = [];
+                    for (var i = 0, len = $scope.questions.length; i < len; i++) {
+                        // 隨機找題
+                        var randomIndex = Math.floor(Math.random() * $scope.questions.length);
+                        // 放到新隊伍
+                        res[i] = $scope.questions[randomIndex];
+                        // 原本隊伍人越來越少，因此randomIndex需要一直抓$scope.questions.length
+                        $scope.questions.splice(randomIndex, 1);
+                    }
+                    $scope.questions = res;
+
+                    // 隱藏界面
                     $scope.testStart = true;
                     $scope.testContent = false;
                     $scope.$apply(); //重新監聽view
@@ -1163,12 +1285,11 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                         $scope.distance = GetZero(Math.floor(distance / (hour)))+":"+GetZero(Math.floor((distance % (hour)) / (minute)))+":"+GetZero(Math.floor((distance % (minute)) / second));                
                         $scope.$apply(); //重新監聽view
                         
-                        //判斷時間到
-                        if (distance <= 0) {
-                            // 關閉計時器
-                            clearInterval(x);
-                            // 儲存現有填答結果
-                            // ...
+                        //判斷時間到 並且 還沒按完成
+                        if (distance <= 0 && $scope.testOver==true) {
+                            // 呼叫回傳測驗 fun
+                            testCallBack(true);
+
                             // 隱藏界面
                             $scope.testStart = true;
                             $scope.testContent = true;
@@ -1178,8 +1299,9 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                         }
                     }, second);
                 } else {
-                    // 關閉計時器
-                    clearInterval(x);
+                    // 呼叫回傳測驗 fun
+                    testCallBack(false);
+
                     // 隱藏界面
                     $scope.testStart = false;       
                     $scope.testContent = true;
@@ -1192,55 +1314,16 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
             });
 
             // 按完成按鈕
-            $scope.testFinish = function(){
-                // 關閉計時器
-                clearInterval(x);
-                // 對答案算成績
-                for (let index = 1; index <= $scope.questions.length; index++) {
-                    if ($scope.questions[index-1].answer==$scope.answer[index]) {
-                        GradeNum+=1;
-                    }
-                    // 最後一筆結算成績
-                    if (index>=$scope.questions.length) {
-                        // 如果全對 給100分
-                        if (GradeNum==$scope.questions.length) {
-                            $scope.test.Grade = 100;
-                        } else {
-                            // 計算得分
-                            $scope.test.Grade = GradeNum * Math.round(100/$scope.questions.length);
-                        }
-                    }
-                }
-                // 儲存現有填答結果
-                // ...
+            $scope.testFinishBtn = function(){
+                // 呼叫回傳測驗 fun
+                testCallBack(true);
+
                 // 隱藏界面
                 $scope.testStart = true;
                 $scope.testContent = true;
                 $scope.testOver = false;
                 $ionicScrollDelegate.scrollTop(true); //滑到最上面
             };
-
-            // 假資料
-            $scope.questions = [
-                { indexReal:1, question: '本週章節名稱是：', optionA:'資訊管理的基本概念與架構', optionB:'資訊管理的科技觀點', optionC:'資訊管理的應用系統面觀點', optionD:'整合性的企業系統—ERP、CRM與SCM', answer:1 },
-                { indexReal:2, question: '「資訊科技」、「經濟環境」與「產業結構」的關係是：', optionA:'三者有交互影響關係', optionB:'三者之間沒有關係', optionC:'只有資訊科技與經濟環境有關係', optionD:'只有經濟環境與產業結構有關係', answer:1 },
-                { indexReal:3, question: '在資通訊科技所促成的新經濟體系中，從「人工作業」變成「電腦作業」的典範轉移，一般稱為：', optionA:'資訊化', optionB:'智慧化', optionC:'虛擬化', optionD:'網路化', answer:1 },
-                { indexReal:4, question: '下列何者不是資訊科技演化相關的定律？', optionA:'運動定律', optionB:'摩爾定律', optionC:'吉爾德定律', optionD:'貝爾定律', answer:1 },
-                { indexReal:5, question: '關於MIS的重要性敘述，何者正確？', optionA:'投資大', optionB:'提升生產力', optionC:'創造競爭優勢', optionD:'所述皆是', answer:4 },
-                { indexReal:6, question: '當我們提到硬體、軟體、資料庫或網路時，指的是MIS知識中哪一方面的議題？', optionA:'IT基礎設施', optionB:'企業的資訊應用系統', optionC:'ABIC四大科技', optionD:'資訊管理', answer:1 },
-            ]
-
-            // 亂數排序
-            var res = [];
-            for (var i = 0, len = $scope.questions.length; i < len; i++) {
-                // 隨機找題
-                var randomIndex = Math.floor(Math.random() * $scope.questions.length);
-                // 放到新隊伍
-                res[i] = $scope.questions[randomIndex];
-                // 原本隊伍人越來越少，因此randomIndex需要一直抓$scope.questions.length
-                $scope.questions.splice(randomIndex, 1);
-            }
-            $scope.questions = res;
 
             // 每次點選項，更新結果檔和進度條
             $scope.answerChange = function(answer){
@@ -3021,15 +3104,18 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                 $scope.missions.push({
                                     missionID:change.doc.id,
                                     Name:change.doc.data().Name,
+                                    Content:change.doc.data().Content,
                                     TimeOut:change.doc.data().TimeOut.toDate().getUTCFullYear()+'/'+
                                             pushMonth+'/'+
                                             pushDate,
                                     LeaderOnly:change.doc.data().LeaderOnly,
                                     type:change.doc.data().type,
+                                    Point:change.doc.data().Point,
                                     finished:change.doc.data().finished,
                                     HTML:$sce.trustAsHtml(change.doc.data().HTML),
                                     time:change.doc.data().time,lock:lock,
                                     show:false,
+                                    isIRS:change.doc.data().isIRS,
                                     showMsg:'查看更多'
                                 });
                                 $scope.$apply(); //重新監聽view
@@ -3053,8 +3139,14 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
 
                     // 新增任務
                     $scope.AddBtn = function(value) {
+                        // 設定預設質
                         $scope.AddBtnPopup = [];
+                        $scope.AddBtnPopup.IRS = [];
                         $scope.AddBtnPopup.LeaderOnly = false;
+                        $scope.AddBtnPopup.isIRS = false;
+                        $scope.AddBtnPopup.IRS.testStart = false;
+                        $scope.AddBtnPopup.HTML = "";
+                        $scope.AddBtnPopup.IRS.questions = "";
                         var ClassID = value.ClassID;
 
                         // 新增任務 - 跳出泡泡
@@ -3063,12 +3155,17 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                             template: 
                                 '<label class="item item-input item-input">'+
                                     '<div class="input-label">任務名稱</div>'+
-                                    '<input type="text" ng-model="AddBtnPopup.Name" placeholder="輸入任務名稱（限15字內）..." maxlength="15">'+    
+                                    '<input type="text" ng-model="AddBtnPopup.Name" placeholder="輸入任務名稱（限15字內）" maxlength="15">'+    
                                 '</label>'+
 
                                 '<label class="item item-input item-input">'+
                                     '<div class="input-label">任務簡介</div>'+
-                                    '<input type="text" ng-model="AddBtnPopup.Content" placeholder="輸入任務簡介（不限字數）..." maxlength="15">'+    
+                                    '<input type="text" ng-model="AddBtnPopup.Content" placeholder="輸入任務簡介（不限字數）">'+    
+                                '</label>'+
+
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">完成點數</div>'+
+                                    '<input type="number" ng-model="AddBtnPopup.Point" placeholder="輸入數字">'+    
                                 '</label>'+
                                 
                                 '<label class="item item-input item-select">'+
@@ -3088,10 +3185,35 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
 
                                 '<ion-toggle ng-model="AddBtnPopup.LeaderOnly">是否僅限組長執行</ion-toggle>'+
 
-                                '<label class="item item-input item-input">'+
+                                '<ion-toggle ng-model="AddBtnPopup.isIRS">是否需要使用IRS</ion-toggle>'+
+
+                                '<label ng-show="!AddBtnPopup.isIRS" class="item item-input item-input">'+
                                     '<div class="input-label">HTML</div>'+
-                                    '<textarea cols="50" rows="5" ng-model="AddBtnPopup.HTML"></textarea>'+
-                                '</label>',
+                                    '<textarea cols="50" rows="5" ng-model="AddBtnPopup.HTML" placeholder="輸入HTML。"></textarea>'+
+                                '</label>'+
+                                
+                                // IRS欄位
+                                '<div ng-show="AddBtnPopup.isIRS">'+
+
+                                    '<label class="item item-input item-input">'+
+                                        '<div class="input-label">考題</div>'+
+                                        '<textarea cols="50" rows="5" ng-model="AddBtnPopup.IRS.questions" placeholder="輸入考題(ex:{})。"></textarea>'+
+                                    '</label>'+
+
+                                    '<label class="item item-input item-input">'+
+                                        '<div class="input-label">每階段題數</div>'+
+                                        '<input type="number" ng-model="AddBtnPopup.IRS.stageQuestion" placeholder="輸入數字">'+    
+                                    '</label>'+
+
+                                    '<label class="item item-input item-input">'+
+                                        '<div class="input-label">每階段時間</div>'+
+                                        '<input type="number" ng-model="AddBtnPopup.IRS.stageTime" placeholder="輸入數字(單位秒)">'+    
+                                    '</label>'+
+
+                                    '<ion-toggle ng-model="AddBtnPopup.IRS.testStart">開啟測驗</ion-toggle>'+
+
+                                '</div>',
+                                
                             scope: $scope,
                             buttons: [{
                                 text: '取消',
@@ -3105,7 +3227,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                 onTap: function(e) {
                                     console.log('選擇新增');
                                     // 判斷是否必填未填
-                                    if ($scope.AddBtnPopup.Name==undefined||$scope.AddBtnPopup.type==undefined||$scope.AddBtnPopup.TimeOut==undefined||$scope.AddBtnPopup.LeaderOnly==undefined||$scope.AddBtnPopup.HTML==undefined) {
+                                    if ($scope.AddBtnPopup.Name==undefined||$scope.AddBtnPopup.type==undefined||$scope.AddBtnPopup.TimeOut==undefined||$scope.AddBtnPopup.LeaderOnly==undefined) {
                                         console.log("請填寫完整");
                                         $ionicPopup.alert({
                                             title: '錯誤',
@@ -3118,8 +3240,10 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                             Name: $scope.AddBtnPopup.Name,
                                             Content: $scope.AddBtnPopup.Content,
                                             type: $scope.AddBtnPopup.type,
+                                            Point: $scope.AddBtnPopup.Point,
                                             TimeOut: $scope.AddBtnPopup.TimeOut,
                                             LeaderOnly: $scope.AddBtnPopup.LeaderOnly,
+                                            isIRS: $scope.AddBtnPopup.isIRS,
                                             HTML: $scope.AddBtnPopup.HTML,
                                             finished: [],
                                             lock: false,
@@ -3127,6 +3251,33 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                         })
                                         .then(function(data) {
                                             console.log("新增任務成功");
+                                            // 判斷是否新增IRS
+                                            if ($scope.AddBtnPopup.isIRS) {
+                                                // 假資料....................................
+                                                $scope.AddBtnPopup.IRS.questions = [
+                                                    { indexReal:1, question: '本週章節名稱是：', optionA:'資訊管理的基本概念與架構', optionB:'資訊管理的科技觀點', optionC:'資訊管理的應用系統面觀點', optionD:'整合性的企業系統—ERP、CRM與SCM', answer:1 },
+                                                    { indexReal:2, question: '「資訊科技」、「經濟環境」與「產業結構」的關係是：', optionA:'三者有交互影響關係', optionB:'三者之間沒有關係', optionC:'只有資訊科技與經濟環境有關係', optionD:'只有經濟環境與產業結構有關係', answer:1 },
+                                                    { indexReal:3, question: '在資通訊科技所促成的新經濟體系中，從「人工作業」變成「電腦作業」的典範轉移，一般稱為：', optionA:'資訊化', optionB:'智慧化', optionC:'虛擬化', optionD:'網路化', answer:1 },
+                                                    { indexReal:4, question: '下列何者不是資訊科技演化相關的定律？', optionA:'運動定律', optionB:'摩爾定律', optionC:'吉爾德定律', optionD:'貝爾定律', answer:1 },
+                                                    { indexReal:5, question: '關於MIS的重要性敘述，何者正確？', optionA:'投資大', optionB:'提升生產力', optionC:'創造競爭優勢', optionD:'所述皆是', answer:4 },
+                                                    { indexReal:6, question: '當我們提到硬體、軟體、資料庫或網路時，指的是MIS知識中哪一方面的議題？', optionA:'IT基礎設施', optionB:'企業的資訊應用系統', optionC:'ABIC四大科技', optionD:'資訊管理', answer:1 }
+                                                ]
+                                                // 新增IRS
+                                                db.collection("IRS").doc(ClassID).collection("測驗列表").doc(data.id)
+                                                .set({
+                                                    Name: $scope.AddBtnPopup.Name,
+                                                    questions: $scope.AddBtnPopup.IRS.questions,
+                                                    stageQuestion: $scope.AddBtnPopup.IRS.stageQuestion,
+                                                    stageTime: $scope.AddBtnPopup.IRS.stageTime * 1000,
+                                                    testStart: $scope.AddBtnPopup.IRS.testStart
+                                                })
+                                                .then(function(data) {
+                                                    console.log("新增IRS成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("新增IRS失敗：", error);
+                                                });
+                                            }
                                         })
                                         .catch(function(error) {
                                             console.error("新增任務失敗：", error);
