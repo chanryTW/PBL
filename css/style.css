@@ -8,6 +8,11 @@ a{text-decoration:none}
 .popup-container .popup{
     width: 80%;
 }
+/* 控制整體最大寬度 */
+.maxWidth{
+    max-width: 768px;
+    margin: 0 auto;
+}
 .card{
     border-radius: 5px;
     box-shadow: 0 4px 16px rgba(0,0,0,.2);
@@ -64,8 +69,8 @@ a{text-decoration:none}
 /* -----------------------------------------------選擇課程頁面----------------------------------------------- */
 .class_block{
     display: inline-block;
-    width: 40vw;
-    height: 40vw;
+    width: 41vw;
+    height: 41vw;
     background: #000;
     opacity: 0.5;
     margin: 3vw;

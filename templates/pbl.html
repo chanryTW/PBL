@@ -1,6 +1,5 @@
 <ion-view title="首頁" hide-back-button="true" id="pbl">
-  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
-
+  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true"><div class="maxWidth">
       <div class="pbl-member" ng-repeat="member in members | orderBy:'memberName'">
         <div ng-class="{true:'pbl-leader pbl-img-div',false:'pbl-img-div'}[{{member.leader}}]">
           <img id="pbl-img" ng-src="{{member.memberImg}}">
@@ -39,8 +38,7 @@
           <a class = "button button-block button-chanry1" href="#/menu/chatroom">前往留言板</a>          
         </div>
       </div>  -->
-       
-  </ion-content>
+  </div></ion-content>
 
   <div ng-if="LockGroupShow" >
     <div class="button-bar pbl-button" ng-if="leaderGroupShow">
