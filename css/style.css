@@ -134,11 +134,13 @@ a{text-decoration:none}
     color: #ffffff;
     font-size: 4vw;
     line-height: 6vw;
+    width: 20vw;
+    margin: 0 auto;
 }
 @media screen and (min-width: 768px) { 
-    .pbl-img-div{ width: 153.6px; height: 153.6px; }
-    .pbl-member{ width: 184.32px; height: 230.4px; }
-    .pbl-member-span{ font-size: 30.72px; line-height: 46.08px; }
+    .pbl-img-div{ width: 153.6px; height: 153.6px; margin: 0 15.36px 0 15.36px;}
+    .pbl-member{ width: 184.32px; }
+    .pbl-member-span{ font-size: 30.72px; line-height: 46.08px; width: 153.6px;}
     .pbl-leader:after{ left: 7.68px;width: 61.44px;height: 61.44px; }
 }
 /* 邀請泡泡圖片 */
