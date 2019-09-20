@@ -5,8 +5,10 @@ html, body, .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, button, input,
     font-family:"Noto Sans TC", "微軟正黑體", Arial, sans-serif;
 }
 a{text-decoration:none}
+/* 控制泡泡最大寬度 */
 .popup-container .popup{
     width: 80%;
+    max-width: 400px;
 }
 /* 控制整體最大寬度 */
 .maxWidth{
