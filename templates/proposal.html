@@ -1,5 +1,5 @@
 <ion-view title="提案聚焦" hide-back-button="true" id="proposal">
-  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
+  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true"><div class="maxWidth">
     
     <div class="proposal_card" ng-repeat="item in items">
       <div class="card">
@@ -19,7 +19,7 @@
     </div>
     <!-- 空格 -->
     <div class="spacer" style="height: 135px;"></div>
-  </ion-content>
+  </div></ion-content>
 
     <div class="AddBall" ng-click="AddProposal('Add')" ng-if="leaderGroupShow">+</div>
 

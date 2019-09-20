@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
+  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true"><div class="maxWidth">
     <div class="spacer" style="height: 40px;"></div>
     <!-- main -->
     <div id="brainstorming_list" class="list list-inset" ng-repeat="item in items | filter:search">
@@ -20,7 +20,7 @@
         <h2 class="brainstorming_h2">匿名：{{item.msg}}<i ng-class="{true: 'likeBtnOn', false: 'likeBtnOff'}[{{item.likeBtn}}]" ng-click="like(item)"></i></h2>
       </div>
     </div>
-  </ion-content>
+  </div></ion-content>
 
   <!-- 文字輸入 -->
   <button class = "button button-block button-small brainstorming_DelAllBtn" ng-if="DelAllBtnShow" ng-click="DelAllBtn()">清空訊息</button>

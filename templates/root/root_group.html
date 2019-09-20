@@ -1,5 +1,5 @@
 <ion-view title="分組狀態" hide-back-button="true" id="root_group">
-  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
+  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true"><div class="maxWidth">
     
     <div class="button-bar">
       <a class="button button-block button-dark" ng-repeat="Class in AllClass" ng-click="choose_class(Class.ClassID,Class.ClassName)">{{Class.ClassName}}</a>
@@ -24,5 +24,5 @@
         <p style="padding:10px;">{{Allgroup2.members}}</p>
     </div>
 
-  </ion-content>
+  </div></ion-content>
 </ion-view>
