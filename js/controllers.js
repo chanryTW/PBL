@@ -161,7 +161,7 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
                             var storage = firebase.storage();
                             var storageRef = storage.ref();
                             storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
-                                // 放入投票內容
+                                // 放入留言版內容
                                 $scope.messages.push({
                                     messageName:change.doc.data().StuID + ' ' + change.doc.data().StuName,
                                     messageImg:url,
@@ -171,7 +171,6 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
 
                                 $scope.$apply(); //重新監聽view
                                 $ionicScrollDelegate.scrollBottom(true); //滑到最下面
-                                console.log("新增：", $scope.votes);
                             })
                         }).catch(function(error) { 
                             console.log("查詢圖片檔名發生錯誤：", error); 
