@@ -2574,6 +2574,40 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                 
             };
 
+            // BUG回報功能
+            $scope.BugBtn = function(Bug) {
+                // 判斷是否未填
+                if (Bug=="" || Bug==undefined) {
+                    console.log("請填寫完整");
+                    $ionicPopup.alert({
+                        title: '錯誤',
+                        template: '請填寫完整。'
+                    });
+                } else {
+                    // 回傳伺服器
+                    db.collection("系統記錄").doc(ClassID).collection("BUG回報")
+                    .add({
+                        StuID: StuID,
+                        Content: Bug,
+                        time: new Date()
+                    })
+                    .then(function(data) {
+                        console.log("回傳伺服器成功");
+                        $ionicPopup.alert({
+                            title: '成功',
+                            template: '回報成功，感謝您。'
+                        });
+                    })
+                    .catch(function(error) {
+                        console.error("回傳伺服器失敗：", error);
+                        $ionicPopup.alert({
+                            title: '失敗',
+                            template: '回報失敗，請稍候再試。'+error
+                        });
+                    });
+                }
+            };
+
         }else{
             console.log("尚未登入");
             $state.go("login");
