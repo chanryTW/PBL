@@ -34,7 +34,8 @@ angular.module('app', ['ionic', 'app.controllers', 'app.routes', 'app.directives
     databaseURL: "https://co-writing-test.firebaseio.com",
     projectId: "co-writing-test",
     storageBucket: "co-writing-test.appspot.com",
-    messagingSenderId: "894137377703"
+    messagingSenderId: "894137377703",
+    appId: "1:894137377703:web:d5584a32c2b21322e98c82"
   };
   firebase.initializeApp(config);
 })
