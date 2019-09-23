@@ -293,6 +293,15 @@ a{text-decoration:none}
 .testOver{
     padding-top: 28vh;
 }
+.testOverSpan{
+    font-size: 5vw;
+}
+@media screen and (min-width: 768px) { 
+    .testStart,.testOver{ line-height:46.08px; font-size:76.8px;}
+    .testStart{ padding-top:230.4px; }
+    .testOver{ padding-top:215.04px; }
+    .testOverSpan{ font-size: 38.4px; }
+}
 /* 進度條 */
 .progress {
     width: 60%;
