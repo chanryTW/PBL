@@ -38,6 +38,8 @@ angular.module('app', ['ionic', 'app.controllers', 'app.routes', 'app.directives
     appId: "1:894137377703:web:d5584a32c2b21322e98c82"
   };
   firebase.initializeApp(config);
+  
+  var perf = firebase.performance();
 })
 
 /*
