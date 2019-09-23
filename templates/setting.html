@@ -22,15 +22,14 @@
       </div>
 
       <div class="card">
-          <div class="item item-divider">BUG回報or建議：</div>
-          <h5 class="padding">視BUG狀況可能給予加分。</h5>
-          <label class="item-input">
-            <input type="text" placeholder="請在此輸入...">
-          </label>
-          <div class="item">
-            <button id="page7_savebtn3" class="button button-block button-chanry1">送出</button>
-          </div>
+        <div class="item item-divider">BUG回報or建議：</div>
+        <label class="item item-input item-input">
+          <textarea cols="50" rows="5" ng-model="Bug" placeholder="請在此輸入(視BUG狀況可能給予加分)..."></textarea>
+        </label>
+        <div class="item">
+          <button ng-click="BugBtn(Bug)" class="button button-block button-chanry1">送出</button>
         </div>
+      </div>
       
     </div></ion-content>
 </ion-view>
