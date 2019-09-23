@@ -13,7 +13,7 @@
         </div>
         <div ng-repeat="brainstorming in item.brainstorming" class="item item-text-wrap proposal_item">
           {{brainstorming.msg}}
-          <i class="proposal_DelBrainstormingBtn" ng-click="" ng-if="leaderGroupShow"></i>
+          <i class="proposal_DelBrainstormingBtn" ng-click="DelBrainstorming(item.time,brainstorming.time)" ng-if="leaderGroupShow"></i>
         </div>
       </div>
     </div>
