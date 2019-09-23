@@ -12,16 +12,15 @@
     <div class="testStart" ng-if="!testStart">等待老師開啟測驗</div>
     <div class="testOver" ng-if="!testOver">
       測驗結束<br>
-      <span style="font-size: 5vw;">
-
+      <span class="testOverSpan">
         您的分數是：{{test.Grade}}<br>
         資料已上傳雲端
       </span>
     </div>
 
-    <div ng-repeat="question in questions | orderBy:'indexFake'" ng-if="!testContent" class="card">
+    <div ng-repeat="question in questions | filter:search" ng-if="!testContent" class="card">
       <div class="item item-divider">
-        {{$index+1}}.{{question.question}}
+        {{search.substr(11)}}.{{question.question}}
       </div>
       <ion-list>
         <ion-radio type="radio" ng-value="1" ng-model="$parent.answer[question.indexReal]" ng-click="answerChange($parent.answer)">(A) {{question.optionA}}</ion-radio>
@@ -32,7 +31,13 @@
       </ion-list>
     </div>
 
-    <a class="button button-block button-chanry1" ng-if="!testContent" ng-click="testFinishBtn()">完成</a>
+    <div ng-if="pageUpDownShow" class="card">
+      <div class="item item-text-wrap row">
+        <a class="button button-block button-chanry1 col" ng-if="pageUpShow" ng-click="pageUp(true)">上一題</a>
+        <a class="button button-block button-chanry2 col" ng-if="pageDownShow" ng-click="pageUp(false)">下一題</a>
+        <a class="button button-block button-chanry2 col" ng-if="FinishBtnShow" ng-click="testFinishBtn()">完成送出</a>
+      </div>
+    </div>
 
     <!-- <div class="card">
       <div class="item item-divider">
