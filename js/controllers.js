@@ -2365,6 +2365,52 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 }
             };
 
+            // 刪除腦力激盪
+            $scope.DelBrainstorming = function(ProposalTime,BrainTime) {
+                // 取得腦力激盪ID
+                db.collection("腦力激盪").doc(ClassID).collection(GroupID).where("time", "==", BrainTime)
+                .get().then(function(results) {
+                    results.forEach(function (doc) {
+                        var BrainID = doc.id;
+                        // 取得該提案之腦力激盪清單
+                        db.collection("提案聚焦").doc(ClassID).collection(GroupID).where("time", "==", ProposalTime)
+                        .get().then(function(results) {
+                            results.forEach(function (doc) {
+                                // 從清單中刪除該腦力激盪
+                                var brainstorming = doc.data().brainstorming;
+                                brainstorming.splice(brainstorming.indexOf(BrainID),1);
+                                // 更新該提案之腦力激盪清單
+                                db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(doc.id)
+                                .update({
+                                    brainstorming: brainstorming
+                                })
+                                .then(function(data) {
+                                    console.log("更新該提案之腦力激盪清單成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("更新該提案之腦力激盪清單失敗：", error);
+                                });
+                                // 標記提案未加入
+                                db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc(BrainID)
+                                .update({
+                                    invited: false
+                                })
+                                .then(function(data) {
+                                    console.log("標記提案成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("標記提案失敗：", error);
+                                });
+                            });
+                        }).catch(function(error) { 
+                            console.log("取得該提案之腦力激盪清單發生錯誤：", error); 
+                });
+                    });
+                }).catch(function(error) { 
+                    console.log("取得腦力激盪ID發生錯誤：", error); 
+                });
+            }
+
             // 刪除提案
             $scope.DelProposal = function(time) {
                 $ionicPopup.confirm({
