@@ -1234,6 +1234,13 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 });
             }
 
+            // 預設在題目1
+            $scope.search = 'fkozq65K題目：01';
+            // 預設第一題的按鈕
+            $scope.pageUpShow = false;
+            $scope.pageDownShow = true;
+            $scope.FinishBtnShow = false;
+
             // 監聽 - 取得測驗資料
             $scope.testStart = false;
             $scope.testContent = true;
@@ -1272,10 +1279,20 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                         $scope.questions.splice(randomIndex, 1);
                     }
                     $scope.questions = res;
+                    
+                    // 放入題目標籤
+                    for (let index = 1; index <= $scope.questions.length; index++) {
+                        var a;
+                        if (index<=9) {
+                            a = '0'+index;
+                        }
+                        $scope.questions[index-1].search = 'fkozq65K題目：'+a;
+                    }
 
                     // 隱藏界面
                     $scope.testStart = true;
                     $scope.testContent = false;
+                    $scope.pageUpDownShow = true;
                     $scope.$apply(); //重新監聽view
 
                     // 倒數計時
@@ -1293,6 +1310,7 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                             $scope.testStart = true;
                             $scope.testContent = true;
                             $scope.testOver = false;
+                            $scope.pageUpDownShow = false;
                             $ionicScrollDelegate.scrollTop(true); //滑到最上面
                             $scope.$apply(); //重新監聽view
                         }
@@ -1305,12 +1323,54 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                     $scope.testStart = false;       
                     $scope.testContent = true;
                     $scope.testOver = true;
+                    $scope.pageUpDownShow = false;
                     $ionicScrollDelegate.scrollTop(true); //滑到最上面
                     $scope.$apply(); //重新監聽view
                 }
             },function(error) {
                 console.error("取得測驗資料發生錯誤：", error);
             });
+
+            // 按上一題或下一題
+            $scope.pageUp = function(Up){
+                if (Up) {
+                    // 上一題
+                    var a = parseInt($scope.search.substr(11))-1;
+                    if (a<=9) {
+                        a = '0'+a;
+                    }
+                    $scope.search = 'fkozq65K題目：'+a;
+                } else {
+                    // 下一題
+                    var a = parseInt($scope.search.substr(11))+1;
+                    if (a<=9) {
+                        a = '0'+a;
+                    }
+                    $scope.search = 'fkozq65K題目：'+a;
+                }
+                // 取得最後一題題號
+                var a = $scope.questions.length;
+                if (a<=9) {
+                    a = '0'+a;
+                }
+                // 判斷是否第一或最後一題
+                if ($scope.search=='fkozq65K題目：01') {
+                    $scope.pageUpShow = false;
+                    $scope.pageDownShow = true;
+                    $scope.FinishBtnShow = false;
+                } else if ($scope.search=='fkozq65K題目：'+a) {
+                    $scope.pageUpShow = true;
+                    $scope.pageDownShow = false;
+                    $scope.FinishBtnShow = true;
+                } else {
+                    $scope.pageUpShow = true;
+                    $scope.pageDownShow = true;
+                    $scope.FinishBtnShow = false;
+                }
+                // 暫存到伺服器
+                // 呼叫回傳測驗 fun
+                testCallBack(false);
+            };
 
             // 按完成按鈕
             $scope.testFinishBtn = function(){
@@ -1321,6 +1381,7 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 $scope.testStart = true;
                 $scope.testContent = true;
                 $scope.testOver = false;
+                $scope.pageUpDownShow = false;
                 $ionicScrollDelegate.scrollTop(true); //滑到最上面
             };
 
@@ -3093,7 +3154,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                     lock = 1;
                                 } else if (change.doc.data().TimeOut.toDate() < new Date()){
                                     lock = 2;
-                                }
+                                }                                
                                 // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
                                 var pushMonth = Number(change.doc.data().TimeOut.toDate().getMonth())+1;
                                 var pushDate = change.doc.data().TimeOut.toDate().getDate();
@@ -3195,17 +3256,12 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                 '<div ng-show="AddBtnPopup.isIRS">'+
 
                                     '<label class="item item-input item-input">'+
-                                        '<div class="input-label">考題</div>'+
+                                        '<div class="input-label">考題上傳</div>'+
                                         '<textarea cols="50" rows="5" ng-model="AddBtnPopup.IRS.questions" placeholder="輸入考題(ex:{})。"></textarea>'+
                                     '</label>'+
 
                                     '<label class="item item-input item-input">'+
-                                        '<div class="input-label">每階段題數</div>'+
-                                        '<input type="number" ng-model="AddBtnPopup.IRS.stageQuestion" placeholder="輸入數字">'+    
-                                    '</label>'+
-
-                                    '<label class="item item-input item-input">'+
-                                        '<div class="input-label">每階段時間</div>'+
+                                        '<div class="input-label">測驗時間</div>'+
                                         '<input type="number" ng-model="AddBtnPopup.IRS.stageTime" placeholder="輸入數字(單位秒)">'+    
                                     '</label>'+
 
@@ -3233,6 +3289,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                             template: '請填寫完整。'
                                         });
                                     } else {
+                                        // 將截止日期設為當天晚上23:59:59
+                                        $scope.AddBtnPopup.TimeOut=$scope.AddBtnPopup.TimeOut.setHours(23,59,59);
+                                        $scope.AddBtnPopup.TimeOut=new Date($scope.AddBtnPopup.TimeOut);
                                         // 新增任務
                                         db.collection("課程任務").doc(ClassID).collection("任務列表")
                                         .add({
@@ -3266,7 +3325,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                                 .set({
                                                     Name: $scope.AddBtnPopup.Name,
                                                     questions: $scope.AddBtnPopup.IRS.questions,
-                                                    stageQuestion: $scope.AddBtnPopup.IRS.stageQuestion,
                                                     stageTime: $scope.AddBtnPopup.IRS.stageTime * 1000,
                                                     testStart: $scope.AddBtnPopup.IRS.testStart
                                                 })
