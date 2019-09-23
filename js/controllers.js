@@ -2589,9 +2589,15 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                             title: '上傳圖片失敗',
                             template: error
                         });
+                        // 清空
+                        $scope.myImage='';
+                        $scope.myCroppedImage='';
                     }, function() {
                         console.log("上傳成功");
                         $ionicLoading.hide();
+                        // 清空
+                        $scope.myImage='';
+                        $scope.myCroppedImage='';
                         // 更新menu的大頭照
                         storageRef.child('members/'+ImgID).getDownloadURL().then(function(url) {
                             document.getElementById("menu-img").src=url;
@@ -2613,11 +2619,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                             template: '更換照片完成。'
                         });
                     });
-                    // 清空
-                    $scope.myImage='';
-                    $scope.myCroppedImage='';
                 }
-                
             };
 
             // BUG回報功能
