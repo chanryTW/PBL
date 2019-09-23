@@ -2565,7 +2565,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                     var storage = firebase.storage();
                     var storageRef = storage.ref();
                     var now = new Date();
-                    var ImgID = now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
+                    var ImgID = StuID+now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
                     var uploadTask = storageRef.child('members/'+ImgID).putString(myCroppedImage, 'data_url');
                     uploadTask.on('state_changed', function(snapshot){
                         // 取得檔案上傳狀態，並用數字顯示
