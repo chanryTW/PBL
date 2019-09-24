@@ -170,7 +170,7 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
                                 });
 
                                 $scope.$apply(); //重新監聽view
-                                // $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                             })
                         }).catch(function(error) { 
                             console.log("查詢圖片檔名發生錯誤：", error); 
