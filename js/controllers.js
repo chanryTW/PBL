@@ -170,7 +170,7 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
                                 });
 
                                 $scope.$apply(); //重新監聽view
-                                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                                // $ionicScrollDelegate.scrollBottom(true); //滑到最下面
                             })
                         }).catch(function(error) { 
                             console.log("查詢圖片檔名發生錯誤：", error); 
@@ -2459,26 +2459,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 });
             };
 
-        }else{
-            console.log("尚未登入");
-            $state.go("login");
-            // window.location.reload();
-        }
-    });
-}])
-
-// ----------------------------------------組內互評頁面----------------------------------------
-.controller('ingroup_mutualCtrl', ['$scope', '$stateParams', 
-function ($scope, $stateParams) {
-    var db = firebase.firestore();
-    // 驗證登入
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user) { //登入成功，取得使用者
-            console.log("已登入狀態");
-            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
-            var ClassID = localStorage.getItem("ClassID");
-
-            // ...
         }else{
             console.log("尚未登入");
             $state.go("login");
