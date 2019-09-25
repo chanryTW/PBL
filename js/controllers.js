@@ -130,6 +130,18 @@ function ($scope, $stateParams, $state, $ionicLoading, $timeout) {
 
     // 按下課程
     $scope.choose_class = function(ClassID,ClassName) {
+        // 系統紀錄 - 登入紀錄
+        db.collection("系統記錄").doc(ClassID).collection("登入紀錄")
+        .add({
+            StuID: StuID,
+            time: new Date()
+        })
+        .then(function(data) {
+            console.log("系統紀錄 - 登入紀錄成功");
+        })
+        .catch(function(error) {
+            console.error("系統紀錄 - 登入紀錄失敗：", error);
+        });
         // $timeout.cancel(mytimeout);//停止計時器
         localStorage.setItem("ClassID",ClassID);
         localStorage.setItem("ClassName",ClassName);
@@ -2613,7 +2625,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                         template: '請填寫完整。'
                     });
                 } else {
-                    // 回傳伺服器
+                    // 系統紀錄 - 回傳伺服器
                     db.collection("系統記錄").doc(ClassID).collection("BUG回報")
                     .add({
                         StuID: StuID,
