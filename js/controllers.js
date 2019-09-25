@@ -133,7 +133,7 @@ function ($scope, $stateParams, $state, $ionicLoading, $timeout) {
         // 系統紀錄 - 登入紀錄
         db.collection("系統記錄").doc(ClassID).collection("登入紀錄")
         .add({
-            StuID: StuID,
+            StuID: $stateParams.StuID,
             time: new Date()
         })
         .then(function(data) {
