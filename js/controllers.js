@@ -170,7 +170,8 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
                                 });
 
                                 $scope.$apply(); //重新監聽view
-                                $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                                $ionicScrollDelegate.scrollBottom(); //滑到最下面
+                                $ionicScrollDelegate.resize(); //重新取得範圍
                             })
                         }).catch(function(error) { 
                             console.log("查詢圖片檔名發生錯誤：", error); 
@@ -1311,7 +1312,7 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                             $scope.testContent = true;
                             $scope.testOver = false;
                             $scope.pageUpDownShow = false;
-                            $ionicScrollDelegate.scrollTop(true); //滑到最上面
+                            $ionicScrollDelegate.scrollTop(); //滑到最上面
                             $scope.$apply(); //重新監聽view
                         }
                     }, second);
@@ -1324,7 +1325,7 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                     $scope.testContent = true;
                     $scope.testOver = true;
                     $scope.pageUpDownShow = false;
-                    $ionicScrollDelegate.scrollTop(true); //滑到最上面
+                    $ionicScrollDelegate.scrollTop(); //滑到最上面
                     $scope.$apply(); //重新監聽view
                 }
             },function(error) {
@@ -1382,7 +1383,7 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 $scope.testContent = true;
                 $scope.testOver = false;
                 $scope.pageUpDownShow = false;
-                $ionicScrollDelegate.scrollTop(true); //滑到最上面
+                $ionicScrollDelegate.scrollTop(); //滑到最上面
             };
 
             // 每次點選項，更新結果檔和進度條
@@ -1524,7 +1525,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                         }
                         $scope.items.push(a);
                         $scope.$apply(); //重新監聽view
-                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                        $ionicScrollDelegate.scrollBottom(); //滑到最下面
                         console.log("新增: ", a);
                     }
                     if (change.type === "modified") {
@@ -1746,7 +1747,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             });
                         });
                         $scope.items.push({ProposalName:a.ProposalName,brainstorming:b,time:a.time});
-                        $ionicScrollDelegate.scrollBottom(true); //滑到最下面
+                        $ionicScrollDelegate.scrollBottom(); //滑到最下面
                         console.log("新增: ", $scope.items);
                     } else if (change.type === "modified") {
                         console.log("修改: ", change.doc.data());
