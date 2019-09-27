@@ -2399,14 +2399,28 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                                 })
                                                 .then(function(data) {
                                                     console.log("新增bell成功");
+                                                    // 取得小組名單
+                                                    db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+                                                    .get().then(function(results) {
+                                                        // 更新未讀名單
+                                                        db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
+                                                        .update({
+                                                            bellBadge: results.data().members
+                                                        })
+                                                        .then(function(data) {
+                                                            console.log("更新未讀名單成功");
+                                                        })
+                                                        .catch(function(error) {
+                                                            console.error("更新未讀名單失敗：", error);
+                                                        });
+
+                                                    }).catch(function(error) { 
+                                                        console.log("取得小組名單發生錯誤：", error); 
+                                                    });
                                                 })
                                                 .catch(function(error) {
                                                     console.error("新增bell失敗：", error);
                                                 });
-
-                                                // 取得小組名單
-                                                // 更新未讀名單
-                                                // ..................................................
                                             });
                                         }).catch(function(error) { 
                                             console.log("查詢全部訊息發生錯誤：", error); 
