@@ -6,7 +6,7 @@
         <div class="item item-divider">
           提案：【{{item.ProposalName}}】
           <div class="right">
-            <i class="proposal_bellProposalBtn" ng-click="bellProposal(item.time)"></i>
+            <i class="proposal_bellProposalBtn" ng-click="bellProposal(item.time)" ng-class="{true: 'bellBadge', false: ''}[{{item.bellBadge}}]"></i>
             <i class="proposal_AddProposalBtn" ng-click="AddProposal('Invite',item.time)"></i>
             <i class="proposal_DelProposalBtn" ng-click="DelProposal(item.time)" ng-if="leaderGroupShow"></i>
           </div>
