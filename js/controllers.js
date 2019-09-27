@@ -247,23 +247,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
             console.log(StuID);
-
-            // 記錄登入
-            // var db = firebase.database();
-            // var Today=new Date(); 
-            // // 取得 UTC time
-            // utc = Today.getTime() + (Today.getTimezoneOffset() * 60000);
-            // db.ref("/登入記錄/").push({記錄: "用戶 "+user.uid+" 登入於 "+Date(utc + (3600000*8))},
-            // function(error) {
-            //     if (error){
-            //         console.log("記錄登入記錄失敗");
-            //         console.log(error);
-            //     }
-            //     else{
-            //         console.log("記錄登入記錄成功");
-            //     }
-            // });
-            
+          
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
@@ -359,8 +343,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             },function(error) {
                 console.log("檢查小組狀態發生錯誤：", error); 
             }); 
-
-            
 
             // 創立小組 or 邀請小組
             $scope.addGroup = function(InviteOrAdd) {
