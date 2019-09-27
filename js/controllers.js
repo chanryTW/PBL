@@ -106,47 +106,54 @@ function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
 // ----------------------------------------選擇課程頁面----------------------------------------
 .controller('choose_classCtrl', ['$scope', '$stateParams', '$state', '$ionicLoading', '$timeout',
 function ($scope, $stateParams, $state, $ionicLoading, $timeout) {
-    $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入課程中...</p>'});
-    var a = [];
-    var db = firebase.firestore();
-    db.collection("課程").where("ClassStu", "array-contains", $stateParams.StuID)
-    .get().then(function (querySnapshot) {
-        querySnapshot.forEach(function (doc) {
-            a.push(doc.data());
-            $scope.items = a;
-            $scope.$apply(); //重新監聽view
+    // 判斷是否空降or按到上一頁
+    if ($stateParams.StuID!=null) {
+        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入課程中...</p>'});
+        var a = [];
+        var db = firebase.firestore();
+        db.collection("課程").where("ClassStu", "array-contains", $stateParams.StuID)
+        .get().then(function (querySnapshot) {
+            querySnapshot.forEach(function (doc) {
+                a.push(doc.data());
+                $scope.items = a;
+                $scope.$apply(); //重新監聽view
+            });
         });
-    });
 
-    // 定時重整
-    // $scope.onTimeout = function(){
-    //     $state.go($state.current, {}, {reload: true}); //重新載入view
-    //     mytimeout = $timeout($scope.onTimeout,2000);
-    //     console.log("重整");
-    // };
-    // var mytimeout = $timeout($scope.onTimeout,2000);
+        // 定時重整
+        // $scope.onTimeout = function(){
+        //     $state.go($state.current, {}, {reload: true}); //重新載入view
+        //     mytimeout = $timeout($scope.onTimeout,2000);
+        //     console.log("重整");
+        // };
+        // var mytimeout = $timeout($scope.onTimeout,2000);
 
-    $ionicLoading.hide();
+        $ionicLoading.hide();
 
-    // 按下課程
-    $scope.choose_class = function(ClassID,ClassName) {
-        // 系統紀錄 - 登入紀錄
-        db.collection("系統記錄").doc(ClassID).collection("登入紀錄")
-        .add({
-            StuID: $stateParams.StuID,
-            time: new Date()
-        })
-        .then(function(data) {
-            console.log("系統紀錄 - 登入紀錄成功");
-        })
-        .catch(function(error) {
-            console.error("系統紀錄 - 登入紀錄失敗：", error);
-        });
-        // $timeout.cancel(mytimeout);//停止計時器
-        localStorage.setItem("ClassID",ClassID);
-        localStorage.setItem("ClassName",ClassName);
-        $state.go("menu.pbl");
-    };
+        // 按下課程
+        $scope.choose_class = function(ClassID,ClassName) {
+            // 系統紀錄 - 登入紀錄
+            db.collection("系統記錄").doc(ClassID).collection("登入紀錄")
+            .add({
+                StuID: $stateParams.StuID,
+                time: new Date()
+            })
+            .then(function(data) {
+                console.log("系統紀錄 - 登入紀錄成功");
+            })
+            .catch(function(error) {
+                console.error("系統紀錄 - 登入紀錄失敗：", error);
+            });
+            // $timeout.cancel(mytimeout);//停止計時器
+            localStorage.setItem("ClassID",ClassID);
+            localStorage.setItem("ClassName",ClassName);
+            $state.go("menu.pbl");
+        };
+    } else {
+        console.log("錯誤方式");
+        $state.go("login");
+        // window.location.reload();
+    }
 }])
 
 // ----------------------------------------留言版頁面----------------------------------------
