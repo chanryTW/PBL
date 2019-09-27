@@ -472,6 +472,18 @@ a{text-decoration:none}
     background: url(../svg/bell.svg);
     margin: 0 5px 0 5px;
 }
+/* 鈴鐺的提醒紅點 */
+.bellBadge::before{
+    content: "";
+    display: block;
+    position: relative;
+    top: 0px;
+    left: 20px;
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    background-color: rgb(255, 0, 0);
+}
 /* 刪除腦力激盪圖示 */
 .proposal_DelBrainstormingBtn{
     position: absolute;
