@@ -2479,7 +2479,7 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
-            
+
             // 修改密碼
             $scope.Passward = function() {
                 // 寄送密碼重置信
@@ -2595,6 +2595,20 @@ function ($scope, $stateParams, $ionicLoading, $ionicPopup) {
                         .catch(function(error) {
                             console.error("更新DB檔名失敗：", error);
                         });
+                        // 判斷是否有小組
+                        if (localStorage.getItem("GroupID")!="none") {
+                            // 通知首頁更換照片
+                            db.collection("分組").doc(ClassID).collection("group").doc(localStorage.getItem("GroupID"))
+                            .update({
+                                imgChange: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("通知首頁更換照片成功");
+                            })
+                            .catch(function(error) {
+                                console.error("通知首頁更換照片失敗：", error);
+                            });
+                        }
 
                         var alertPopup = $ionicPopup.alert({
                             title: '成功',
