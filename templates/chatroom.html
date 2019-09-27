@@ -6,7 +6,7 @@
     
     <div class="spacer" style="height: 20px;"></div>
 
-    <div class="list-inset" ng-repeat="message in messages">
+    <div class="list-inset" ng-repeat="message in messages | orderBy:'time'">
       <div id="brainstorming_item" class="item">
         <div class="item item-avatar itemMessage">
             <img id="imgMessage" ng-src="{{message.messageImg}}">
