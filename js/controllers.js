@@ -833,7 +833,7 @@ function ($scope, $stateParams, $ionicPopup) {
                     });
                 }
             },function(error) {
-                console.log("取得提議發生錯誤：", error); 
+                console.log("取得建議發生錯誤：", error); 
             });
 
             // 點擊votebtn
@@ -1825,18 +1825,18 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
             // 點擊bell
             $scope.bellProposal = function(time) {
                 $scope.bells = []; // 清空重載
-                // 載入提議 
-                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入提議中...</p>'});
+                // 載入建議 
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入建議中...</p>'});
                 // 取得提案ID
                 db.collection("提案聚焦").doc(ClassID).collection(GroupID).where("time", "==", time)
                 .get().then(function(results) {
                     results.forEach(function (doc) {
                         proposalID = doc.id;
-                        // 監聽 - 取得提議
-                        unsubscribe = db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").where("solve", "==", false)
+                        // 監聽 - 取得建議
+                        unsubscribe = db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("建議").where("solve", "==", false)
                         .onSnapshot(function(results) {
                             if (results.empty) {
-                                console.log("目前無提議");
+                                console.log("目前無建議");
                                 $scope.bells = [];
                                 // ................................
                                 $ionicLoading.hide();
@@ -1938,7 +1938,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                 });
                             }
                         },function(error) {
-                            console.log("取得提議發生錯誤：", error); 
+                            console.log("取得建議發生錯誤：", error); 
                         });
 
                         // 判斷未讀名單是否有自己
@@ -1965,11 +1965,11 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
 
                 // 跳出泡泡
                 $ionicPopup.show({
-                    title: '組員提議之腦力激盪',
-                    subTitle: '請進行投票，贊成過半自動成立，反之否決提議。',
+                    title: '組員建議之腦力激盪',
+                    subTitle: '請進行投票，贊成過半自動成立，反之否決建議。',
                     template: 
                     '<div ng-repeat="bell in bells">'+
-                        '<div class="item item-divider">【匿名】提議加入以下腦力激盪</div>'+
+                        '<div class="item item-divider">【匿名】建議加入以下腦力激盪</div>'+
                         '<div ng-repeat="bellBrainstorming in bell.bellBrainstorming">'+
                             '<div class="item">{{$index+1}}.{{bellBrainstorming.msg}}</div>'+
                         '</div>'+
@@ -2051,21 +2051,21 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                     .get().then(function(doc) {
                         var membersLength = doc.data().members.length;
                         if ($scope.bells[indexNum].voteN.length > membersLength/2 || ($scope.bells[indexNum].voteN.length == $scope.bells[indexNum].voteY.length && $scope.bells[indexNum].voteY.length == membersLength/2)) {
-                            console.log("否決提議or平手");
-                            // 關閉提議
-                            db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").doc(bellID)
+                            console.log("否決建議or平手");
+                            // 關閉建議
+                            db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("建議").doc(bellID)
                             .update({
                                 solve: true,
                             })
                             .then(function(data) {
-                                console.log("關閉提議成功");
+                                console.log("關閉建議成功");
                                 $scope.$apply(); //重新監聽view
                             })
                             .catch(function(error) {
-                                console.error("關閉提議失敗：", error);
+                                console.error("關閉建議失敗：", error);
                             });
                         } else if ($scope.bells[indexNum].voteY.length > membersLength/2) {
-                            console.log("提議成立");
+                            console.log("建議成立");
                             // 取得提案聚焦內腦力激盪陣列
                             db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID)
                             .get().then(function(doc) {
@@ -2101,17 +2101,17 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                         .catch(function(error) {
                                             console.error("標記提案失敗：", error);
                                         });
-                                        // 關閉提議
-                                        db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").doc(bellID)
+                                        // 關閉建議
+                                        db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("建議").doc(bellID)
                                         .update({
                                             solve: true,
                                         })
                                         .then(function(data) {
-                                            console.log("關閉提議成功");
+                                            console.log("關閉建議成功");
                                             $scope.$apply(); //重新監聽view
                                         })
                                         .catch(function(error) {
-                                            console.error("關閉提議失敗：", error);
+                                            console.error("關閉建議失敗：", error);
                                         });
                                     });
                                 })
@@ -2127,7 +2127,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                     });
 
                     // 更新伺服器
-                    db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議").doc(bellID)
+                    db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("建議").doc(bellID)
                     .update({
                         voteN: $scope.bells[indexNum].voteN,
                         voteY: $scope.bells[indexNum].voteY
@@ -2144,7 +2144,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                 }
             };
 
-            // 新增,加入,提議提案
+            // 新增,加入,建議提案
             $scope.AddProposal = function(InviteOrAdd,time) {
                 $scope.proposals = [];
                 // 新增提案 - 取得未新增名單
@@ -2351,10 +2351,10 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                             }]
                         });
                     } else {
-                        // 加入提案 - 跳出泡泡(非組長)提議
+                        // 加入提案 - 跳出泡泡(非組長)建議
                         $ionicPopup.show({
-                            title: '提議加入之腦力激盪',
-                            subTitle: '提議後需等過半組員同意才可加入。',
+                            title: '建議加入之腦力激盪',
+                            subTitle: '建議後需等過半組員同意才可加入。',
                             template: 
                             '<div ng-repeat="proposalsPerSearch in proposalsForFilter() | filter:searchFilter | orderBy:'+"'search'"+'">'+
                                 '<div class="item item-divider">腦力激盪{{proposalsPerSearch.search}}</div>'+
@@ -2370,10 +2370,10 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                     console.log('選擇取消');
                                 }
                             }, {
-                                text: '提議',
+                                text: '建議',
                                 type: 'button-chanry1',
                                 onTap: function(e) {
-                                    console.log('選擇提議');
+                                    console.log('選擇建議');
                                     // 判斷是否必填未填
                                     if($scope.checkProposals.length == 0) {
                                         console.log("請勾選腦力激盪");
@@ -2388,7 +2388,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                             results.forEach(function (doc) {
                                                 var proposalID = doc.id;
                                                 // 新增bell
-                                                db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("提議")
+                                                db.collection("提案聚焦").doc(ClassID).collection(GroupID).doc(proposalID).collection("建議")
                                                 .add({
                                                     StuID: StuID,
                                                     brainstorming: $scope.checkProposals,
