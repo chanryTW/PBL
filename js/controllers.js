@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 var verson = "1.0.0";
 // 1.0.0 => 正式版發佈 2019.00.00
-angular.module('app.controllers', ['ngImgCrop'])
+angular.module('app.controllers', ['ngImgCrop','angular-bind-html-compile'])
 // ----------------------------------------登入頁面----------------------------------------
 .controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state', '$ionicLoading',
 function ($scope, $stateParams, $ionicPopup, $state, $ionicLoading) {
@@ -990,8 +990,8 @@ function ($scope, $stateParams, $ionicPopup) {
 }])
    
 // ----------------------------------------課程任務頁面----------------------------------------
-.controller('missionCtrl', ['$scope', '$stateParams', '$sce', '$state',
-function ($scope, $stateParams, $sce, $state) {
+.controller('missionCtrl', ['$scope', '$stateParams', '$sce', '$state', '$ionicPopup', '$ionicLoading',
+function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -999,56 +999,34 @@ function ($scope, $stateParams, $sce, $state) {
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
+            var GroupID = localStorage.getItem("GroupID");
 
-            // 監聽 - 載入所有任務
-            $scope.missions = [];
-            db.collection("課程任務").doc(ClassID).collection("任務列表")
-            .onSnapshot(function(querySnapshot) {
-                querySnapshot.docChanges().forEach(function(change) {
-                    if (change.type === "added") {
-                        console.log("新增: ", change.doc.data());
-                        // 判斷是否 關閉3 完成1 過期2
-                        var lock = 0;
-                        if (change.doc.data().lock == true){
-                            lock = 3;
-                        } else if (change.doc.data().finished.indexOf(StuID)!=-1){
-                            lock = 1;
-                        } else if (change.doc.data().TimeOut.toDate() < new Date()){
-                            lock = 2;
-                        }
-                        // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
-                        var pushMonth = Number(change.doc.data().TimeOut.toDate().getMonth())+1;
-                        var pushDate = change.doc.data().TimeOut.toDate().getDate();
-                        if (change.doc.data().TimeOut.toDate().getDate()<=9) {
-                            pushDate = '0'+change.doc.data().TimeOut.toDate().getDate();
-                        }
-                        $scope.missions.push({
-                            missionID:change.doc.id,
-                            Name:change.doc.data().Name,
-                            Content:change.doc.data().Content,
-                            TimeOut:change.doc.data().TimeOut.toDate().getUTCFullYear()+'/'+
-                                    pushMonth+'/'+
-                                    pushDate,
-                            LeaderOnly:change.doc.data().LeaderOnly,
-                            type:change.doc.data().type,
-                            Point:change.doc.data().Point,
-                            finished:change.doc.data().finished,
-                            HTML:$sce.trustAsHtml(change.doc.data().HTML),
-                            time:change.doc.data().time,
-                            lock:lock,
-                            show:false,
-                            isIRS:change.doc.data().isIRS,
-                            showMsg:'查看更多'
-                        });
-                        $scope.$apply(); //重新監聽view
-                    } else if (change.type === "modified") {
-                        console.log("修改: ", change.doc.data());
-                        // 用findIndex找出要修改的位置
-                        var indexNum = $scope.missions.findIndex((element)=>{
-                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
-                        });
-                        // 刪除
-                        if (indexNum!=-1) {
+            // 判斷組長
+            $scope.isLeader = false;
+            $scope.members = [];
+            db.collection("分組").doc(ClassID).collection("group").where("leader", "==", StuID)
+            .get().then(function(results) {
+                if(results.empty) {
+                    console.log("你非組長"); 
+                    $scope.isLeader = false;
+                } else {
+                    console.log("你是組長");
+                    $scope.isLeader = true;
+                    // 取得小組名單
+                    db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+                    .get().then(function(results) {
+                        $scope.members = results.data().members;
+                    }).catch(function(error) { 
+                        console.log("取得小組名單發生錯誤：", error); 
+                    });
+                }
+                
+                // 監聽 - 載入所有任務
+                $scope.missions = [];
+                db.collection("課程任務").doc(ClassID).collection("任務列表")
+                .onSnapshot(function(querySnapshot) {
+                    querySnapshot.docChanges().forEach(function(change) {
+                        if (change.type === "added") {
                             // 判斷是否 關閉3 完成1 過期2
                             var lock = 0;
                             if (change.doc.data().lock == true){
@@ -1057,35 +1035,176 @@ function ($scope, $stateParams, $sce, $state) {
                                 lock = 1;
                             } else if (change.doc.data().TimeOut.toDate() < new Date()){
                                 lock = 2;
+                            } else if (change.doc.data().LeaderOnly && !$scope.isLeader) {
+                                // 限組長填寫，且你不是組長
+                                lock = 3;
                             }
-                            $scope.missions[indexNum].lock = lock;
-                            console.log("修改任務成功");
-                        }else{
-                            console.log("修改任務不成功");
+                            // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
+                            var pushMonth = Number(change.doc.data().TimeOut.toDate().getMonth())+1;
+                            if (pushMonth<=9) {
+                                pushMonth = '0'+pushMonth;
+                            }
+                            var pushDate = change.doc.data().TimeOut.toDate().getDate();
+                            if (pushDate<=9) {
+                                pushDate = '0'+pushDate;
+                            }
+                            $scope.missions.push({
+                                missionID:change.doc.id,
+                                Name:change.doc.data().Name,
+                                Content:change.doc.data().Content,
+                                TimeOut:change.doc.data().TimeOut.toDate().getUTCFullYear()+'/'+
+                                        pushMonth+'/'+
+                                        pushDate,
+                                LeaderOnly:change.doc.data().LeaderOnly,
+                                type:change.doc.data().type,
+                                Point:change.doc.data().Point,
+                                finished:change.doc.data().finished,
+                                HTML:$sce.trustAsHtml(change.doc.data().HTML),
+                                time:change.doc.data().time,
+                                lock:lock,
+                                show:false,
+                                isIRS:change.doc.data().isIRS,
+                                showMsg:'查看更多'
+                            });
+                            $scope.$apply(); //重新監聽view
+                            console.log("新增: ", $scope.missions);
+                        } else if (change.type === "modified") {
+                            console.log("修改: ", change.doc.data());
+                            // 用findIndex找出要修改的位置
+                            var indexNum = $scope.missions.findIndex((element)=>{
+                                return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                            });
+                            // 修改
+                            if (indexNum!=-1) {
+                                // 判斷是否 關閉3 完成1 過期2
+                                var lock = 0;
+                                if (change.doc.data().lock == true){
+                                    lock = 3;
+                                } else if (change.doc.data().finished.indexOf(StuID)!=-1){
+                                    lock = 1;
+                                } else if (change.doc.data().TimeOut.toDate() < new Date()){
+                                    lock = 2;
+                                } else if (change.doc.data().LeaderOnly && !$scope.isLeader) { 
+                                    // 限組長填寫，且你不是組長
+                                    lock = 3;
+                                }
+                                $scope.missions[indexNum].lock = lock;
+                                console.log("修改任務成功");
+                            }else{
+                                console.log("修改任務不成功");
+                            }
+                            $scope.$apply(); //重新監聽view
+                        } else if (change.type === "removed") {
+                            console.log("刪除: ", change.doc.data());
+                            // 用findIndex找出要刪除的位置
+                            var indexNum = $scope.missions.findIndex((element)=>{
+                                return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                            });
+                            // 刪除
+                            if (indexNum!=-1) {
+                                $scope.missions.splice(indexNum,1);
+                                console.log("刪除任務成功");
+                            }else{
+                                console.log("刪除任務不成功");
+                            }
+                            $scope.$apply(); //重新監聽view
                         }
-                        $scope.$apply(); //重新監聽view
-                    } else if (change.type === "removed") {
-                        console.log("刪除: ", change.doc.data());
-                        // 用findIndex找出要刪除的位置
-                        var indexNum = $scope.missions.findIndex((element)=>{
-                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
-                        });
-                        // 刪除
-                        if (indexNum!=-1) {
-                            $scope.missions.splice(indexNum,1);
-                            console.log("刪除任務成功");
-                        }else{
-                            console.log("刪除任務不成功");
-                        }
-                        $scope.$apply(); //重新監聽view
-                    }
+                    });
                 });
+            }).catch(function(error) { 
+                console.log("判斷組長發生錯誤：", error); 
             });
+
+            
 
             // 進入IRS按鈕
             $scope.GoIRS = function(missionID,missionName,missionContent){
                 $state.go("menu.irs",{TestID:missionID,TestName:missionName,TestContent:missionContent});
             };
+
+            // 選擇提案聚焦按鈕
+            $scope.chooseProposal = [];
+            $scope.chooseProposalBtn = function(){
+                $scope.proposals = [];
+                // 選擇提案 - 取得提案聚焦
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入提案聚焦中...</p>'});
+                db.collection("提案聚焦").doc(ClassID).collection(GroupID)
+                .get().then(function(results) {
+                    if(results.empty) {
+                        console.log("無提案聚焦");
+                        $ionicLoading.hide();
+                    } else {
+                        var a = results.docs.length;
+                        var count = 0;
+                        results.forEach(function (doc) {
+                            $scope.proposals.push({
+                                ID:doc.id,
+                                ProposalName:doc.data().ProposalName,
+                                brainstorming:doc.data().brainstorming,
+                            });
+                            // 判斷最後一筆關閉轉圈圈
+                            count++;
+                            if (count==a) {
+                                $ionicLoading.hide();
+                            }
+                        });
+                        console.log("取得提案聚焦：",$scope.proposals);
+                    }
+                }).catch(function(error) { 
+                    console.log("取得未分組名單發生錯誤：", error); 
+                });
+
+                $scope.checkProposals = [];
+                // 選擇提案 - 偵測勾選
+                $scope.proposalBtn = function(proposal) {
+                    // 判斷有無在陣列中，無則增加、有則刪除
+                    if ($scope.checkProposals.indexOf(proposal) === -1) {
+                        $scope.checkProposals.push(proposal);
+                    } else {
+                        $scope.checkProposals.splice($scope.checkProposals.indexOf(proposal),1);
+                    }
+                    console.log($scope.checkProposals);
+                };
+                
+                $scope.proposalInput = [];
+                // 選擇提案 - 跳出泡泡
+                $ionicPopup.show({
+                    title: '選擇提案',
+                    subTitle: '請選擇提案聚焦，可多選。',
+                    template: 
+                        '<div>'+
+                            '<div class="item item-divider">提案聚焦</div>'+
+                            '<div ng-repeat="proposal in proposals">'+
+                                '<ion-checkbox ng-click="proposalBtn(proposal)">{{proposal.ProposalName}}</ion-checkbox>'+
+                            '</div>'+
+                        '</div>',
+                    scope: $scope,
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '選擇',
+                        type: 'button-chanry1',
+                        onTap: function(e) {
+                            console.log('選擇選擇');
+                            // 判斷是否必填未填
+                            if($scope.checkProposals.length == 0) {
+                                console.log("請勾選提案聚焦");
+                                $ionicPopup.alert({
+                                    title: '錯誤',
+                                    template: '請勾選至少一項提案聚焦。'
+                                });
+                            } else {
+                                $scope.chooseProposal = $scope.checkProposals;
+                                $scope.response = $scope.checkProposals;
+                            }
+                        }
+                    }]
+                });
+            };            
 
             // 查看更多按鈕
             $scope.missionShow = function(doc){
@@ -1110,22 +1229,71 @@ function ($scope, $stateParams, $sce, $state) {
 
             // 回傳填答結果
             $scope.response = [];
-            $scope.responseBtn = function(missionID){
-                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
-                .add({
-                    StuID: StuID,
-                    missionID: missionID,
-                    response: $scope.response,
-                    time: new Date()
-                })
-                .then(function(data) {
-                    console.log("回傳填答結果成功");
-                })
-                .catch(function(error) {
-                    console.error("回傳填答結果失敗：", error);
+            $scope.responseBtn = function(doc){
+                var missionID = doc.missionID;
+                // 跳出泡泡
+                $ionicPopup.confirm({
+                    title: '存檔送出',
+                    template: '確定要送出嗎?',
+                    subTitle: '注意：送出後無法修改。',
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '確定',
+                        type: 'button-chanry1',
+                        onTap: function(e) {
+                            console.log('選擇送出');
+                            // 上傳伺服器
+                            db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
+                            .add({
+                                StuID: StuID,
+                                missionID: missionID,
+                                response: $scope.response,
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("回傳填答結果成功");
+                                // 標記已完成 - 取得已完成名單
+                                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                                .get().then(function(results) {
+                                    var a = results.data().finished;
+                                    // 判斷如果是組長限定的任務
+                                    if (doc.LeaderOnly) {
+                                        for(var i=0; i<$scope.members.length; ++i) {
+                                            a.push($scope.members[i]);
+                                        }
+                                    } else {
+                                        a.push(StuID);
+                                    }
+                                    // 標記已完成 - 更新已完成名單
+                                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                                    .update({
+                                        finished: a
+                                    })
+                                    .then(function() {
+                                        console.log("更新已完成名單成功");
+                                        // 收合內容
+                                        $scope.missionShow(doc);
+                                        $scope.$apply(); //重新監聽view
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新已完成名單失敗", error);
+                                    });
+                                }).catch(function(error) { 
+                                    console.log("取得已完成名單發生錯誤：", error); 
+                                });
+                            })
+                            .catch(function(error) {
+                                console.error("回傳填答結果失敗：", error);
+                            });
+                        }
+                    }]
                 });
             };
-
 
         }else{
             console.log("尚未登入");
