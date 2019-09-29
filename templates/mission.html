@@ -23,7 +23,7 @@
           <li class="item">
             <p>{{mission.Content}}</p>
           </li>
-          <div ng-show="mission.show" ng-bind-html="mission.HTML"></div>
+          <div ng-show="mission.show" bind-html-compile="mission.HTML"></div>
           <!-- IRS進入按鈕 -->
           <button ng-if="mission.isIRS" class="button button-block button-chanry2" ng-click="GoIRS(mission.missionID,mission.Name,mission.Content)">開始測驗</button>
           <!-- 收合按鈕 -->
@@ -41,7 +41,7 @@
         </span>
         <span class="timeOutSpan">
           <i class="timeOut"></i>
-          2020/1/6 截止
+          2020/01/06 截止
         </span>
       </div>
       <div class="item item_padding0 item-text-wrap">
