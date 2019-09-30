@@ -3503,6 +3503,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                     Point:change.doc.data().Point,
                                     finished:change.doc.data().finished,
                                     HTML:$sce.trustAsHtml(change.doc.data().HTML),
+                                    time:change.doc.data().time,
                                     lock:lock,
                                     show:false,
                                     isIRS:change.doc.data().isIRS,
@@ -3933,7 +3934,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                     // 將截止日期設為當天晚上23:59:59
                                     $scope.modifyPopup.TimeOut2=$scope.modifyPopup.TimeOut2.setHours(23,59,59);
                                     $scope.modifyPopup.TimeOut2=new Date($scope.modifyPopup.TimeOut2);
-                                    // 新增任務
+                                    // 修改任務
                                     db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
                                     .update({
                                         Name: $scope.modifyPopup.Name,
@@ -3943,8 +3944,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                         TimeOut: $scope.modifyPopup.TimeOut2,
                                         LeaderOnly: $scope.modifyPopup.LeaderOnly,
                                         HTML: $scope.modifyPopup.HTML,
-                                        lock: $scope.modifyPopup.lock,
-                                        time: new Date()
+                                        lock: $scope.modifyPopup.lock
                                     })
                                     .then(function(data) {
                                         console.log("修改任務成功");
