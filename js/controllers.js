@@ -1333,6 +1333,9 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
             $scope.test.Name = $stateParams.TestName;
             $scope.test.Content = $stateParams.TestContent;
 
+            // 放正確答案
+            $scope.rightAnswer = [];
+
             // 宣告計時器 答對題數
             var x,GradeNum=0; 
             
@@ -1343,18 +1346,19 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 // 是否全部完成
                 if (isFinish) {
                     // 對答案算成績
-                    for (let index = 1; index <= $scope.questions.length; index++) {
-                        if ($scope.questions[index-1].answer==$scope.answer[index]) {
+                    for (let index = 1; index <= $scope.rightAnswer.length; index++) {
+                        console.log($scope.rightAnswer[index-1],$scope.answer[index]);
+                        if ($scope.rightAnswer[index-1]==$scope.answer[index]) {
                             GradeNum+=1;
                         }
                         // 最後一筆結算成績
-                        if (index>=$scope.questions.length) {
+                        if (index>=$scope.rightAnswer.length) {
                             // 如果全對 給100分
-                            if (GradeNum==$scope.questions.length) {
+                            if (GradeNum==$scope.rightAnswer.length) {
                                 $scope.test.Grade = 100;
                             } else {
                                 // 計算得分
-                                $scope.test.Grade = GradeNum * Math.round(100/$scope.questions.length);
+                                $scope.test.Grade = GradeNum * Math.round(100/$scope.rightAnswer.length);
                             }
                         }
                     }
@@ -1439,6 +1443,12 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 if (doc.data().testStart) {
                     // 載入題庫
                     $scope.questions = doc.data().questions;
+
+                    // 存入正確答案
+                    for (let index = 0; index < $scope.questions.length; index++) {
+                        $scope.rightAnswer[index] = $scope.questions[index].answer;
+                    }
+                    
                     // 亂數排序
                     var res = [];
                     for (var i = 0, len = $scope.questions.length; i < len; i++) {
@@ -3631,12 +3641,18 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                             if ($scope.AddBtnPopup.isIRS) {
                                                 // 假資料....................................
                                                 $scope.AddBtnPopup.IRS.questions = [
-                                                    { indexReal:1, question: '本週章節名稱是：', optionA:'資訊管理的基本概念與架構', optionB:'資訊管理的科技觀點', optionC:'資訊管理的應用系統面觀點', optionD:'整合性的企業系統—ERP、CRM與SCM', answer:1 },
-                                                    { indexReal:2, question: '「資訊科技」、「經濟環境」與「產業結構」的關係是：', optionA:'三者有交互影響關係', optionB:'三者之間沒有關係', optionC:'只有資訊科技與經濟環境有關係', optionD:'只有經濟環境與產業結構有關係', answer:1 },
-                                                    { indexReal:3, question: '在資通訊科技所促成的新經濟體系中，從「人工作業」變成「電腦作業」的典範轉移，一般稱為：', optionA:'資訊化', optionB:'智慧化', optionC:'虛擬化', optionD:'網路化', answer:1 },
-                                                    { indexReal:4, question: '下列何者不是資訊科技演化相關的定律？', optionA:'運動定律', optionB:'摩爾定律', optionC:'吉爾德定律', optionD:'貝爾定律', answer:1 },
-                                                    { indexReal:5, question: '關於MIS的重要性敘述，何者正確？', optionA:'投資大', optionB:'提升生產力', optionC:'創造競爭優勢', optionD:'所述皆是', answer:4 },
-                                                    { indexReal:6, question: '當我們提到硬體、軟體、資料庫或網路時，指的是MIS知識中哪一方面的議題？', optionA:'IT基礎設施', optionB:'企業的資訊應用系統', optionC:'ABIC四大科技', optionD:'資訊管理', answer:1 }
+                                                    // { indexReal:1, question: '本週章節名稱是：', optionA:'資訊管理的基本概念與架構', optionB:'資訊管理的科技觀點', optionC:'資訊管理的應用系統面觀點', optionD:'整合性的企業系統—ERP、CRM與SCM', answer:1 },
+                                                    // { indexReal:2, question: '「資訊科技」、「經濟環境」與「產業結構」的關係是：', optionA:'三者有交互影響關係', optionB:'三者之間沒有關係', optionC:'只有資訊科技與經濟環境有關係', optionD:'只有經濟環境與產業結構有關係', answer:1 },
+                                                    // { indexReal:3, question: '在資通訊科技所促成的新經濟體系中，從「人工作業」變成「電腦作業」的典範轉移，一般稱為：', optionA:'資訊化', optionB:'智慧化', optionC:'虛擬化', optionD:'網路化', answer:1 },
+                                                    // { indexReal:4, question: '下列何者不是資訊科技演化相關的定律？', optionA:'運動定律', optionB:'摩爾定律', optionC:'吉爾德定律', optionD:'貝爾定律', answer:1 },
+                                                    // { indexReal:5, question: '關於MIS的重要性敘述，何者正確？', optionA:'投資大', optionB:'提升生產力', optionC:'創造競爭優勢', optionD:'所述皆是', answer:4 },
+                                                    // { indexReal:6, question: '當我們提到硬體、軟體、資料庫或網路時，指的是MIS知識中哪一方面的議題？', optionA:'IT基礎設施', optionB:'企業的資訊應用系統', optionC:'ABIC四大科技', optionD:'資訊管理', answer:1 }
+                                                    { indexReal:1, question: '本學年度為？', optionA:'106', optionB:'107', optionC:'108', optionD:'109', answer:3 },
+                                                    { indexReal:2, question: '資管系系主任是：', optionA:'汪素卿', optionB:'賴俊男', optionC:'黃奇俊', optionD:'賴正男', answer:4 },
+                                                    { indexReal:3, question: '本堂課名稱為：', optionA:'管理資訊系統', optionB:'管理學', optionC:'專家管理', optionD:'專案管理', answer:1 },
+                                                    { indexReal:4, question: '下列何者是高科大正確的校區名？', optionA:'光復', optionB:'新興', optionC:'旗津', optionD:'六龜', answer:3 },
+                                                    { indexReal:5, question: '本系本系系辦的人員有？', optionA:'柯大哥', optionB:'鯰魚哥', optionC:'柱柱姐', optionD:'柯P學姐', answer:1 },
+                                                    { indexReal:6, question: '本系比較不帥的老師是：', optionA:'劉勇志', optionB:'陳信榮', optionC:'王馨葦', optionD:'黃國璽', answer:3 }
                                                 ]
                                                 // 新增IRS
                                                 db.collection("IRS").doc(ClassID).collection("測驗列表").doc(data.id)
