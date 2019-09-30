@@ -3712,7 +3712,117 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                 }
             };
 
-            
+            // 點擊 狀態 修改 刪除 任務
+            $scope.SettingMission = function(type,ClassID,missionID) {
+                if (type=='status') {
+                    // 查看答題狀態
+
+                    // 轉換姓名 fun
+                    function ChangeName(Stu) {
+                        Stu = 'C107193101';
+                        // 查詢姓名
+                        db.collection("帳號").doc(Stu)
+                        .get().then(function(results) {
+                            return results.data().Name
+                        }).catch(function(error) { 
+                            console.log("查詢姓名發生錯誤：", error); 
+                        });
+                    };
+
+                    // 監聽 - 取得任務狀態
+                    $scope.missionStatus = [];
+                    var unsubscribe = db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                    .onSnapshot(function(doc) {
+                        // 取得任務狀態
+                        $scope.missionStatus = doc.data();
+
+                        // 取得全班名單
+                        $scope.AllStu = [];
+                        db.collection("課程").doc(ClassID)
+                        .get().then(function (results) {
+                            $scope.AllStu = results.data().ClassStu;
+                            // results.data().ClassStu.forEach(function (Stu) {
+                            //     $scope.AllStu.push(Stu+ChangeName(Stu));
+                            // });
+
+                            // 取得未完成名單 (全班名單-已完成名單)
+                            $scope.unfinished = $scope.AllStu;
+                            // $scope.AllStu //全班
+                            // $scope.missionStatus.finished //已完成
+                            for (let i = 0; i < $scope.missionStatus.finished.length; i++) {
+                                if ($scope.AllStu.indexOf($scope.missionStatus.finished[i])!=-1) {
+                                    $scope.unfinished.splice($scope.AllStu.indexOf($scope.missionStatus.finished[i],1));
+                                }
+                                // 判斷最後一筆
+                                if (i>=$scope.missionStatus.finished.length-1) {
+                                    // 完成名單補上姓名
+                                    for (let j = 0; j < $scope.missionStatus.finished.length; j++) {
+                                        db.collection("帳號").doc($scope.missionStatus.finished[j])
+                                        .get().then(function(results) {
+                                            $scope.missionStatus.finished[j] = $scope.missionStatus.finished[j]+results.data().Name;
+                                            $scope.$apply(); //重新監聽view
+                                        }).catch(function(error) { 
+                                            console.log("查詢姓名發生錯誤：", error); 
+                                        });
+                                    }
+                                    // 未完成名單補上姓名
+                                    for (let j = 0; j < $scope.unfinished.length; j++) {
+                                        db.collection("帳號").doc($scope.unfinished[j])
+                                        .get().then(function(results) {
+                                            $scope.unfinished[j] = $scope.unfinished[j]+results.data().Name;
+                                            $scope.$apply(); //重新監聽view
+                                        }).catch(function(error) { 
+                                            console.log("查詢姓名發生錯誤：", error); 
+                                        });
+                                    }
+                                    
+                                }
+                            }
+                        });
+                    },function(error) {
+                        console.error("取得任務狀態發生錯誤：", error);
+                    });
+
+                    // 跳出泡泡
+                    $ionicPopup.show({
+                        title: '答題狀態(即時監聽)',
+                        template: 
+                            '<div>'+
+                                '<div class="item item-divider">任務名稱</div>'+
+                                '<div class="item item-content">{{missionStatus.Name}}</div>'+
+
+                                '<div class="item item-divider">是否限組長</div>'+
+                                '<div class="item item-content">{{missionStatus.LeaderOnly}}</div>'+
+                                
+                                '<div class="item item-divider">人數</div>'+
+                                '<div class="item item-content">已完成{{missionStatus.finished.length}}人，未完成{{unfinished.length}}人</div>'+
+
+                                '<div class="item item-divider">已完成名單</div>'+
+                                '<div class="item item-content">{{missionStatus.finished}}</div>'+
+
+                                '<div class="item item-divider">未完成名單</div>'+
+                                '<div class="item item-content">{{unfinished}}</div>'+
+                            '</div>',
+                        scope: $scope,
+                        buttons: [{
+                            text: '關閉',
+                            type: 'button-chanry1',
+                            onTap: function(e) {
+                                console.log('選擇取消');
+                                // 關閉監聽
+                                unsubscribe();
+                            }
+                        }]
+                    });
+                } else if (type=='modify') {
+                    // 修改任務
+                    
+                } else if (type=='delete') {
+                    // 刪除任務
+                    
+                }
+                
+            };
 
         }else{
             console.log("尚未登入");
