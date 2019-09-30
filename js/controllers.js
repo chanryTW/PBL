@@ -1230,7 +1230,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
 
             // 回傳填答結果
             $scope.response = [];
-            $scope.responseBtn = function(doc){
+            $scope.responseBtn = function(doc,response){
                 var missionID = doc.missionID;
                 // 跳出泡泡
                 $ionicPopup.confirm({
@@ -1253,7 +1253,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             .add({
                                 StuID: StuID,
                                 missionID: missionID,
-                                response: $scope.response,
+                                response: response,
                                 time: new Date()
                             })
                             .then(function(data) {
