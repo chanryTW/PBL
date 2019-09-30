@@ -3775,7 +3775,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                             console.log("查詢姓名發生錯誤：", error); 
                                         });
                                     }
-                                    
                                 }
                             }
                         });
@@ -3816,12 +3815,38 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                     });
                 } else if (type=='modify') {
                     // 修改任務
-                    
+                    // ...........................
                 } else if (type=='delete') {
                     // 刪除任務
-                    
+                    // 跳出泡泡
+                    $ionicPopup.confirm({
+                        title: '刪除任務',
+                        template: '確定要刪除任務嗎?',
+                        buttons: [{
+                            text: '取消',
+                            type: 'button-default',
+                            onTap: function(e) {
+                                console.log('選擇取消');
+                            }
+                        }, {
+                            text: '刪除',
+                            type: 'button-chanry1',
+                            onTap: function(e) {
+                                console.log('選擇刪除');
+                                // 刪除任務資料
+                                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                                .delete()
+                                .then(function(data) {
+                                    console.log("刪除任務資料成功");
+                                    $scope.$apply(); //重新監聽view
+                                })
+                                .catch(function(error) {
+                                    console.error("刪除任務資料失敗：", error);
+                                });
+                            }
+                        }]
+                    });
                 }
-                
             };
 
         }else{
