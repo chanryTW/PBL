@@ -26,20 +26,6 @@
         <button id="page7_savebtn3" class="button button-block button-chanry1" ng-click="addClass()">創立</button>
       </div>
     </div>
-
-    <div class="card" ng-repeat="Class in AllClass">
-      <div class="item item-divider">
-        【{{Class.ClassName}}】設定：
-      </div>
-      <ion-toggle ng-model="Class.inviteLock" ng-checked="Class.inviteLock" ng-change="LockGroupChange(Class.ClassID,Class.inviteLock)">開放學生自行分組</ion-toggle>
-      <label class="item item-input">
-        <div class="input-label">
-          小組人數上限
-        </div>
-        <input type="number" ng-model="Class.maxMembers" ng-change="maxMembersChange(Class.ClassID,Class.maxMembers)">
-      </label>
-    </div>
     
-
   </div></ion-content>
 </ion-view>
