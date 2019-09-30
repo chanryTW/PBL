@@ -3243,36 +3243,6 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                 });
             });
 
-            // 設定 - 開放學生自行分組
-            $scope.LockGroupChange = function(ClassID,inviteLock) {
-                // 更新inviteLock
-                db.collection("課程").doc(ClassID)
-                .update({
-                    inviteLock: inviteLock
-                })
-                .then(function(data) {
-                    console.log("更新inviteLock成功");
-                })
-                .catch(function(error) {
-                    console.error("更新inviteLock失敗：", error);
-                });
-            };
-
-            // 設定 - 小組人數上限
-            $scope.maxMembersChange = function(ClassID,maxMembers) {
-                // 更新maxMembers
-                db.collection("課程").doc(ClassID)
-                .update({
-                    maxMembers: maxMembers
-                })
-                .then(function(data) {
-                    console.log("更新maxMembers成功");
-                })
-                .catch(function(error) {
-                    console.error("更新maxMembers失敗：", error);
-                });
-            };
-
         }else{
             console.log("非管理員");
             $state.go("login");
@@ -3305,6 +3275,14 @@ function ($scope, $stateParams, $state, $ionicLoading) {
             $scope.choose_class = function(ClassID,ClassName) {
                 $scope.cardShow = false;
                 $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入資料中...</p>'});
+
+                // 取得課程設定資訊
+                // 用findIndex找出位置
+                var indexNum = $scope.AllClass.findIndex((element)=>{
+                    return (element.ClassID === ClassID);
+                });
+                $scope.thisClass = $scope.AllClass[indexNum];
+                console.log($scope.thisClass);
 
                 // 取得分組狀態
                 $scope.Allgroups = [];
@@ -3405,11 +3383,37 @@ function ($scope, $stateParams, $state, $ionicLoading) {
                         $state.go($state.current, {}, {reload: true}); //重新載入view
                     });
                 });
-
             };
 
+            // 設定 - 開放學生自行分組
+            $scope.LockGroupChange = function(ClassID,inviteLock) {
+                // 更新inviteLock
+                db.collection("課程").doc(ClassID)
+                .update({
+                    inviteLock: inviteLock
+                })
+                .then(function(data) {
+                    console.log("更新inviteLock成功");
+                })
+                .catch(function(error) {
+                    console.error("更新inviteLock失敗：", error);
+                });
+            };
 
-
+            // 設定 - 小組人數上限
+            $scope.maxMembersChange = function(ClassID,maxMembers) {
+                // 更新maxMembers
+                db.collection("課程").doc(ClassID)
+                .update({
+                    maxMembers: maxMembers
+                })
+                .then(function(data) {
+                    console.log("更新maxMembers成功");
+                })
+                .catch(function(error) {
+                    console.error("更新maxMembers失敗：", error);
+                });
+            };
 
         }else{
             console.log("尚未登入");

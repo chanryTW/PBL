@@ -5,10 +5,23 @@
       <a class="button button-block button-dark" ng-repeat="Class in AllClass" ng-click="choose_class(Class.ClassID,Class.ClassName)">{{Class.ClassName}}</a>
     </div>
 
+    <div class="card" ng-show="cardShow" >
+      <div class="item item-divider">
+        【{{thisClass.ClassName}}】分組設定（請點按鈕更新）：
+      </div>
+      <ion-toggle ng-model="thisClass.inviteLock" ng-checked="thisClass.inviteLock" ng-change="LockGroupChange(thisClass.ClassID,thisClass.inviteLock)">開放學生自行分組</ion-toggle>
+      <label class="item item-input">
+        <div class="input-label">
+          小組人數上限
+        </div>
+        <input type="number" ng-model="thisClass.maxMembers" ng-change="maxMembersChange(thisClass.ClassID,thisClass.maxMembers)">
+      </label>
+    </div>
+
     <div class="card" ng-show="cardShow">
       <div ng-repeat="Allgroup in Allgroups">
         <div class="item item-divider">
-          【{{Allgroup.ClassName}}】分組狀態（請點按鈕更新）：
+          【{{Allgroup.ClassName}}】分組狀態：
         </div>
         <h4 style="padding:10px;"><b>未分組名單：</b></h4>
         <p style="padding:10px;">{{Allgroup.Ngroup}}</p>
