@@ -3503,7 +3503,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                                     Point:change.doc.data().Point,
                                     finished:change.doc.data().finished,
                                     HTML:$sce.trustAsHtml(change.doc.data().HTML),
-                                    time:change.doc.data().time,
                                     lock:lock,
                                     show:false,
                                     isIRS:change.doc.data().isIRS,
