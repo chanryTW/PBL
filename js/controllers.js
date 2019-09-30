@@ -358,13 +358,14 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             // 判斷不是自己才加入
                             if (doc.id!=StuID) {
                                 var a = results.docs[results.docs.length-1].id;
+                                var b = results.docs[results.docs.length-2].id;
                                 // 查詢姓名
                                 db.collection("帳號").doc(doc.id)
                                 .get().then(function(results) {
                                     $scope.Stus.push({StuID:doc.id,Name:results.data().Name,Checked:false});
                                     $state.go($state.current, {}, {reload: true}); //重新載入view
-                                    // 判斷最後一筆 關閉轉圈圈
-                                    if (doc.id==a) {
+                                    // 判斷倒數第一or第二筆 關閉轉圈圈
+                                    if (doc.id==a || doc.id==b) {
                                         $ionicLoading.hide();
                                     }
                                 }).catch(function(error) { 
