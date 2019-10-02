@@ -2163,7 +2163,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                     title: '組員建議之腦力激盪',
                     subTitle: '請進行投票，贊成過半自動成立，反之否決建議。',
                     template: 
-                    '<div ng-repeat="bell in bells">'+
+                    '<div ng-repeat="bell in bells | orderBy:'+"'time'"+'">'+
                         '<div class="item item-divider">【匿名】建議加入以下腦力激盪</div>'+
                         '<div ng-repeat="bellBrainstorming in bell.bellBrainstorming">'+
                             '<div class="item">{{$index+1}}.{{bellBrainstorming.msg}}</div>'+
