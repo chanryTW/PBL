@@ -8,6 +8,7 @@ var verson = "1.0.0";
 // -新增腦力激盪點擊分頁自動置底
 // -修正腦力激盪底部height
 // -修正首頁底部height
+// -修正首頁成績計算打錯
 
 // Firebase Key
 var config = {
