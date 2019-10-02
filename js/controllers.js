@@ -6,6 +6,7 @@ var verson = "1.0.0";
 // -修正重複加入小組問題
 // -接受一小組自動拒絕其他所有邀請並重載關閉全部Popup
 // -新增腦力激盪點擊分頁自動置底
+// -修正腦力激盪底部height
 
 // Firebase Key
 var config = {
