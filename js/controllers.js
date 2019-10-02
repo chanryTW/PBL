@@ -2974,92 +2974,48 @@ function ($scope, $stateParams, $ionicPopup, $state) {
             // 監聽 - 搜尋是否有人邀請
             db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
             .onSnapshot(function(querySnapshot) {
-                querySnapshot.forEach(function(doc) {
-                    console.log("有人邀請");
-                    // 查詢姓名
-                    var groupID = doc.data().groupID;
-                    var inviteID = doc.id;
-                    var leaderID = doc.data().leader;
-                    db.collection("帳號").doc(leaderID)
-                    .get().then(function(results) {
-                        var leaderName = results.data().Name;
-                        //跳出邀請訊息
-                        $ionicPopup.show({
-                            title: '小組邀請',
-                            subTitle: leaderID+' '+leaderName+' 邀請你加入小組。',
-                            template: 
-                                '<img class="inviteImg" src="img/invite.jpg">',
-                            scope: $scope,
-                            buttons: [{
-                                text: '拒絕',
-                                type: 'button-default',
-                                onTap: function(e) {
-                                    console.log('選擇拒絕');
-                                    // 更新回應狀態
-                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
-                                    .update({
-                                        respond: true
-                                    })
-                                    .then(function(data) {
-                                        console.log("更新回應狀態成功");
-                                        // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
-                                        db.collection("分組").doc(ClassID).collection("group").doc(groupID)
-                                        .get().then(function(results) {
-                                            var inviting = results.data().inviting;
-                                            // 刪除自己
-                                            inviting.splice(inviting.indexOf(StuID),1);
-                                            // 取消邀請
-                                            db.collection("分組").doc(ClassID).collection("group").doc(groupID)
-                                            .update({
-                                                inviting: inviting
-                                            })
-                                            .then(function(data) {
-                                                console.log("更新inviting成功");
-                                            })
-                                            .catch(function(error) {
-                                                console.error("更新inviting失敗：", error);
-                                            });
-                                        }).catch(function(error) { 
-                                            console.log("檢查小組是否還存在，可能小組已解散：", error); 
-                                        });
-                                    })
-                                    .catch(function(error) {
-                                        console.error("更新回應狀態失敗：", error);
-                                    });
-                                }
-                            }, {
-                                text: '接受',
-                                type: 'button-chanry1',
-                                onTap: function(e) {
-                                    console.log('選擇接受');
-                                    // 更新回應狀態
-                                    db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
-                                    .update({
-                                        respond: true
-                                    })
-                                    .then(function(data) {
-                                        console.log("更新回應狀態成功");
-                                        // 創立小組 - 更新入組狀態
-                                        db.collection("分組").doc(ClassID).collection("student").doc(StuID)
+                querySnapshot.docChanges().forEach(function(change) {
+                    // 僅新增的邀請會跳出 修改不會重載
+                    if (change.type === "added") {
+                        var doc = change.doc;
+
+                        console.log("有人邀請");
+                        // 查詢姓名
+                        var groupID = doc.data().groupID;
+                        var inviteID = doc.id;
+                        var leaderID = doc.data().leader;
+                        db.collection("帳號").doc(leaderID)
+                        .get().then(function(results) {
+                            var leaderName = results.data().Name;
+                            //跳出邀請訊息
+                            var invitePopup = $ionicPopup.show({
+                                title: '小組邀請',
+                                subTitle: leaderID+' '+leaderName+' 邀請你加入小組。',
+                                template: 
+                                    '<img class="inviteImg" src="img/invite.jpg">',
+                                scope: $scope,
+                                buttons: [{
+                                    text: '拒絕',
+                                    type: 'button-default',
+                                    onTap: function(e) {
+                                        console.log('選擇拒絕');
+                                        // 更新回應狀態
+                                        db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
                                         .update({
-                                            grouped: true
+                                            respond: true
                                         })
                                         .then(function(data) {
-                                            console.log("更新入組狀態成功");
+                                            console.log("更新回應狀態成功");
                                             // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
                                             db.collection("分組").doc(ClassID).collection("group").doc(groupID)
                                             .get().then(function(results) {
                                                 var inviting = results.data().inviting;
-                                                var members = results.data().members;
                                                 // 刪除自己
                                                 inviting.splice(inviting.indexOf(StuID),1);
-                                                // 新增自己
-                                                members.push(StuID);
                                                 // 取消邀請
                                                 db.collection("分組").doc(ClassID).collection("group").doc(groupID)
                                                 .update({
-                                                    inviting: inviting,
-                                                    members: members
+                                                    inviting: inviting
                                                 })
                                                 .then(function(data) {
                                                     console.log("更新inviting成功");
@@ -3072,18 +3028,110 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                                             });
                                         })
                                         .catch(function(error) {
-                                            console.error("更新入組狀態失敗：", error);
+                                            console.error("更新回應狀態失敗：", error);
                                         });
-                                    })
-                                    .catch(function(error) {
-                                        console.error("更新回應狀態失敗：", error);
-                                    });
-                                }
-                            }]
+                                    }
+                                }, {
+                                    text: '接受',
+                                    type: 'button-chanry1',
+                                    onTap: function(e) {
+                                        console.log('選擇接受');
+                                        // 更新回應狀態
+                                        db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(inviteID)
+                                        .update({
+                                            respond: true
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新回應狀態成功");
+                                            // 創立小組 - 更新入組狀態
+                                            db.collection("分組").doc(ClassID).collection("student").doc(StuID)
+                                            .update({
+                                                grouped: true
+                                            })
+                                            .then(function(data) {
+                                                console.log("更新入組狀態成功");
+                                                // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
+                                                db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                                .get().then(function(results) {
+                                                    var inviting = results.data().inviting;
+                                                    var members = results.data().members;
+                                                    // 刪除自己
+                                                    inviting.splice(inviting.indexOf(StuID),1);
+                                                    // 新增自己
+                                                    members.push(StuID);
+                                                    // 取消邀請
+                                                    db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                                    .update({
+                                                        inviting: inviting,
+                                                        members: members
+                                                    })
+                                                    .then(function(data) {
+                                                        console.log("更新inviting成功");
+                                                        // 拒絕其他邀請
+                                                        db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").where("respond", "==", false)
+                                                        .get().then(function (querySnapshot) {
+                                                            querySnapshot.forEach(function (doc) {
+                                                                // 拒絕其他邀請 - 更新回應狀態
+                                                                db.collection("分組").doc(ClassID).collection("student").doc(StuID).collection("invite").doc(doc.id)
+                                                                .update({
+                                                                    respond: true
+                                                                })
+                                                                .then(function(data) {
+                                                                    console.log("拒絕其他邀請 - 更新回應狀態成功");
+                                                                    // 檢查小組是否還存在 如存在 刪除自己邀請中狀態
+                                                                    db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                                                    .get().then(function(results) {
+                                                                        var inviting = results.data().inviting;
+                                                                        // 刪除自己
+                                                                        inviting.splice(inviting.indexOf(StuID),1);
+                                                                        // 取消邀請
+                                                                        db.collection("分組").doc(ClassID).collection("group").doc(groupID)
+                                                                        .update({
+                                                                            inviting: inviting
+                                                                        })
+                                                                        .then(function(data) {
+                                                                            console.log("更新inviting成功");
+                                                                            // 重載頁面 目的關閉全部泡泡(極端用法)
+                                                                            window.location.reload();
+                                                                        })
+                                                                        .catch(function(error) {
+                                                                            console.error("更新inviting失敗：", error);
+                                                                        });
+                                                                    }).catch(function(error) { 
+                                                                        console.log("檢查小組是否還存在，可能小組已解散：", error); 
+                                                                    });
+                                                                })
+                                                                .catch(function(error) {
+                                                                    console.error("拒絕其他邀請 - 更新回應狀態失敗：", error);
+                                                                });
+                                                            });
+                                                        });
+                                                        // 關閉其他invitePopup
+                                                        for (let index = 0; index < 10; index++) {
+                                                            invitePopup.close();
+                                                        }
+                                                    })
+                                                    .catch(function(error) {
+                                                        console.error("更新inviting失敗：", error);
+                                                    });
+                                                }).catch(function(error) { 
+                                                    console.log("檢查小組是否還存在，可能小組已解散：", error); 
+                                                });
+                                            })
+                                            .catch(function(error) {
+                                                console.error("更新入組狀態失敗：", error);
+                                            });
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新回應狀態失敗：", error);
+                                        });
+                                    }
+                                }]
+                            });
+                        }).catch(function(error) { 
+                            console.log("查詢姓名發生錯誤：", error); 
                         });
-                    }).catch(function(error) { 
-                        console.log("查詢姓名發生錯誤：", error); 
-                    });
+                    }
                 });
             },function(error) {
                 console.log("搜尋是否有人邀請發生錯誤：", error); 
