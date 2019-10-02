@@ -5,6 +5,7 @@ var verson = "1.0.0";
 // -修正投票排序（提案聚焦建議投票）
 // -修正重複加入小組問題
 // -接受一小組自動拒絕其他所有邀請並重載關閉全部Popup
+// -新增腦力激盪點擊分頁自動置底
 
 // Firebase Key
 var config = {
@@ -1674,6 +1675,8 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     // 替換class - 新頁面
                     $scope.tabsCounts[number-1].num = number;
                     $scope.tabsCounts[number-1].active = true;
+
+                    $ionicScrollDelegate.scrollBottom(); //滑到最下面
                 }
             }
             // 監聽 - 頁籤數
