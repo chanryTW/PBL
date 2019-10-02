@@ -1,6 +1,22 @@
 /*jshint esversion: 6 */
 var verson = "1.0.0";
-// 1.0.0 => 正式版發佈 2019.00.00
+// 1.0.0 => 正式版發佈 2019.09.30
+// 1.1.0
+// -修正投票排序（提案聚焦建議投票）
+// -修正重複邀請造成重複加入
+
+// Firebase Key
+var config = {
+apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
+authDomain: "co-writing-test.firebaseapp.com",
+databaseURL: "https://co-writing-test.firebaseio.com",
+projectId: "co-writing-test",
+storageBucket: "co-writing-test.appspot.com",
+messagingSenderId: "894137377703",
+appId: "1:894137377703:web:d5584a32c2b21322e98c82"
+};
+firebase.initializeApp(config);
+var perf = firebase.performance();
 angular.module('app.controllers', ['ngImgCrop','angular-bind-html-compile'])
 // ----------------------------------------登入頁面----------------------------------------
 .controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state', '$ionicLoading',
