@@ -62,6 +62,16 @@ angular.module('app.routes', [])
     }
   })
 
+  .state('menu.point', {
+    url: '/point',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/point.html',
+        controller: 'pointCtrl'
+      }
+    }
+  })
+
   .state('menu.irs', {
     params:{"TestID":null,"TestName":null,"TestContent":null},
     url: '/irs',

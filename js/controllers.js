@@ -1,14 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.0.0";
-// 1.0.0 => 正式版發佈 2019.09.30
-// 1.1.0
-// -修正投票排序（提案聚焦建議投票）
-// -修正重複加入小組問題
-// -接受一小組自動拒絕其他所有邀請並重載關閉全部Popup
-// -新增腦力激盪點擊分頁自動置底
-// -修正腦力激盪底部height
-// -修正首頁底部height
-// -修正首頁成績計算打錯
+var verson = "1.1.0";
 
 // Firebase Key
 var config = {
@@ -1316,6 +1307,26 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                     }]
                 });
             };
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+            // window.location.reload();
+        }
+    });
+}])
+
+// ----------------------------------------點數歷程記錄頁面----------------------------------------
+.controller('pointCtrl', ['$scope', '$stateParams', '$sce', '$state',
+function ($scope, $stateParams, $sce, $state) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
+            var ClassID = localStorage.getItem("ClassID");
+
 
         }else{
             console.log("尚未登入");
