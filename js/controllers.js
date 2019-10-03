@@ -1312,14 +1312,61 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                 // 標記已完成 - 取得已完成名單
                                 db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
                                 .get().then(function(results) {
+                                    // 加分fun
+                                    function addPoint(Stu) {
+                                        // 防作弊 - 檢查是否已加分
+                                        console.log('檢查是否已加分'+Stu);
+                                        db.collection("帳號").doc(Stu).collection("點數歷程記錄").where("check", "==", missionID)
+                                        .get().then(function(results) {
+                                            if(results.empty) {
+                                                console.log("第一次拿獎勵"); 
+                                                // 加分 - 上傳伺服器
+                                                db.collection("帳號").doc(Stu).collection("點數歷程記錄")
+                                                .add({
+                                                    content: '完成任務：'+doc.Name,
+                                                    point: paswLock(doc.Point),
+                                                    check: missionID,
+                                                    time: new Date()
+                                                })
+                                                .then(function(data) {
+                                                    console.log("加分 - 上傳伺服器成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("加分 - 上傳伺服器失敗：", error);
+                                                });
+                                            } else {
+                                                console.log("已拿過此獎勵");
+                                                // 系統紀錄 - 通報伺服器
+                                                db.collection("系統記錄").doc(ClassID).collection("資安回報")
+                                                .add({
+                                                    StuID: Stu,
+                                                    Content: '已拿過'+missionID+'獎勵',
+                                                    time: new Date()
+                                                })
+                                                .then(function(data) {
+                                                    console.log("通報伺服器成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("通報伺服器失敗：", error);
+                                                });
+                                            }
+                                        }).catch(function(error) { 
+                                            console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                                        });
+                                    }
+
                                     var a = results.data().finished;
                                     // 判斷如果是組長限定的任務
                                     if (doc.LeaderOnly) {
                                         for(var i=0; i<$scope.members.length; ++i) {
                                             a.push($scope.members[i]);
+                                            // 加全部組員分
+                                            addPoint($scope.members[i]);
                                         }
                                     } else {
                                         a.push(StuID);
+                                        // 只加自己分
+                                        addPoint(StuID);
                                     }
                                     // 標記已完成 - 更新已完成名單
                                     db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
@@ -1330,19 +1377,6 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                         console.log("更新已完成名單成功");
                                         // 收合內容
                                         $scope.missionShow(doc);
-                                        // 加分 - 上傳伺服器
-                                        db.collection("帳號").doc(StuID).collection("點數歷程記錄")
-                                        .add({
-                                            content: '完成任務：'+doc.Name,
-                                            point: paswLock(doc.Point),
-                                            time: new Date()
-                                        })
-                                        .then(function(data) {
-                                            console.log("加分 - 上傳伺服器成功");
-                                        })
-                                        .catch(function(error) {
-                                            console.error("加分 - 上傳伺服器失敗：", error);
-                                        });
                                         $scope.$apply(); //重新監聽view
                                     })
                                     .catch(function(error) {
@@ -1501,6 +1535,8 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                     // 標記已完成 - 取得已完成名單
                     db.collection("課程任務").doc(ClassID).collection("任務列表").doc(TestID)
                     .get().then(function(results) {
+                        var name = results.data().Name;
+                        var point = results.data().Point;
                         var a = results.data().finished;
                         a.push(StuID);
                         // 標記已完成 - 更新已完成名單
@@ -1510,18 +1546,43 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                         })
                         .then(function() {
                             console.log("更新已完成名單成功");
-                            // 加分 - 上傳伺服器
-                            db.collection("帳號").doc(StuID).collection("點數歷程記錄")
-                            .add({
-                                content: '完成任務：'+results.data().Name,
-                                point: paswLock(results.data().Point),
-                                time: new Date()
-                            })
-                            .then(function(data) {
-                                console.log("加分 - 上傳伺服器成功");
-                            })
-                            .catch(function(error) {
-                                console.error("加分 - 上傳伺服器失敗：", error);
+                            // 防作弊 - 檢查是否已加分
+                            db.collection("帳號").doc(StuID).collection("點數歷程記錄").where("check", "==", TestID)
+                            .get().then(function(results) {
+                                if(results.empty) {
+                                    console.log("第一次拿獎勵"); 
+                                    // 加分 - 上傳伺服器
+                                    db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+                                    .add({
+                                        content: '完成任務：'+name,
+                                        point: paswLock(point),
+                                        check: TestID,
+                                        time: new Date()
+                                    })
+                                    .then(function(data) {
+                                        console.log("加分 - 上傳伺服器成功");
+                                    })
+                                    .catch(function(error) {
+                                        console.error("加分 - 上傳伺服器失敗：", error);
+                                    });
+                                } else {
+                                    console.log("已拿過此獎勵");
+                                    // 系統紀錄 - 通報伺服器
+                                    db.collection("系統記錄").doc(ClassID).collection("資安回報")
+                                    .add({
+                                        StuID: StuID,
+                                        Content: '已拿過'+TestID+'獎勵',
+                                        time: new Date()
+                                    })
+                                    .then(function(data) {
+                                        console.log("通報伺服器成功");
+                                    })
+                                    .catch(function(error) {
+                                        console.error("通報伺服器失敗：", error);
+                                    });
+                                }
+                            }).catch(function(error) { 
+                                console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
                             });
                             $scope.$apply(); //重新監聽view
                         })
