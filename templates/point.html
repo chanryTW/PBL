@@ -1,26 +1,19 @@
 <ion-view title="點數歷程記錄" id="point">
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header"><div class="maxWidth">
 
-      <div class="card">
-        <div class="item item_padding0 item-text-wrap">
-          <ul class="list">
-            <li class="item">
-              09/30 回報BUG
-              <span class="missionPointSpan">
-                <i class="missionPoint"></i>
-                +10
-              </span>
-            </li>
-            <li class="item item_paddingRight">
-              09/30 回報
-              <span class="missionPointSpan">
-                <i class="missionPoint"></i>
-                +20
-              </span>
-            </li>
-          </ul>
-        </div>
+    <div class="card">
+      <div class="item item_padding0 item-text-wrap">
+        <ul class="list">
+          <li ng-repeat="point in points | orderBy:'time'" class="item">
+            {{point.time}} {{point.content}}
+            <span class="missionPointSpan">
+              <i class="missionPoint"></i>
+              +{{point.point}}
+            </span>
+          </li>
+        </ul>
       </div>
+    </div>
 
   </div></ion-content>
 </ion-view>
