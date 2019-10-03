@@ -3246,6 +3246,108 @@ function ($scope, $stateParams, $ionicPopup, $state) {
             },function(error) {
                 console.log("取得小組ID發生錯誤：", error); 
             }); 
+
+            // 解密fun
+            function pasw(code) {
+                var key = ['V','T','C','J','G','A','Y','K','F','P'];
+                // 驗證 - 是否七碼
+                if (code.length!=7) {
+                    return 'ER'
+                }
+                // 驗證 - 安全碼是否正確
+                else if (key.indexOf(code.substr(0,1))+key.indexOf(code.substr(6,1))!=9 || key.indexOf(code.substr(3,1))+key.indexOf(code.substr(4,1))!=9){
+                    return 'ER'
+                }
+                else {
+                    var a = ''+key.indexOf(code.substr(1,1))+key.indexOf(code.substr(2,1))+key.indexOf(code.substr(5,1));
+                    return parseInt(a)
+                }
+            }
+
+            // 加密fun
+            function paswLock(code) {
+                code = code.toString();
+                var key = ['V','T','C','J','G','A','Y','K','F','P'];
+                // 產生兩組安全碼
+                var a = Math.floor(Math.random()*9)+0;
+                var b = 9-a;
+                var c = Math.floor(Math.random()*9)+0;
+                var d = 9-c;
+                // 判斷數字
+                var e,f,g;
+                if (code<10) {
+                    e = 0;
+                    f = 0
+                    g = code.substr(0,1);
+                } else if (code<100) {
+                    e = 0;
+                    f = code.substr(0,1);
+                    g = code.substr(1,1);
+                } else {
+                    e = code.substr(0,1);
+                    f = code.substr(1,1);
+                    g = code.substr(2,1);
+                }
+                return ''+key[a]+key[e]+key[f]+key[c]+key[d]+key[g]+key[b]
+            }
+
+            var TotalPointArray = [];
+            // 監聽 - 取得點數
+            db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        // 呼叫解密fun
+                        var point = pasw(change.doc.data().point);
+                        if (point == 'ER') {
+                            // 系統紀錄 - 通報伺服器
+                            db.collection("系統記錄").doc(ClassID).collection("資安回報")
+                            .add({
+                                StuID: StuID,
+                                Content: '點數解密發生錯誤',
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("通報伺服器成功");
+                            })
+                            .catch(function(error) {
+                                console.error("通報伺服器失敗：", error);
+                            });
+                        } else {
+                            TotalPointArray.push({
+                                point:point,
+                                time:change.doc.data().time
+                            });
+                        }
+                        console.log("新增: ", change.doc.data());
+                        $scope.$apply(); //重新監聽view
+                    } else if (change.type === "modified") {
+                        console.log("修改: ", change.doc.data());
+                    } else if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                    }
+                    // 有修改就重新加總
+                    var TotalPoint = 0;
+                    for (let index = 0; index < TotalPointArray.length; index++) {
+                        TotalPoint += TotalPointArray[index].point;
+                        // 判斷最後一筆
+                        if (index==TotalPointArray.length-1) {
+                            $scope.TotalPoint = TotalPoint;
+                            // 更新伺服器點數
+                            db.collection("帳號").doc(StuID)
+                            .update({
+                                Point: paswLock(TotalPoint)
+                            })
+                            .then(function(data) {
+                                console.log("更新伺服器點數成功");
+                            })
+                            .catch(function(error) {
+                                console.error("更新伺服器點數失敗：", error);
+                            });
+                        }
+                    }
+                });
+            });
         }else{
             console.log("尚未登入");
             $state.go("login");
