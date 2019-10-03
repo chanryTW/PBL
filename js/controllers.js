@@ -1327,7 +1327,74 @@ function ($scope, $stateParams, $sce, $state) {
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
 
+            // 解密fun
+            function pasw(code) {
+                var key = ['V','T','C','J','G','A','Y','K','F','P'];
+                // 驗證 - 是否七碼
+                if (code.length!=7) {
+                    return 'ER'
+                }
+                // 驗證 - 安全碼是否正確
+                else if (key.indexOf(code.substr(0,1))+key.indexOf(code.substr(6,1))!=9 || key.indexOf(code.substr(3,1))+key.indexOf(code.substr(4,1))!=9){
+                    return 'ER'
+                }
+                else {
+                    var a = ''+key.indexOf(code.substr(1,1))+key.indexOf(code.substr(2,1))+key.indexOf(code.substr(5,1));
+                    return parseInt(a)
+                }
+            }
 
+            $scope.points = [];
+            // 監聽 - 取得點數歷程記錄
+            db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        // 呼叫解密fun
+                        var point = pasw(change.doc.data().point);
+                        if (point == 'ER') {
+                            // 系統紀錄 - 通報伺服器
+                            db.collection("系統記錄").doc(ClassID).collection("資安回報")
+                            .add({
+                                StuID: StuID,
+                                Content: '點數解密發生錯誤',
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("通報伺服器成功");
+                            })
+                            .catch(function(error) {
+                                console.error("通報伺服器失敗：", error);
+                            });
+                        }
+                        
+                        // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
+                        var pushMonth = Number(change.doc.data().time.toDate().getMonth())+1;
+                        if (pushMonth<=9) {
+                            pushMonth = '0'+pushMonth;
+                        }
+                        var pushDate = change.doc.data().time.toDate().getDate();
+                        if (pushDate<=9) {
+                            pushDate = '0'+pushDate;
+                        }
+                        // 取得日期
+                        var time = pushMonth+'/'+pushDate;
+
+                        // 放入資料
+                        $scope.points.push({
+                            point:point,
+                            content:change.doc.data().content,
+                            time:time
+                        });
+                        console.log("新增: ", change.doc.data());
+                        $scope.$apply(); //重新監聽view
+                    } else if (change.type === "modified") {
+                        console.log("修改: ", change.doc.data());
+                    } else if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                    }
+                });
+            });
         }else{
             console.log("尚未登入");
             $state.go("login");
