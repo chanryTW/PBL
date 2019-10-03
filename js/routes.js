@@ -148,6 +148,16 @@ angular.module('app.routes', [])
         controller: 'root_missionCtrl'
       }
     }
+  })
+
+  .state('rootmenu.root_point', {
+    url: '/root_point',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/root/root_point.html',
+        controller: 'root_pointCtrl'
+      }
+    }
   });
 
 $urlRouterProvider.otherwise('/login');

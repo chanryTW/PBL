@@ -4313,6 +4313,179 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
     });
 }])
 
+// ----------------------------------------教師版點數管理----------------------------------------
+.controller('root_pointCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading',
+function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+            console.log("已登入狀態");
+            $scope.cardShow = false;
+
+            // 列出全部課程
+            db.collection("課程")
+            .get().then(function (querySnapshot) {
+                $scope.AllClass = [];
+                querySnapshot.forEach(function (doc) {
+                    $scope.AllClass.push(doc.data());
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                });
+                console.log($scope.AllClass);
+            });
+
+            // 選擇課程 - 選擇中
+            $scope.hide = function() {
+                $scope.cardShow = false;
+            };
+
+            // 選擇課程 - 選擇完成
+            $scope.SelectBtn = function(value) {
+                if (value!=undefined) {
+                    var ClassID = value.ClassID;
+                    var StuID = "教師版";
+                    $scope.cardShow = true;
+
+                    // 監聽 - 載入所有人總點數
+                    // ...........
+
+                    // 發放點數
+                    $scope.AddBtn = function(value) {
+                        $scope.Stus = [];
+                        // 取得學生名單
+                        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入學生中...</p>'});
+                        db.collection("分組").doc(ClassID).collection("student")
+                        .get().then(function(results) {
+                            results.forEach(function (doc) {
+                                var a = results.docs[results.docs.length-1].id;
+                                var b = results.docs[results.docs.length-2].id;
+                                // 查詢姓名
+                                db.collection("帳號").doc(doc.id)
+                                .get().then(function(results) {
+                                    $scope.Stus.push({StuID:doc.id,Name:results.data().Name,Checked:false});
+                                    // 判斷倒數第一or第二筆 關閉轉圈圈
+                                    if (doc.id==a || doc.id==b) {
+                                        $ionicLoading.hide();
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("查詢姓名發生錯誤：", error); 
+                                });
+                            });
+                        }).catch(function(error) { 
+                            console.log("取得未分組名單發生錯誤：", error); 
+                        });
+
+                        $scope.checkStus = [];
+                        // 取得學生名單 - 偵測勾選
+                        $scope.check = function(Stu) {
+                            // 判斷有無在陣列中，無則增加、有則刪除
+                            if ($scope.checkStus.indexOf(Stu) === -1) {
+                                $scope.checkStus.push(Stu);
+                            } else {
+                                $scope.checkStus.splice($scope.checkStus.indexOf(Stu),1);
+                            }
+                            console.log($scope.checkStus);
+                        };
+
+                        // 設定預設值
+                        $scope.AddBtnPopup = [];
+
+                        // 發放點數 - 跳出泡泡
+                        $ionicPopup.show({
+                            title: '發放點數',
+                            template: 
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">點數說明</div>'+
+                                    '<input type="text" ng-model="AddBtnPopup.content" placeholder="輸入說明">'+    
+                                '</label>'+
+
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">點數數量</div>'+
+                                    '<input type="number" ng-model="AddBtnPopup.point" placeholder="輸入數字">'+    
+                                '</label>'+
+                                
+                                '<label class="item item-input item-select">'+
+                                    '<div class="input-label">發放日期</div>'+
+                                    '<input type="date" ng-model="AddBtnPopup.time">'+    
+                                '</label>'+
+                                
+                                '<div ng-repeat="Stu in Stus">'+
+                                    '<ion-checkbox ng-model="Stu.Checked" ng-click="check(Stu.StuID)">{{Stu.StuID}} {{Stu.Name}}</ion-checkbox>'+
+                                '</div>',
+
+                            scope: $scope,
+                            buttons: [{
+                                text: '取消',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇取消');
+                                }
+                            }, {
+                                text: '發放',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇發放');
+                                    // 判斷是否必填未填
+                                    if ($scope.AddBtnPopup.content==undefined||$scope.AddBtnPopup.point==undefined||$scope.AddBtnPopup.time==undefined) {
+                                        console.log("請填寫完整");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請填寫完整。'
+                                        });
+                                    } else if ($scope.checkStus.length==0) {
+                                        console.log("請至少勾一位");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請至少勾一位。'
+                                        });
+                                    } else {
+                                        // 產生此次發放編號
+                                        var now = new Date();
+                                        var pointID =now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
+
+                                        // 加分 - 上傳伺服器
+                                        for (let index = 0; index < $scope.checkStus.length; index++) {
+                                            db.collection("帳號").doc($scope.checkStus[index]).collection("點數歷程記錄")
+                                            .add({
+                                                content: $scope.AddBtnPopup.content,
+                                                point: paswLock($scope.AddBtnPopup.point),
+                                                check: pointID,
+                                                time: new Date()
+                                            })
+                                            .then(function(data) {
+                                                console.log("加分 - 上傳伺服器成功");
+                                            })
+                                            .catch(function(error) {
+                                                console.error("加分 - 上傳伺服器失敗：", error);
+                                            });
+                                            $ionicPopup.alert({
+                                                title: '成功',
+                                                template: '發送成功'
+                                            });
+                                        }
+                                    }
+                                }
+                            }]
+                        });
+                    };
+
+                } else {
+                    // 提醒
+                    $ionicPopup.alert({
+                        title: '錯誤',
+                        template: '請選擇課程。'
+                    });
+                }
+            };
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+            // window.location.reload();
+        }
+    });
+}])
+
 // ----------------------------------------教師版選單頁面----------------------------------------
 .controller('rootmenuCtrl', ['$scope', '$stateParams', '$state',
 function ($scope, $stateParams, $state) {
