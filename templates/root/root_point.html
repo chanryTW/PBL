@@ -20,19 +20,19 @@
       </div>
     </div>
 
-    <!-- <div class="card">
+    <div ng-show="cardShow" class="card">
       <div class="item item_padding0 item-text-wrap">
         <ul class="list">
-          <li ng-repeat="point in points | orderBy:'-time'" class="item">
-            {{point.time}} {{point.content}}
+          <li ng-repeat="StuPoint in StuPoints | orderBy:'Name'" class="item">
+            {{StuPoint.Name}}
             <span class="missionPointSpan">
               <i class="missionPoint"></i>
-              +{{point.point}}
+              {{StuPoint.Point}}
             </span>
           </li>
         </ul>
       </div>
-    </div> -->
+    </div>
 
   </div></ion-content>
 </ion-view>
