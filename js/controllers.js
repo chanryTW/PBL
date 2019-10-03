@@ -4346,8 +4346,30 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                     var StuID = "教師版";
                     $scope.cardShow = true;
 
-                    // 監聽 - 載入所有人總點數
-                    // ...........
+                    $scope.StuPoints = [];
+                    // 取得課程名單
+                    db.collection("課程").doc(ClassID)
+                    .get().then(function(results) {
+                        var ClassStu = results.data().ClassStu;
+                        ClassStu.forEach(function (Stu) {
+                            // 載入總點數
+                            db.collection("帳號").doc(Stu)
+                            .get().then(function(results) {
+                                if (results.data().Point!=undefined) {
+                                    $scope.StuPoints.push({
+                                        Name:Stu+' '+results.data().Name,
+                                        Point:pasw(results.data().Point)
+                                    });
+                                    $scope.$apply(); //重新監聽view
+                                }
+                            }).catch(function(error) { 
+                                console.log("載入總點數發生錯誤：", error); 
+                            });
+                        });
+                    }).catch(function(error) { 
+                        console.log("取得課程名單發生錯誤：", error); 
+                    });
+                    
 
                     // 發放點數
                     $scope.AddBtn = function(value) {
@@ -4450,17 +4472,13 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                                 content: $scope.AddBtnPopup.content,
                                                 point: paswLock($scope.AddBtnPopup.point),
                                                 check: pointID,
-                                                time: new Date()
+                                                time: $scope.AddBtnPopup.time
                                             })
                                             .then(function(data) {
                                                 console.log("加分 - 上傳伺服器成功");
                                             })
                                             .catch(function(error) {
                                                 console.error("加分 - 上傳伺服器失敗：", error);
-                                            });
-                                            $ionicPopup.alert({
-                                                title: '成功',
-                                                template: '發送成功'
                                             });
                                         }
                                     }
