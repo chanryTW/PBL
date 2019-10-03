@@ -601,6 +601,19 @@ a{text-decoration:none}
     opacity: 0.8;
     background: url(../svg/point.svg);
 }
+.pointSpan{
+    display: inline-block;
+    position: relative;
+    top: -1px;
+    margin: 0px 0px 0px 8px;
+    padding: 1px 8px;
+
+    font-size: 14px;
+    font-weight: bold;
+    
+    border: 2px solid #fff;
+    border-radius: 20px;
+}
 /* 列表按鈕 */
 #menu-list-item1 a,#menu-list-item2 a,#menu-list-item3 a,#menu-list-item4 a,#menu-list-item5 a,#menu-list-item6 a,#menu-list-item7 a,#menu-list-item8 a{
     background-color: rgba(255, 255, 255, 0.281);
