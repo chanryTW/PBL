@@ -223,6 +223,7 @@ a{text-decoration:none}
 /* 點數 */
 .missionPointSpan{
     position: absolute;
+    top: 14px;
     right: 0px;
     line-height: 20px;
     width: 40px;
@@ -239,6 +240,9 @@ a{text-decoration:none}
 /* 小任務padding */
 .item.item_padding0{
     padding: 0px 16px 0px 16px;
+}
+.item.item_paddingRight{
+    padding-right: 73px;
 }
 /* 鎖住任務 */
 .missionLock1::after,.missionLock2::after,.missionLock3::after{
