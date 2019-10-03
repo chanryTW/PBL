@@ -1,6 +1,5 @@
 /*jshint esversion: 6 */
 var verson = "1.1.0";
-
 // Firebase Key
 var config = {
 apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -13,6 +12,48 @@ appId: "1:894137377703:web:d5584a32c2b21322e98c82"
 };
 firebase.initializeApp(config);
 var perf = firebase.performance();
+// 解密fun
+function pasw(code) {
+    var key = ['V','T','C','J','G','A','Y','K','F','P'];
+    // 驗證 - 是否七碼
+    if (code.length!=7) {
+        return 'ER'
+    }
+    // 驗證 - 安全碼是否正確
+    else if (key.indexOf(code.substr(0,1))+key.indexOf(code.substr(6,1))!=9 || key.indexOf(code.substr(3,1))+key.indexOf(code.substr(4,1))!=9){
+        return 'ER'
+    }
+    else {
+        var a = ''+key.indexOf(code.substr(1,1))+key.indexOf(code.substr(2,1))+key.indexOf(code.substr(5,1));
+        return parseInt(a)
+    }
+}
+// 加密fun
+function paswLock(code) {
+    code = code.toString();
+    var key = ['V','T','C','J','G','A','Y','K','F','P'];
+    // 產生兩組安全碼
+    var a = Math.floor(Math.random()*9)+0;
+    var b = 9-a;
+    var c = Math.floor(Math.random()*9)+0;
+    var d = 9-c;
+    // 判斷數字
+    var e,f,g;
+    if (code<10) {
+        e = 0;
+        f = 0
+        g = code.substr(0,1);
+    } else if (code<100) {
+        e = 0;
+        f = code.substr(0,1);
+        g = code.substr(1,1);
+    } else {
+        e = code.substr(0,1);
+        f = code.substr(1,1);
+        g = code.substr(2,1);
+    }
+    return ''+key[a]+key[e]+key[f]+key[c]+key[d]+key[g]+key[b]
+}
 angular.module('app.controllers', ['ngImgCrop','angular-bind-html-compile'])
 // ----------------------------------------登入頁面----------------------------------------
 .controller('loginCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state', '$ionicLoading',
@@ -1128,8 +1169,6 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                 console.log("判斷組長發生錯誤：", error); 
             });
 
-            
-
             // 進入IRS按鈕
             $scope.GoIRS = function(missionID,missionName,missionContent){
                 $state.go("menu.irs",{TestID:missionID,TestName:missionName,TestContent:missionContent});
@@ -1291,6 +1330,19 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                         console.log("更新已完成名單成功");
                                         // 收合內容
                                         $scope.missionShow(doc);
+                                        // 加分 - 上傳伺服器
+                                        db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+                                        .add({
+                                            content: '完成任務：'+doc.Name,
+                                            point: paswLock(doc.Point),
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("加分 - 上傳伺服器成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("加分 - 上傳伺服器失敗：", error);
+                                        });
                                         $scope.$apply(); //重新監聽view
                                     })
                                     .catch(function(error) {
@@ -1326,23 +1378,6 @@ function ($scope, $stateParams, $sce, $state) {
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
-
-            // 解密fun
-            function pasw(code) {
-                var key = ['V','T','C','J','G','A','Y','K','F','P'];
-                // 驗證 - 是否七碼
-                if (code.length!=7) {
-                    return 'ER'
-                }
-                // 驗證 - 安全碼是否正確
-                else if (key.indexOf(code.substr(0,1))+key.indexOf(code.substr(6,1))!=9 || key.indexOf(code.substr(3,1))+key.indexOf(code.substr(4,1))!=9){
-                    return 'ER'
-                }
-                else {
-                    var a = ''+key.indexOf(code.substr(1,1))+key.indexOf(code.substr(2,1))+key.indexOf(code.substr(5,1));
-                    return parseInt(a)
-                }
-            }
 
             $scope.points = [];
             // 監聽 - 取得點數歷程記錄
@@ -1475,6 +1510,19 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                         })
                         .then(function() {
                             console.log("更新已完成名單成功");
+                            // 加分 - 上傳伺服器
+                            db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+                            .add({
+                                content: '完成任務：'+results.data().Name,
+                                point: paswLock(results.data().Point),
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("加分 - 上傳伺服器成功");
+                            })
+                            .catch(function(error) {
+                                console.error("加分 - 上傳伺服器失敗：", error);
+                            });
                             $scope.$apply(); //重新監聽view
                         })
                         .catch(function(error) {
@@ -3246,50 +3294,6 @@ function ($scope, $stateParams, $ionicPopup, $state) {
             },function(error) {
                 console.log("取得小組ID發生錯誤：", error); 
             }); 
-
-            // 解密fun
-            function pasw(code) {
-                var key = ['V','T','C','J','G','A','Y','K','F','P'];
-                // 驗證 - 是否七碼
-                if (code.length!=7) {
-                    return 'ER'
-                }
-                // 驗證 - 安全碼是否正確
-                else if (key.indexOf(code.substr(0,1))+key.indexOf(code.substr(6,1))!=9 || key.indexOf(code.substr(3,1))+key.indexOf(code.substr(4,1))!=9){
-                    return 'ER'
-                }
-                else {
-                    var a = ''+key.indexOf(code.substr(1,1))+key.indexOf(code.substr(2,1))+key.indexOf(code.substr(5,1));
-                    return parseInt(a)
-                }
-            }
-
-            // 加密fun
-            function paswLock(code) {
-                code = code.toString();
-                var key = ['V','T','C','J','G','A','Y','K','F','P'];
-                // 產生兩組安全碼
-                var a = Math.floor(Math.random()*9)+0;
-                var b = 9-a;
-                var c = Math.floor(Math.random()*9)+0;
-                var d = 9-c;
-                // 判斷數字
-                var e,f,g;
-                if (code<10) {
-                    e = 0;
-                    f = 0
-                    g = code.substr(0,1);
-                } else if (code<100) {
-                    e = 0;
-                    f = code.substr(0,1);
-                    g = code.substr(1,1);
-                } else {
-                    e = code.substr(0,1);
-                    f = code.substr(1,1);
-                    g = code.substr(2,1);
-                }
-                return ''+key[a]+key[e]+key[f]+key[c]+key[d]+key[g]+key[b]
-            }
 
             var TotalPointArray = [];
             // 監聽 - 取得點數
