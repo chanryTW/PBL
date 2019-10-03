@@ -604,7 +604,7 @@ a{text-decoration:none}
 .pointSpan{
     display: inline-block;
     position: relative;
-    top: -1px;
+    top: -3px;
     margin: 0px 0px 0px 8px;
     padding: 1px 8px;
 
