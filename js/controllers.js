@@ -1309,6 +1309,8 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             })
                             .then(function(data) {
                                 console.log("回傳填答結果成功");
+                                // 清空response
+                                $scope.response = [];
                                 // 標記已完成 - 取得已完成名單
                                 db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
                                 .get().then(function(results) {
@@ -1611,6 +1613,8 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 })
                 .then(function(data) {
                     console.log("回傳填答結果成功");
+                    // 清空response
+                    $scope.response = [];
                 })
                 .catch(function(error) {
                     console.error("回傳填答結果失敗：", error);
