@@ -73,10 +73,10 @@ a{text-decoration:none}
     display: inline-block;
     width: 40vw;
     height: 40vw;
-    background: #000;
-    opacity: 0.5;
+    opacity: 0.9;
     margin: 3vw;
     border-radius: 2vw;
+    background-image: url(/img/Rectangle\ 5.png);
 }
 .button-text{
     color: white;
