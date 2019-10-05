@@ -71,15 +71,35 @@ a{text-decoration:none}
 /* -----------------------------------------------選擇課程頁面----------------------------------------------- */
 .class_block{
     display: inline-block;
+    position: relative;
     width: 40vw;
     height: 40vw;
     opacity: 0.9;
     margin: 3vw;
     border-radius: 2vw;
     background-image: url(/img/Rectangle\ 5.png);
+    box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -moz-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+    -webkit-box-shadow: 6px 6px 12px -2px rgba(20%,20%,40%,0.5);
+}
+.class_blockLock::after{
+    content: "LOCK";
+    font-size: 10vw;
+    line-height: 50px;
+    color: white;
+    text-align: center;
+
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 2vw;
+    opacity: 0.5;
+    z-index: 8;
+    background-color: #0D5B80;
 }
 .button-text{
-    color: white;
+    color: #ffffff;
     font-size: 5vw;
     line-height: 40vw;
     text-align: center;

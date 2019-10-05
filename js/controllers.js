@@ -3497,6 +3497,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                                 ClassName: className,
                                 ClassContent: "暫無公告。",
                                 inviteLock: false,
+                                lock: false,
                                 maxMembers: 6,
                                 ClassStu: Stu
                             })
