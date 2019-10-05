@@ -299,13 +299,12 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             console.log("已登入狀態");
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
-            console.log(StuID);
           
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
                 $scope.items = [{ClassName:doc.data().ClassName,ClassContent:doc.data().ClassContent,lock:doc.data().lock}];
-                // $scope.$apply(); //重新監聽view
+                $scope.$apply(); //重新監聽view
                 // 如果課程鎖定 跳回登入頁面
                 if (doc.data().lock==true) {
                     console.log("課程鎖定");
