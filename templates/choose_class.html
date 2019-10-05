@@ -1,9 +1,11 @@
 <ion-view title="選擇課程" id="choose_class">
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header">
 
-  <a ng-repeat="item in items" class="class_block" ng-click="choose_class(item.ClassID,item.ClassName)">
-    <div class="button-text">{{item.ClassName}}</div>
-  </a>
-
+  <div ng-repeat="item in items" class="class_block"  ng-class="{true:'class_blockLock',false:''}[{{item.lock}}]">
+    <a ng-click="choose_class(item.ClassID,item.ClassName)">
+      <div class="button-text">{{item.ClassName}}</div>
+    </a>
+  </div>
+  
   </ion-content>
 </ion-view>
