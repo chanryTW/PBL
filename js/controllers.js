@@ -304,8 +304,14 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
-                $scope.items = [{ClassName:doc.data().ClassName,ClassContent:doc.data().ClassContent}];
-                $state.go($state.current, {}, {reload: true}); //重新載入view
+                $scope.items = [{ClassName:doc.data().ClassName,ClassContent:doc.data().ClassContent,lock:doc.data().lock}];
+                // $scope.$apply(); //重新監聽view
+                // 如果課程鎖定 跳回登入頁面
+                if (doc.data().lock==true) {
+                    console.log("課程鎖定");
+                    $state.go("login");
+                    // window.location.reload();
+                }
             },function(error) {
                 console.error("讀取課程發生錯誤：", error);
                 $state.go("login");
