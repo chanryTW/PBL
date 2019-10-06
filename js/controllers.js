@@ -4728,45 +4728,35 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
             $scope.SettingMission = function(type,ClassID,missionID) {
                 if (type=='status') {
                     // 查看答題狀態
-
-                    // 轉換姓名 fun
-                    function ChangeName(Stu) {
-                        Stu = 'C107193101';
-                        // 查詢姓名
-                        db.collection("帳號").doc(Stu)
-                        .get().then(function(results) {
-                            return results.data().Name
-                        }).catch(function(error) { 
-                            console.log("查詢姓名發生錯誤：", error); 
-                        });
-                    };
-
                     // 監聽 - 取得任務狀態
                     $scope.missionStatus = [];
-                    var unsubscribe = db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
-                    .onSnapshot(function(doc) {
+                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                    .get().then(function(doc) {
                         // 取得任務狀態
                         $scope.missionStatus = doc.data();
+                        $scope.missionStatus.finished = doc.data().finished;
+                        $scope.$apply(); //重新監聽view
 
                         // 取得全班名單
                         $scope.AllStu = [];
                         db.collection("課程").doc(ClassID)
                         .get().then(function (results) {
                             $scope.AllStu = results.data().ClassStu;
-                            // results.data().ClassStu.forEach(function (Stu) {
-                            //     $scope.AllStu.push(Stu+ChangeName(Stu));
-                            // });
 
                             // 取得未完成名單 (全班名單-已完成名單)
                             $scope.unfinished = $scope.AllStu;
                             // $scope.AllStu //全班
                             // $scope.missionStatus.finished //已完成
                             for (let i = 0; i < $scope.missionStatus.finished.length; i++) {
-                                if ($scope.AllStu.indexOf($scope.missionStatus.finished[i])!=-1) {
-                                    $scope.unfinished.splice($scope.AllStu.indexOf($scope.missionStatus.finished[i],1));
+                                if ($scope.unfinished.indexOf($scope.missionStatus.finished[i])!=-1) {
+                                    $scope.unfinished.splice($scope.unfinished.indexOf($scope.missionStatus.finished[i]),1);
                                 }
+                                // if ($scope.AllStu.indexOf($scope.missionStatus.finished[i])!=-1) {
+                                //     $scope.unfinished.splice($scope.AllStu.indexOf($scope.missionStatus.finished[i],1));
+                                // }
                                 // 判斷最後一筆
                                 if (i>=$scope.missionStatus.finished.length-1) {
+                                    console.log("最後一筆");
                                     // 完成名單補上姓名
                                     for (let j = 0; j < $scope.missionStatus.finished.length; j++) {
                                         db.collection("帳號").doc($scope.missionStatus.finished[j])
@@ -4820,8 +4810,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                             type: 'button-chanry1',
                             onTap: function(e) {
                                 console.log('選擇取消');
-                                // 關閉監聽
-                                unsubscribe();
                             }
                         }]
                     });
@@ -5008,11 +4996,17 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄")
                             .get().then(function(results) {
                                 if (results.data().Point!=undefined) {
-                                    $scope.StuPoints.push({
-                                        Name:Stu+' '+results.data().Name,
-                                        Point:pasw(results.data().Point)
+                                    // 查詢姓名
+                                    db.collection("帳號").doc(Stu)
+                                    .get().then(function(a) {
+                                        $scope.StuPoints.push({
+                                            Name:Stu+' '+a.data().Name,
+                                            Point:pasw(results.data().Point)
+                                        });
+                                        $scope.$apply(); //重新監聽view
+                                    }).catch(function(error) { 
+                                        console.log("查詢姓名發生錯誤：", error); 
                                     });
-                                    $scope.$apply(); //重新監聽view
                                 }
                             }).catch(function(error) { 
                                 console.log("載入總點數發生錯誤：", error); 
