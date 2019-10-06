@@ -12,7 +12,7 @@
           </div>
         </div>
         <div ng-repeat="brainstorming in item.brainstorming" class="item item-text-wrap proposal_item">
-          {{brainstorming.msg}}
+          <span ng-bind-html="brainstorming.msg | linky"></span>
           <i class="proposal_DelBrainstormingBtn" ng-click="DelBrainstorming(item.time,brainstorming.time)" ng-if="leaderGroupShow"></i>
         </div>
       </div>
