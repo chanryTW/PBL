@@ -3352,6 +3352,57 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                         GroupID = doc.id;
                         // 開關顯示
                         $scope.needGroup = true;
+                        // 防作弊 - 檢查是否已加分
+                        db.collection("帳號").doc(StuID).collection("點數歷程記錄").where("check", "==", "SmallTask1")
+                        .get().then(function(results) {
+                            if(results.empty) {
+                                console.log("第一次拿獎勵"); 
+                                // 加分 - 上傳伺服器
+                                db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+                                .add({
+                                    content: '完成任務：擁有小組',
+                                    point: paswLock(15),
+                                    check: 'SmallTask1',
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("加分 - 上傳伺服器成功");
+                                    // 更新小任務進度
+                                    db.collection("課程任務").doc(ClassID).collection("小任務進度").doc(StuID)
+                                    .set({
+                                        StuID: StuID,
+                                        SmallTask1: 1,
+                                        SmallTask1Time: new Date()
+                                    })
+                                    .then(function(data) {
+                                        console.log("更新小任務進度成功");
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新小任務進度失敗：", error);
+                                    });
+                                })
+                                .catch(function(error) {
+                                    console.error("加分 - 上傳伺服器失敗：", error);
+                                });
+                            } else {
+                                console.log("已拿過此獎勵");
+                                // 系統紀錄 - 通報伺服器
+                                db.collection("系統記錄").doc(ClassID).collection("資安回報")
+                                .add({
+                                    StuID: StuID,
+                                    Content: '已拿過SmallTask1獎勵',
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("通報伺服器成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("通報伺服器失敗：", error);
+                                });
+                            }
+                        }).catch(function(error) { 
+                            console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                        });
                     });
                 } else {
                     console.log("選單 - 未加入小組");
