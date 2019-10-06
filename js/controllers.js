@@ -290,8 +290,8 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
 }])
 
 // ----------------------------------------主頁面----------------------------------------
-.controller('pblCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading',
-function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
+.controller('pblCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading', '$sce',
+function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $sce) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -303,7 +303,11 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
-                $scope.items = [{ClassName:doc.data().ClassName,ClassContent:doc.data().ClassContent,lock:doc.data().lock}];
+                $scope.items = [{
+                    ClassName:doc.data().ClassName,
+                    ClassContent:$sce.trustAsHtml(doc.data().ClassContent),
+                    lock:doc.data().lock
+                }];
                 $scope.$apply(); //重新監聽view
                 // 如果課程鎖定 跳回登入頁面
                 if (doc.data().lock==true) {
