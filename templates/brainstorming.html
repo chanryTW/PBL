@@ -16,8 +16,7 @@
     <!-- main -->
     <div id="brainstorming_list" class="list list-inset" ng-repeat="item in items | filter:search">
       <div id="brainstorming_item" class="item">
-        <!-- <h2>{{item.StuName}}</h2> -->
-        <h2 class="brainstorming_h2">匿名：{{item.msg}}<i ng-class="{true: 'likeBtnOn', false: 'likeBtnOff'}[{{item.likeBtn}}]" ng-click="like(item)"></i></h2>
+        <h2 class="brainstorming_h2">匿名：<span ng-bind-html="item.msg | linky"></span><i ng-class="{true: 'likeBtnOn', false: 'likeBtnOff'}[{{item.likeBtn}}]" ng-click="like(item)"></i></h2>
       </div>
     </div>
     <div class="spacer" style="height: 1px;"></div>

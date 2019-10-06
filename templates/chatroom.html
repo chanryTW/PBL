@@ -11,7 +11,7 @@
         <div class="item item-avatar itemMessage">
             <img id="imgMessage" ng-src="{{message.messageImg}}">
             <h2>{{message.messageName}}</h2>
-            <p>{{message.messageContent}}</p>
+            <p ng-bind-html="message.messageContent | linky"></p>
         </div>
       </div>
     </div>
