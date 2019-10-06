@@ -4941,7 +4941,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         var ClassStu = results.data().ClassStu;
                         ClassStu.forEach(function (Stu) {
                             // 載入總點數
-                            db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄")
+                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄")
                             .get().then(function(results) {
                                 if (results.data().Point!=undefined) {
                                     $scope.StuPoints.push({
@@ -4958,7 +4958,6 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         console.log("取得課程名單發生錯誤：", error); 
                     });
                     
-
                     // 發放點數
                     $scope.AddBtn = function(value) {
                         $scope.Stus = [];
