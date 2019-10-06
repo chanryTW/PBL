@@ -1203,6 +1203,31 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             // 判斷成功
                             if (doc.data().schedule>=1) {
                                 $scope.SmallTask.SmallTask1_finished = true;
+                                // 防作弊 - 檢查是否已加分
+                                db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", "SmallTask1")
+                                .get().then(function(results) {
+                                    if(results.empty) {
+                                        console.log("尚未解完此小任務"); 
+                                        // 加分 - 上傳伺服器
+                                        db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
+                                        .add({
+                                            content: '完成任務：擁有小組(1/1)',
+                                            point: paswLock(15),
+                                            check: 'SmallTask1',
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("加分 - 上傳伺服器成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("加分 - 上傳伺服器失敗：", error);
+                                        });
+                                    } else {
+                                        console.log("已拿過此獎勵");
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                                });
                             } else {
                                 $scope.SmallTask.SmallTask1_finished = false;
                             }
@@ -1211,14 +1236,64 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             // 判斷成功
                             if (doc.data().schedule>=5) {
                                 $scope.SmallTask.SmallTask2_finished = true;
+                                // 防作弊 - 檢查是否已加分
+                                db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", "SmallTask2")
+                                .get().then(function(results) {
+                                    if(results.empty) {
+                                        console.log("尚未解完此小任務"); 
+                                        // 加分 - 上傳伺服器
+                                        db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
+                                        .add({
+                                            content: '完成任務：參與腦力激盪討論(5/5)',
+                                            point: paswLock(10),
+                                            check: 'SmallTask2',
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("加分 - 上傳伺服器成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("加分 - 上傳伺服器失敗：", error);
+                                        });
+                                    } else {
+                                        console.log("已拿過此獎勵");
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                                });
                             } else {
                                 $scope.SmallTask.SmallTask2_finished = false;
                             }
                             $scope.SmallTask.SmallTask2_schedule = doc.data().schedule;
-                        } else if (doc.id=="SmallTask2_3") {
+
                             // 判斷成功
                             if (doc.data().schedule>=20) {
                                 $scope.SmallTask.SmallTask3_finished = true;
+                                // 防作弊 - 檢查是否已加分
+                                db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", "SmallTask3")
+                                .get().then(function(results) {
+                                    if(results.empty) {
+                                        console.log("尚未解完此小任務"); 
+                                        // 加分 - 上傳伺服器
+                                        db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
+                                        .add({
+                                            content: '完成任務：參與腦力激盪討論(20/20)',
+                                            point: paswLock(10),
+                                            check: 'SmallTask3',
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("加分 - 上傳伺服器成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("加分 - 上傳伺服器失敗：", error);
+                                        });
+                                    } else {
+                                        console.log("已拿過此獎勵");
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                                });
                             } else {
                                 $scope.SmallTask.SmallTask3_finished = false;
                             }
@@ -1227,6 +1302,31 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             // 判斷成功
                             if (doc.data().schedule>=10) {
                                 $scope.SmallTask.SmallTask4_finished = true;
+                                // 防作弊 - 檢查是否已加分
+                                db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", "SmallTask4")
+                                .get().then(function(results) {
+                                    if(results.empty) {
+                                        console.log("尚未解完此小任務"); 
+                                        // 加分 - 上傳伺服器
+                                        db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
+                                        .add({
+                                            content: '完成任務：按讚腦力激盪(10/10)',
+                                            point: paswLock(5),
+                                            check: 'SmallTask4',
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("加分 - 上傳伺服器成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("加分 - 上傳伺服器失敗：", error);
+                                        });
+                                    } else {
+                                        console.log("已拿過此獎勵");
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                                });
                             } else {
                                 $scope.SmallTask.SmallTask4_finished = false;
                             }
@@ -2083,6 +2183,24 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     })
                     .then(function(data) {
                         console.log("新增腦力激盪成功");
+                        // 更新小任務 自己腦力激盪次數
+                        db.collection("腦力激盪").doc(ClassID).collection(GroupID).where("StuID", "==", StuID)
+                        .get().then(function(results) {
+                            // 更新小任務進度
+                            db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask2_3")
+                            .set({
+                                schedule: results.size,
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("更新小任務進度成功");
+                            })
+                            .catch(function(error) {
+                                console.error("更新小任務進度失敗：", error);
+                            });
+                        }).catch(function(error) { 
+                            console.log("更新小任務 自己腦力激盪次數發生錯誤：", error); 
+                        });
                     })
                     .catch(function(error) {
                         console.error("新增腦力激盪失敗：", error);
@@ -2124,6 +2242,25 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     .catch(function(error) {
                         console.error("更新按讚狀態失敗：", error);
                     });
+                    // 取得目前次數
+                    db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask4")
+                    .get().then(function(results) {
+                        console.log("減少按讚次數");
+                        // 更新小任務進度
+                        db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask4")
+                        .update({
+                            schedule: results.data().schedule-1,
+                            time: new Date()
+                        })
+                        .then(function(data) {
+                            console.log("更新小任務進度成功");
+                        })
+                        .catch(function(error) {
+                            console.error("更新小任務進度失敗：", error);
+                        });
+                    }).catch(function(error) { 
+                        console.log("取得目前次數發生錯誤：", error); 
+                    });
                 } else {
                     // 更新按讚狀態
                     item.like.push(StuID);
@@ -2133,9 +2270,45 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                     })
                     .then(function(data) {
                         console.log("更新按讚狀態成功");
+
                     })
                     .catch(function(error) {
                         console.error("更新按讚狀態失敗：", error);
+                    });
+                    // 取得目前次數
+                    db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask4")
+                    .get().then(function(results) {
+                        if(!results.exists) {
+                            console.log("第一次按讚");
+                            // 更新小任務進度
+                            db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask4")
+                            .set({
+                                schedule: 1,
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("更新小任務進度成功");
+                            })
+                            .catch(function(error) {
+                                console.error("更新小任務進度失敗：", error);
+                            });
+                        } else {
+                            console.log("增加按讚次數",results);
+                            // 更新小任務進度
+                            db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask4")
+                            .update({
+                                schedule: results.data().schedule+1,
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("更新小任務進度成功");
+                            })
+                            .catch(function(error) {
+                                console.error("更新小任務進度失敗：", error);
+                            });
+                        }
+                    }).catch(function(error) { 
+                        console.log("取得目前次數發生錯誤：", error); 
                     });
                 }
             };
@@ -3452,43 +3625,17 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                         GroupID = doc.id;
                         // 開關顯示
                         $scope.needGroup = true;
-                        // 防作弊 - 檢查是否已加分
-                        db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", "SmallTask1")
-                        .get().then(function(results) {
-                            if(results.empty) {
-                                console.log("第一次拿獎勵"); 
-                                // 加分 - 上傳伺服器
-                                db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
-                                .add({
-                                    content: '完成任務：擁有小組(1/1)',
-                                    point: paswLock(15),
-                                    check: 'SmallTask1',
-                                    time: new Date()
-                                })
-                                .then(function(data) {
-                                    console.log("加分 - 上傳伺服器成功");
-                                    // 更新小任務進度
-                                    db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask1")
-                                    .set({
-                                        SmallTask1: true,
-                                        schedule: 1,
-                                        time: new Date()
-                                    })
-                                    .then(function(data) {
-                                        console.log("更新小任務進度成功");
-                                    })
-                                    .catch(function(error) {
-                                        console.error("更新小任務進度失敗：", error);
-                                    });
-                                })
-                                .catch(function(error) {
-                                    console.error("加分 - 上傳伺服器失敗：", error);
-                                });
-                            } else {
-                                console.log("已拿過此獎勵");
-                            }
-                        }).catch(function(error) { 
-                            console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                        // 更新小任務進度
+                        db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask1")
+                        .set({
+                            schedule: 1,
+                            time: new Date()
+                        })
+                        .then(function(data) {
+                            console.log("更新小任務進度成功");
+                        })
+                        .catch(function(error) {
+                            console.error("更新小任務進度失敗：", error);
                         });
                     });
                 } else {
