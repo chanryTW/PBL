@@ -1888,7 +1888,8 @@ function ($scope, $stateParams, $sce, $state) {
                         $scope.points.push({
                             point:point,
                             content:change.doc.data().content,
-                            time:time
+                            time:time,
+                            deltime:change.doc.data().time
                         });
                         console.log("新增: ", change.doc.data());
                         $scope.$apply(); //重新監聽view
@@ -1896,6 +1897,18 @@ function ($scope, $stateParams, $sce, $state) {
                         console.log("修改: ", change.doc.data());
                     } else if (change.type === "removed") {
                         console.log("刪除: ", change.doc.data());
+                        // 用findIndex找出要刪除的位置
+                        var indexNum = $scope.points.findIndex((element)=>{
+                            return (element.deltime.seconds === change.doc.data().time.seconds) & (element.deltime.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        // 刪除
+                        if (indexNum!=-1) {
+                            $scope.points.splice(indexNum,1);
+                            console.log("刪除點數歷程記錄成功");
+                        }else{
+                            console.log("刪除點數歷程記錄不成功");
+                        }
+                        $scope.$apply(); //重新監聽view
                     }
                 });
             });
@@ -3948,6 +3961,18 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                         console.log("修改: ", change.doc.data());
                     } else if (change.type === "removed") {
                         console.log("刪除: ", change.doc.data());
+                        // 用findIndex找出要刪除的位置
+                        var indexNum = TotalPointArray.findIndex((element)=>{
+                            return (element.time.seconds === change.doc.data().time.seconds) & (element.time.nanoseconds === change.doc.data().time.nanoseconds);
+                        });
+                        // 刪除
+                        if (indexNum!=-1) {
+                            TotalPointArray.splice(indexNum,1);
+                            console.log("刪除點數成功");
+                        }else{
+                            console.log("刪除點數不成功");
+                        }
+                        $scope.$apply(); //重新監聽view
                     }
                     // 有修改就重新加總
                     var TotalPoint = 0;
