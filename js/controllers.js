@@ -2293,7 +2293,7 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                                 console.error("更新小任務進度失敗：", error);
                             });
                         } else {
-                            console.log("增加按讚次數",results);
+                            console.log("增加按讚次數");
                             // 更新小任務進度
                             db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask4")
                             .update({
