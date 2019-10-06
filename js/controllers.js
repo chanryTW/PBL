@@ -1174,6 +1174,105 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                 console.log("判斷組長發生錯誤：", error); 
             });
 
+            // 監聽 - 載入小任務進度
+            db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度")
+            .onSnapshot(function(results) {
+                $scope.SmallTask = [];
+                $scope.SmallTask.SmallTask1_finished = false;
+                $scope.SmallTask.SmallTask1_schedule = 0;
+                $scope.SmallTask.SmallTask2_finished = false;
+                $scope.SmallTask.SmallTask2_schedule = 0;
+                $scope.SmallTask.SmallTask3_finished = false;
+                $scope.SmallTask.SmallTask3_schedule = 0;
+                $scope.SmallTask.SmallTask4_finished = false;
+                $scope.SmallTask.SmallTask4_schedule = 0;
+                $scope.SmallTask.SmallTask5_finished = false;
+                $scope.SmallTask.SmallTask5_schedule = 0;
+                $scope.SmallTask.SmallTask6_finished = false;
+                $scope.SmallTask.SmallTask6_schedule = 0;
+                $scope.SmallTask.SmallTask7_finished = false;
+                $scope.SmallTask.SmallTask7_schedule = 0;
+                $scope.SmallTask.SmallTask8_finished = false;
+                $scope.SmallTask.SmallTask8_schedule = 0;
+                // 確認是否有小任務
+                if (results.empty == false) {
+                    results.forEach(function (doc) {
+                        var content,point;
+                        // 判斷並放入資料(不聰明做法)
+                        if (doc.id=="SmallTask1") {
+                            // 判斷成功
+                            if (doc.data().schedule>=1) {
+                                $scope.SmallTask.SmallTask1_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask1_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask1_schedule = doc.data().schedule;
+                        } else if (doc.id=="SmallTask2_3") {
+                            // 判斷成功
+                            if (doc.data().schedule>=5) {
+                                $scope.SmallTask.SmallTask2_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask2_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask2_schedule = doc.data().schedule;
+                        } else if (doc.id=="SmallTask2_3") {
+                            // 判斷成功
+                            if (doc.data().schedule>=20) {
+                                $scope.SmallTask.SmallTask3_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask3_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask3_schedule = doc.data().schedule;
+                        } else if (doc.id=="SmallTask4") {
+                            // 判斷成功
+                            if (doc.data().schedule>=10) {
+                                $scope.SmallTask.SmallTask4_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask4_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask4_schedule = doc.data().schedule;
+                        } else if (doc.id=="SmallTask5") {
+                            // 判斷成功
+                            if (doc.data().schedule>=1) {
+                                $scope.SmallTask.SmallTask5_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask5_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask5_schedule = doc.data().schedule;
+                        } else if (doc.id=="SmallTask6") {
+                            // 判斷成功
+                            if (doc.data().schedule>=5) {
+                                $scope.SmallTask.SmallTask6_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask6_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask6_schedule = doc.data().schedule;
+                        } else if (doc.id=="SmallTask7") {
+                            // 判斷成功
+                            if (doc.data().schedule>=1) {
+                                $scope.SmallTask.SmallTask7_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask7_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask7_schedule = doc.data().schedule;
+                        } else if (doc.id=="SmallTask8") {
+                            // 判斷成功
+                            if (doc.data().schedule>=1) {
+                                $scope.SmallTask.SmallTask8_finished = true;
+                            } else {
+                                $scope.SmallTask.SmallTask8_finished = false;
+                            }
+                            $scope.SmallTask.SmallTask8_schedule = doc.data().schedule;
+                        }
+                    });
+                } else {
+                    console.log("尚無小任務");
+                }
+                
+            },function(error) {
+                console.error("取得測驗資料發生錯誤：", error);
+            });
+
             // 進入IRS按鈕
             $scope.GoIRS = function(missionID,missionName,missionContent){
                 $state.go("menu.irs",{TestID:missionID,TestName:missionName,TestContent:missionContent});
