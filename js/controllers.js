@@ -1264,6 +1264,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             }
                             $scope.SmallTask.SmallTask8_schedule = doc.data().schedule;
                         }
+                        $scope.$apply(); //重新監聽view
                     });
                 } else {
                     console.log("尚無小任務");
