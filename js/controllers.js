@@ -1387,7 +1387,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                         db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
                                         .add({
                                             content: '完成任務：參與腦力激盪討論(20/20)',
-                                            point: paswLock(10),
+                                            point: paswLock(20),
                                             check: 'SmallTask3',
                                             time: new Date()
                                         })
@@ -1420,7 +1420,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                         db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
                                         .add({
                                             content: '完成任務：按讚腦力激盪(10/10)',
-                                            point: paswLock(5),
+                                            point: paswLock(10),
                                             check: 'SmallTask4',
                                             time: new Date()
                                         })
@@ -1453,7 +1453,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                         db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
                                         .add({
                                             content: '完成任務：發起投票且結案(投票系統) (1/1)',
-                                            point: paswLock(10),
+                                            point: paswLock(15),
                                             check: 'SmallTask5',
                                             time: new Date()
                                         })
