@@ -300,6 +300,70 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $sce) {
             var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
             var ClassID = localStorage.getItem("ClassID");
           
+            // 移轉
+            // db.collection("帳號")
+            // .get().then(function(results) {
+            //     if(!results.empty) {
+            //         results.forEach(function (doc) {
+            //             var Stu = doc.id;
+            //             db.collection("帳號").doc(Stu).collection("點數歷程記錄")
+            //             .get().then(function(results) {
+            //                 if(!results.empty) {
+            //                     results.forEach(function (doc) {
+            //                         console.log(doc.data());
+            //                         db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄").doc(doc.id)
+            //                         .set({
+            //                             check: doc.data().check,
+            //                             content: doc.data().content,
+            //                             point: doc.data().point,
+            //                             time: doc.data().time
+            //                         })
+            //                         .then(function(data) {
+            //                             console.log(Stu,"!!!!!!!!!成功");
+            //                         })
+            //                         .catch(function(error) {
+            //                             console.error(Stu,"!!!!!!!!!!失敗：", error);
+            //                         });
+            //                     });
+            //                 }
+            //             }).catch(function(error) { 
+            //                 console.log("取得未分組名單發生錯誤：", error); 
+            //             });
+            //         });
+            //     }
+            // }).catch(function(error) { 
+            //     console.log("取帳號錯誤：", error); 
+            // });
+            // 刪除
+            // db.collection("帳號")
+            // .get().then(function(results) {
+            //     if(!results.empty) {
+            //         results.forEach(function (doc) {
+            //             var Stu = doc.id;
+            //             db.collection("帳號").doc(Stu).collection("點數歷程記錄")
+            //             .get().then(function(results) {
+            //                 if(!results.empty) {
+            //                     results.forEach(function (doc) {
+            //                         db.collection("帳號").doc(Stu).collection("點數歷程記錄").doc(doc.id)
+            //                         .delete()
+            //                         .then(function(data) {
+            //                             console.log("刪除成功");
+            //                         })
+            //                         .catch(function(error) {
+            //                             console.error("刪除失敗：", error);
+            //                         });
+            //                     });
+            //                 }
+            //             }).catch(function(error) { 
+            //                 console.log("刪除發生錯誤：", error); 
+            //             });
+            //         });
+            //     }
+            // }).catch(function(error) { 
+            //     console.log("取帳號錯誤：", error); 
+            // });
+            
+
             // 監聽 - 公告內容
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
