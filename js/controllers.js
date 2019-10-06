@@ -1323,12 +1323,12 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                     function addPoint(Stu) {
                                         // 防作弊 - 檢查是否已加分
                                         console.log('檢查是否已加分'+Stu);
-                                        db.collection("帳號").doc(Stu).collection("點數歷程記錄").where("check", "==", missionID)
+                                        db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", missionID)
                                         .get().then(function(results) {
                                             if(results.empty) {
                                                 console.log("第一次拿獎勵"); 
                                                 // 加分 - 上傳伺服器
-                                                db.collection("帳號").doc(Stu).collection("點數歷程記錄")
+                                                db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
                                                 .add({
                                                     content: '完成任務：'+doc.Name,
                                                     point: paswLock(doc.Point),
@@ -1422,7 +1422,7 @@ function ($scope, $stateParams, $sce, $state) {
 
             $scope.points = [];
             // 監聽 - 取得點數歷程記錄
-            db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+            db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
             .onSnapshot(function(querySnapshot) {
                 querySnapshot.docChanges().forEach(function(change) {
                     if (change.type === "added") {
@@ -1554,12 +1554,12 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                         .then(function() {
                             console.log("更新已完成名單成功");
                             // 防作弊 - 檢查是否已加分
-                            db.collection("帳號").doc(StuID).collection("點數歷程記錄").where("check", "==", TestID)
+                            db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", TestID)
                             .get().then(function(results) {
                                 if(results.empty) {
                                     console.log("第一次拿獎勵"); 
                                     // 加分 - 上傳伺服器
-                                    db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+                                    db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
                                     .add({
                                         content: '完成任務：'+name,
                                         point: paswLock(point),
@@ -3353,14 +3353,14 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                         // 開關顯示
                         $scope.needGroup = true;
                         // 防作弊 - 檢查是否已加分
-                        db.collection("帳號").doc(StuID).collection("點數歷程記錄").where("check", "==", "SmallTask1")
+                        db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", "SmallTask1")
                         .get().then(function(results) {
                             if(results.empty) {
                                 console.log("第一次拿獎勵"); 
                                 // 加分 - 上傳伺服器
-                                db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+                                db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
                                 .add({
-                                    content: '完成任務：擁有小組',
+                                    content: '完成任務：擁有小組(1/1)',
                                     point: paswLock(15),
                                     check: 'SmallTask1',
                                     time: new Date()
@@ -3368,11 +3368,11 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                                 .then(function(data) {
                                     console.log("加分 - 上傳伺服器成功");
                                     // 更新小任務進度
-                                    db.collection("課程任務").doc(ClassID).collection("小任務進度").doc(StuID)
+                                    db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度").doc("SmallTask1")
                                     .set({
-                                        StuID: StuID,
-                                        SmallTask1: 1,
-                                        SmallTask1Time: new Date()
+                                        SmallTask1: true,
+                                        schedule: 1,
+                                        time: new Date()
                                     })
                                     .then(function(data) {
                                         console.log("更新小任務進度成功");
@@ -3405,7 +3405,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
 
             var TotalPointArray = [];
             // 監聽 - 取得點數
-            db.collection("帳號").doc(StuID).collection("點數歷程記錄")
+            db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
             .onSnapshot(function(querySnapshot) {
                 querySnapshot.docChanges().forEach(function(change) {
                     if (change.type === "added") {
@@ -3446,8 +3446,8 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                         if (index==TotalPointArray.length-1) {
                             $scope.TotalPoint = TotalPoint;
                             // 更新伺服器點數
-                            db.collection("帳號").doc(StuID)
-                            .update({
+                            db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄")
+                            .set({
                                 Point: paswLock(TotalPoint)
                             })
                             .then(function(data) {
@@ -4401,7 +4401,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         var ClassStu = results.data().ClassStu;
                         ClassStu.forEach(function (Stu) {
                             // 載入總點數
-                            db.collection("帳號").doc(Stu)
+                            db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄")
                             .get().then(function(results) {
                                 if (results.data().Point!=undefined) {
                                     $scope.StuPoints.push({
@@ -4515,7 +4515,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
 
                                         // 加分 - 上傳伺服器
                                         for (let index = 0; index < $scope.checkStus.length; index++) {
-                                            db.collection("帳號").doc($scope.checkStus[index]).collection("點數歷程記錄")
+                                            db.collection("點數").doc(ClassID).collection($scope.checkStus[index]).doc("點數歷程記錄").collection("點數歷程記錄")
                                             .add({
                                                 content: $scope.AddBtnPopup.content,
                                                 point: paswLock($scope.AddBtnPopup.point),
