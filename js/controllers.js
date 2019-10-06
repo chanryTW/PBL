@@ -3386,19 +3386,6 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                                 });
                             } else {
                                 console.log("已拿過此獎勵");
-                                // 系統紀錄 - 通報伺服器
-                                db.collection("系統記錄").doc(ClassID).collection("資安回報")
-                                .add({
-                                    StuID: StuID,
-                                    Content: '已拿過SmallTask1獎勵',
-                                    time: new Date()
-                                })
-                                .then(function(data) {
-                                    console.log("通報伺服器成功");
-                                })
-                                .catch(function(error) {
-                                    console.error("通報伺服器失敗：", error);
-                                });
                             }
                         }).catch(function(error) { 
                             console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
