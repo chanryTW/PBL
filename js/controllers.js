@@ -818,6 +818,7 @@ function ($scope, $stateParams, $ionicPopup) {
                                     // 放入投票內容
                                     $scope.votes.push({
                                         voteID:change.doc.id,
+                                        voteStuID:change.doc.data().StuID,
                                         voteName:change.doc.data().StuID + ' ' + change.doc.data().StuName,
                                         voteImg:voteImg,
                                         title:change.doc.data().title,
@@ -896,7 +897,7 @@ function ($scope, $stateParams, $ionicPopup) {
             });
 
             // 點擊votebtn
-            $scope.votebtn = function(NorY,voteID) {
+            $scope.votebtn = function(NorY,voteID,voteStuID) {
                 // 用findIndex找出位置
                 var indexNum = $scope.votes.findIndex((element)=>{
                     return (element.voteID === voteID);
@@ -954,6 +955,42 @@ function ($scope, $stateParams, $ionicPopup) {
                             .then(function(data) {
                                 console.log("關閉投票成功");
                                 $scope.$apply(); //重新監聽view
+                                // 將獎勵發給發起者
+                                // 取得目前次數
+                                db.collection("點數").doc(ClassID).collection(voteStuID).doc("小任務進度").collection("小任務進度").doc("SmallTask5")
+                                .get().then(function(results) {
+                                    if(!results.exists) {
+                                        console.log("第一次結案");
+                                        // 更新小任務進度
+                                        db.collection("點數").doc(ClassID).collection(voteStuID).doc("小任務進度").collection("小任務進度").doc("SmallTask5")
+                                        .set({
+                                            schedule: 1,
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新小任務進度成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新小任務進度失敗：", error);
+                                        });
+                                    } else {
+                                        console.log("增加結案次數");
+                                        // 更新小任務進度
+                                        db.collection("點數").doc(ClassID).collection(voteStuID).doc("小任務進度").collection("小任務進度").doc("SmallTask5")
+                                        .update({
+                                            schedule: results.data().schedule+1,
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新小任務進度成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新小任務進度失敗：", error);
+                                        });
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("取得目前次數發生錯誤：", error); 
+                                });
                             })
                             .catch(function(error) {
                                 console.error("關閉投票失敗：", error);
@@ -1335,6 +1372,31 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             // 判斷成功
                             if (doc.data().schedule>=1) {
                                 $scope.SmallTask.SmallTask5_finished = true;
+                                // 防作弊 - 檢查是否已加分
+                                db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", "SmallTask5")
+                                .get().then(function(results) {
+                                    if(results.empty) {
+                                        console.log("尚未解完此小任務"); 
+                                        // 加分 - 上傳伺服器
+                                        db.collection("點數").doc(ClassID).collection(StuID).doc("點數歷程記錄").collection("點數歷程記錄")
+                                        .add({
+                                            content: '完成任務：發起投票且結案(投票系統) (1/1)',
+                                            point: paswLock(10),
+                                            check: 'SmallTask5',
+                                            time: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("加分 - 上傳伺服器成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("加分 - 上傳伺服器失敗：", error);
+                                        });
+                                    } else {
+                                        console.log("已拿過此獎勵");
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                                });
                             } else {
                                 $scope.SmallTask.SmallTask5_finished = false;
                             }
