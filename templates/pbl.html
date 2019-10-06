@@ -25,9 +25,7 @@
         <div class="item item-divider">
           【{{item.ClassName}}】課程說明：
         </div>
-        <div class="item item-text-wrap">
-          {{item.ClassContent}}
-        </div>
+        <div class="item item-text-wrap" bind-html-compile="item.ClassContent"></div>
       </div>
 
       <div class="spacer" style="height: 40px;"></div>
