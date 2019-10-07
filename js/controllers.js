@@ -1752,7 +1752,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                 });
                             } else {
                                 $scope.chooseProposal = $scope.checkProposals;
-                                $scope.response = $scope.checkProposals;
+                                $scope.response.proposal = $scope.checkProposals;
                             }
                         }
                     }]
@@ -1811,7 +1811,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             .then(function(data) {
                                 console.log("回傳填答結果成功");
                                 // 清空response
-                                $scope.response = [];
+                                // $scope.response = [];
                                 // 標記已完成 - 取得已完成名單
                                 db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
                                 .get().then(function(results) {
