@@ -1781,7 +1781,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             };
 
             // 回傳填答結果
-            $scope.response = [];
+            $scope.response = {};
             $scope.responseBtn = function(doc,response){
                 var missionID = doc.missionID;
                 // 跳出泡泡
@@ -1801,6 +1801,8 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                         onTap: function(e) {
                             console.log('選擇送出');
                             // 上傳伺服器
+                            console.log("回傳",response);
+                            console.log("回傳",$scope.response);
                             db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
                             .add({
                                 StuID: StuID,
@@ -1811,7 +1813,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                             .then(function(data) {
                                 console.log("回傳填答結果成功");
                                 // 清空response
-                                // $scope.response = [];
+                                $scope.response = {};
                                 // 標記已完成 - 取得已完成名單
                                 db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
                                 .get().then(function(results) {
