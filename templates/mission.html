@@ -1,7 +1,7 @@
 <ion-view title="課程任務" id="mission">
   <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header"><div class="maxWidth">
 
-    <div ng-repeat="mission in missions | orderBy:'TimeOut'" class="card">
+    <div ng-repeat="mission in missions | orderBy:'TimeOut'" ng-if="mission.hide" class="card">
       <div class="item item-divider">
         <span ng-class="{'MissionType1': mission.type == '隨堂測驗', 'MissionType2': mission.type == '小組討論', 'MissionType3': mission.type == '加分問卷', 'MissionType4': mission.type == '評分'}">
           {{mission.type}}

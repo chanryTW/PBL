@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.2.0";
+var verson = "1.2.1";
 // Firebase Key
 var config = {
 apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -1255,6 +1255,30 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                     }).catch(function(error) { 
                         console.log("取得小組名單發生錯誤：", error); 
                     });
+
+                    // 分組學習單匯入
+                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc("pI0idh7L8pufBVT3bnr4").collection("填答結果").where("StuID", "==", StuID)
+                    .get().then(function(results) {
+                        if (results.empty) {
+                            // 上次未送出
+                            console.log("上次未送出");
+                        } else {
+                            // 取得上一版資料
+                            console.log("取得上一版資料");
+                            results.forEach(function (doc) {
+                                $scope.response.question1 = doc.data().response.question1;
+                                $scope.response.question2 = doc.data().response.question2;
+                                $scope.response.question3 = doc.data().response.question3;
+                                $scope.response.question4 = doc.data().response.question4;
+                                $scope.response.question5 = doc.data().response.question5;
+
+                                $scope.checkProposals = doc.data().response.proposal;
+                                $scope.chooseProposal = doc.data().response.proposal;
+                            });
+                        }
+                    }).catch(function(error) { 
+                        console.log("分組學習單匯入發生錯誤：", error); 
+                    });
                 }
                 
                 // 監聽 - 載入所有任務
@@ -1298,6 +1322,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                 HTML:$sce.trustAsHtml(change.doc.data().HTML),
                                 time:change.doc.data().time,
                                 lock:lock,
+                                hide:!change.doc.data().hide,
                                 show:false,
                                 isIRS:change.doc.data().isIRS,
                                 showMsg:'查看更多'
@@ -1898,6 +1923,70 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                     }]
                 });
             };
+
+            // 匯出資料
+            // function sheet2blob(sheet, sheetName) {
+            //     sheetName = sheetName || 'sheet1';
+            //     var workbook = {
+            //         SheetNames: [sheetName],
+            //         Sheets: {}
+            //     };
+            //     workbook.Sheets[sheetName] = sheet;
+            //     // 生成excel的配置项
+            //     var wopts = {
+            //         bookType: 'xlsx', // 要生成的文件类型
+            //         bookSST: false, // 是否生成Shared String Table，官方解释是，如果开启生成速度会下降，但在低版本IOS设备上有更好的兼容性
+            //         type: 'binary'
+            //     };
+            //     var wbout = XLSX.write(workbook, wopts);
+            //     var blob = new Blob([s2ab(wbout)], {type:"application/octet-stream"});
+            //     // 字符串转ArrayBuffer
+            //     function s2ab(s) {
+            //         var buf = new ArrayBuffer(s.length);
+            //         var view = new Uint8Array(buf);
+            //         for (var i=0; i!=s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+            //         return buf;
+            //     }
+            //     return blob;
+            // }
+            // function openDownloadDialog(url, saveName)
+            // {
+            //     if(typeof url == 'object' && url instanceof Blob)
+            //     {
+            //         url = URL.createObjectURL(url); // 创建blob地址
+            //     }
+            //     var aLink = document.createElement('a');
+            //     aLink.href = url;
+            //     aLink.download = saveName || ''; // HTML5新增的属性，指定保存文件名，可以不要后缀，注意，file:///模式下不会生效
+            //     var event;
+            //     if(window.MouseEvent) event = new MouseEvent('click');
+            //     else
+            //     {
+            //         event = document.createEvent('MouseEvents');
+            //         event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            //     }
+            //     aLink.dispatchEvent(event);
+            // }
+            // db.collection("課程任務").doc("fUkQPcydohutuKVmV1pN").collection("任務列表").doc("pI0idh7L8pufBVT3bnr4").collection("填答結果")
+            // .get().then(function(results) {
+            //     var items = [];
+            //     items.push(["組長","版本","第一題","第二題","第三題","第四題","第五題"])
+            //     results.forEach(function (doc) {
+            //         items.push([
+            //             doc.data().StuID,
+            //             "V1",
+            //             doc.data().response.question1,
+            //             doc.data().response.question2,
+            //             doc.data().response.question3,
+            //             doc.data().response.question4,
+            //             doc.data().response.question5
+            //         ]);
+            //     });
+            //     var sheet = XLSX.utils.aoa_to_sheet(items);
+            //     openDownloadDialog(sheet2blob(sheet), '匯出.xlsx');
+            // }).catch(function(error) { 
+            //     console.log("匯出資料發生錯誤：", error); 
+            // });
 
         }else{
             console.log("尚未登入");
