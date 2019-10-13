@@ -1967,11 +1967,44 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             //     }
             //     aLink.dispatchEvent(event);
             // }
-            // db.collection("課程任務").doc("fUkQPcydohutuKVmV1pN").collection("任務列表").doc("pI0idh7L8pufBVT3bnr4").collection("填答結果")
+            // db.collection("課程任務").doc(ClassID).collection("任務列表").doc("pI0idh7L8pufBVT3bnr4").collection("填答結果")
             // .get().then(function(results) {
             //     var items = [];
-            //     items.push(["組長","版本","第一題","第二題","第三題","第四題","第五題"])
+            //     items.push(["組長","版本","第一題","第二題","第三題","第四題","第五題","提案"])
             //     results.forEach(function (doc) {
+            //         var proposal = "";
+            //         // 如果有提案才放
+            //         if (doc.data().response.proposal!=undefined) {
+            //             for (let i = 0; i < doc.data().response.proposal.length; i++) {
+            //                 var brainstorming = "";
+            //                 for (let j = 0; j < doc.data().response.proposal[i].brainstorming.length; j++) {
+            //                     // 先取得小組ID
+            //                     db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
+            //                     .get().then(function(results) {
+            //                         results.forEach(function (doc2) {
+            //                             // 再用小組ID搜尋腦力激盪名稱
+            //                             db.collection("腦力激盪").doc(ClassID).collection(doc2.id).doc(doc.data().response.proposal[i].brainstorming[j])
+            //                             .get().then(function(doc3) {
+            //                                 brainstorming = brainstorming + doc3.data().msg + ",";
+            //                                 // 判斷最後一筆
+            //                                 if (j == doc.data().response.proposal[i].brainstorming.length-1) {
+            //                                     proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
+            //                                     // 判斷最後一筆
+            //                                     if (i == doc.data().response.proposal.length-1) {
+            //                                         console.log(proposal);
+            //                                         proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
+            //                                     }
+            //                                 }
+            //                             }).catch(function(error) { 
+            //                                 console.log("用小組ID搜尋腦力激盪名稱發生錯誤：", error); 
+            //                             });
+            //                         });
+            //                     }).catch(function(error) { 
+            //                         console.log("取得小組ID發生錯誤：", error); 
+            //                     });
+            //                 }
+            //             }
+            //         }
             //         items.push([
             //             doc.data().StuID,
             //             "V1",
@@ -1979,7 +2012,8 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             //             doc.data().response.question2,
             //             doc.data().response.question3,
             //             doc.data().response.question4,
-            //             doc.data().response.question5
+            //             doc.data().response.question5,
+            //             proposal
             //         ]);
             //     });
             //     var sheet = XLSX.utils.aoa_to_sheet(items);
