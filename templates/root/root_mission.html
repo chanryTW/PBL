@@ -18,6 +18,12 @@
       <div class="item item-text-wrap">
         <button class="button button-block button-chanry1" ng-click="AddBtn(selectClass)">新增</button>
       </div>
+      <div class="item item-divider">
+          【{{selectClass.ClassName}}】匯出任務：
+        </div>
+        <div class="item item-text-wrap">
+          <button class="button button-block button-chanry1" ng-click="OutputBtn()">匯出</button>
+        </div>
     </div>
 
     <div ng-repeat="mission in missions | orderBy:'TimeOut'" class="card">
