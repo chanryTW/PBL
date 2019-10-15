@@ -150,6 +150,26 @@ angular.module('app.routes', [])
     }
   })
 
+  .state('rootmenu.root_brainstorming', {
+    url: '/root_brainstorming',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/root/root_brainstorming.html',
+        controller: 'root_brainstormingCtrl'
+      }
+    }
+  })
+
+  .state('rootmenu.root_proposal', {
+    url: '/root_proposal',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/root/root_proposal.html',
+        controller: 'root_proposalCtrl'
+      }
+    }
+  })
+
   .state('rootmenu.root_point', {
     url: '/root_point',
     views: {
