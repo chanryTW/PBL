@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.2.2";
+var verson = "1.2.3";
 // Firebase Key
 var config = {
 apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -4764,114 +4764,161 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                     };
 
                     // 匯出資料
-                    function sheet2blob(sheet, sheetName) {
-                        sheetName = sheetName || 'sheet1';
-                        var workbook = {
-                            SheetNames: [sheetName],
-                            Sheets: {}
-                        };
-                        workbook.Sheets[sheetName] = sheet;
-                        // 生成excel的配置项
-                        var wopts = {
-                            bookType: 'xlsx', // 要生成的文件类型
-                            bookSST: false, // 是否生成Shared String Table，官方解释是，如果开启生成速度会下降，但在低版本IOS设备上有更好的兼容性
-                            type: 'binary'
-                        };
-                        var wbout = XLSX.write(workbook, wopts);
-                        var blob = new Blob([s2ab(wbout)], {type:"application/octet-stream"});
-                        // 字符串转ArrayBuffer
-                        function s2ab(s) {
-                            var buf = new ArrayBuffer(s.length);
-                            var view = new Uint8Array(buf);
-                            for (var i=0; i!=s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
-                            return buf;
-                        }
-                        return blob;
-                    }
-                    function openDownloadDialog(url, saveName)
-                    {
-                        if(typeof url == 'object' && url instanceof Blob)
-                        {
-                            url = URL.createObjectURL(url); // 创建blob地址
-                        }
-                        var aLink = document.createElement('a');
-                        aLink.href = url;
-                        aLink.download = saveName || ''; // HTML5新增的属性，指定保存文件名，可以不要后缀，注意，file:///模式下不会生效
-                        var event;
-                        if(window.MouseEvent) event = new MouseEvent('click');
-                        else
-                        {
-                            event = document.createEvent('MouseEvents');
-                            event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                        }
-                        aLink.dispatchEvent(event);
-                    }
-                    var items = [];
-                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc("pI0idh7L8pufBVT3bnr4").collection("填答結果")
-                    .get().then(function(results) {
-                        items.push(["組長","組員","版本","第一題","第二題","第三題","第四題","第五題","提案"]);
-                        results.forEach(function (doc) {
-                            var proposal = "",members;
-                            // 如果有提案才放
-                            if (doc.data().response.proposal!=undefined) {
-                                for (let i = 0; i < doc.data().response.proposal.length; i++) {
-                                    var brainstorming = "";
-                                    for (let j = 0; j < doc.data().response.proposal[i].brainstorming.length; j++) {
-                                        // 先取得小組ID
-                                        db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
-                                        .get().then(function(results) {
-                                            results.forEach(function (doc2) {
-                                                members = doc2.data().members;
-                                                // 再用小組ID搜尋腦力激盪名稱
-                                                db.collection("腦力激盪").doc(ClassID).collection(doc2.id).doc(doc.data().response.proposal[i].brainstorming[j])
-                                                .get().then(function(doc3) {
-                                                    brainstorming = brainstorming + doc3.data().msg + ",";
-                                                    // 判斷最後一筆
-                                                    if (j == doc.data().response.proposal[i].brainstorming.length-1) {
-                                                        proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
-                                                        // 判斷最後一筆
-                                                        if (i == doc.data().response.proposal.length-1) {
-                                                            proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
-                                                        }
-                                                    }
-                                                }).catch(function(error) { 
-                                                    console.log("用小組ID搜尋腦力激盪名稱發生錯誤：", error); 
-                                                });
-                                            });
-                                        }).catch(function(error) { 
-                                            console.log("取得小組ID發生錯誤：", error); 
-                                        });
-                                    }
-                                }
-                            }
-                            // 先取得小組ID
-                            db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
-                            .get().then(function(results) {
-                                results.forEach(function (doc2) {
-                                    members = doc2.data().members;
-                                    items.push([
-                                        doc.data().StuID,
-                                        members,
-                                        "V1",
-                                        doc.data().response.question1,
-                                        doc.data().response.question2,
-                                        doc.data().response.question3,
-                                        doc.data().response.question4,
-                                        doc.data().response.question5,
-                                        proposal
-                                    ]);
-                                }); 
-                            }).catch(function(error) { 
-                                console.log("取得小組ID發生錯誤：", error); 
-                            }); 
-                        });
+                    // function sheet2blob(sheet, sheetName) {
+                    //     sheetName = sheetName || 'sheet1';
+                    //     var workbook = {
+                    //         SheetNames: [sheetName],
+                    //         Sheets: {}
+                    //     };
+                    //     workbook.Sheets[sheetName] = sheet;
+                    //     // 生成excel的配置项
+                    //     var wopts = {
+                    //         bookType: 'xlsx', // 要生成的文件类型
+                    //         bookSST: false, // 是否生成Shared String Table，官方解释是，如果开启生成速度会下降，但在低版本IOS设备上有更好的兼容性
+                    //         type: 'binary'
+                    //     };
+                    //     var wbout = XLSX.write(workbook, wopts);
+                    //     var blob = new Blob([s2ab(wbout)], {type:"application/octet-stream"});
+                    //     // 字符串转ArrayBuffer
+                    //     function s2ab(s) {
+                    //         var buf = new ArrayBuffer(s.length);
+                    //         var view = new Uint8Array(buf);
+                    //         for (var i=0; i!=s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+                    //         return buf;
+                    //     }
+                    //     return blob;
+                    // }
+                    // function openDownloadDialog(url, saveName)
+                    // {
+                    //     if(typeof url == 'object' && url instanceof Blob)
+                    //     {
+                    //         url = URL.createObjectURL(url); // 创建blob地址
+                    //     }
+                    //     var aLink = document.createElement('a');
+                    //     aLink.href = url;
+                    //     aLink.download = saveName || ''; // HTML5新增的属性，指定保存文件名，可以不要后缀，注意，file:///模式下不会生效
+                    //     var event;
+                    //     if(window.MouseEvent) event = new MouseEvent('click');
+                    //     else
+                    //     {
+                    //         event = document.createEvent('MouseEvents');
+                    //         event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                    //     }
+                    //     aLink.dispatchEvent(event);
+                    // }
+                    // var items = [];
+                    // db.collection("課程任務").doc(ClassID).collection("任務列表").doc("pI0idh7L8pufBVT3bnr4").collection("填答結果")
+                    // .get().then(function(results) {
+                    //     items.push(["組長","組員","版本","第一題","第二題","第三題","第四題","第五題","提案","時間"]);
+                    //     results.forEach(function (doc) {
+                    //         var proposal = "";
+                    //         // 如果有提案才放
+                    //         // if (doc.data().response.proposal!=undefined) {
+                    //         //     // 列出所有提案
+                    //         //     for (let i = 0; i < doc.data().response.proposal.length; i++) {
+                    //         //         var brainstorming = "";
+                    //         //         // 列出所有腦力激盪
+                    //         //         for (let j = 0; j < doc.data().response.proposal[i].brainstorming.length; j++) {
+                    //         //             // 先取得小組ID
+                    //         //             db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
+                    //         //             .get().then(function(results) {
+                    //         //                 results.forEach(function (doc2) {
+                    //         //                     // 再用小組ID搜尋腦力激盪名稱
+                    //         //                     db.collection("腦力激盪").doc(ClassID).collection(doc2.id).doc(doc.data().response.proposal[i].brainstorming[j])
+                    //         //                     .get().then(function(doc3) {
+                    //         //                         brainstorming = brainstorming + doc3.data().msg + ",";
+                    //         //                         // 判斷最後一筆
+                    //         //                         if (j == doc.data().response.proposal[i].brainstorming.length-1) {
+                    //         //                             proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
+                    //         //                             // 判斷最後一筆
+                    //         //                             if (i == doc.data().response.proposal.length-1) {
+                    //         //                                 proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
+                    //         //                                 // 取得小組成員
+                    //         //                                 db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
+                    //         //                                 .get().then(function(results) {
+                    //         //                                     results.forEach(function (doc2) {
+                    //         //                                         // 總結送出
+                    //         //                                         items.push([
+                    //         //                                             doc.data().StuID,
+                    //         //                                             doc2.data().members,
+                    //         //                                             "V1",
+                    //         //                                             doc.data().response.question1,
+                    //         //                                             doc.data().response.question2,
+                    //         //                                             doc.data().response.question3,
+                    //         //                                             doc.data().response.question4,
+                    //         //                                             doc.data().response.question5,
+                    //         //                                             proposal
+                    //         //                                         ]);
+                    //         //                                     }); 
+                    //         //                                 }).catch(function(error) { 
+                    //         //                                     console.log("取得小組ID發生錯誤：", error); 
+                    //         //                                 }); 
+                    //         //                             }
+                    //         //                         }
+                    //         //                     }).catch(function(error) { 
+                    //         //                         console.log("用小組ID搜尋腦力激盪名稱發生錯誤：", error); 
+                    //         //                     });
+                    //         //                 });
+                    //         //             }).catch(function(error) { 
+                    //         //                 console.log("取得小組ID發生錯誤：", error); 
+                    //         //             });
+                    //         //         }
+                    //         //     }
+                    //         // } else {
+                    //             // 取得小組成員
+                    //             db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
+                    //             .get().then(function(results) {
+                    //                 results.forEach(function (doc2) {
+                    //                     var members = "";
+                    //                     for (let index = 0; index < doc2.data().members.length; index++) {
+                    //                         // 查詢姓名
+                    //                         // db.collection("帳號").doc(doc2.data().members[index])
+                    //                         // .get().then(function(a) {
+                    //                         //     members = members + doc2.data().members[index] + a.data().Name + ",";
+                    //                         // }).catch(function(error) { 
+                    //                         //     console.log("查詢姓名發生錯誤：", error); 
+                    //                         // });
+                    //                         // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
+                    //                         var pushMonth = Number(doc.data().time.toDate().getMonth())+1;
+                    //                         if (pushMonth<=9) {
+                    //                             pushMonth = '0'+pushMonth;
+                    //                         }
+                    //                         var pushDate = doc.data().time.toDate().getDate();
+                    //                         if (pushDate<=9) {
+                    //                             pushDate = '0'+pushDate;
+                    //                         }
+                                            
+                    //                         // 判斷最後一筆
+                    //                         if (index == doc2.data().members.length-1) {
+                    //                             // 總結送出
+                    //                             items.push([
+                    //                                 doc.data().StuID,
+                    //                                 members,
+                    //                                 "V1",
+                    //                                 doc.data().response.question1,
+                    //                                 doc.data().response.question2,
+                    //                                 doc.data().response.question3,
+                    //                                 doc.data().response.question4,
+                    //                                 doc.data().response.question5,
+                    //                                 proposal,
+                    //                                 doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //                                 pushMonth+'/'+
+                    //                                 pushDate,
+                    //                             ]);
+                    //                         }
+                    //                     }
+                    //                 }); 
+                    //             }).catch(function(error) { 
+                    //                 console.log("取得小組ID發生錯誤：", error); 
+                    //             }); 
+                    //         // }
+                    //     });
                         
-                    }).catch(function(error) { 
-                        console.log("匯出資料發生錯誤：", error); 
-                    });
+                    // }).catch(function(error) { 
+                    //     console.log("匯出資料發生錯誤：", error); 
+                    // });
                     // 點按鈕匯出
                     $scope.OutputBtn = function() {
-                        console.log("TEST");
                         var sheet = XLSX.utils.aoa_to_sheet(items);
                         openDownloadDialog(sheet2blob(sheet), '匯出.xlsx');
                     };
@@ -5108,6 +5155,370 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
             };
 
             
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+            // window.location.reload();
+        }
+    });
+}])
+
+// ----------------------------------------教師版腦力激盪----------------------------------------
+.controller('root_brainstormingCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading',
+function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+            console.log("已登入狀態");
+            $scope.cardShow = false;
+
+            // 列出全部課程
+            db.collection("課程")
+            .get().then(function (querySnapshot) {
+                $scope.AllClass = [];
+                querySnapshot.forEach(function (doc) {
+                    $scope.AllClass.push(doc.data());
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                });
+                console.log($scope.AllClass);
+            });
+
+            // 選擇課程 - 選擇中
+            $scope.hide = function() {
+                $scope.cardShow = false;
+            };
+
+            // 選擇課程 - 選擇完成
+            $scope.SelectBtn = function(value) {
+                if (value!=undefined) {
+                    var ClassID = value.ClassID;
+                    var StuID = "教師版";
+                    $scope.cardShow = true;
+
+                    $scope.groups = [];
+                    // 取得各組別
+                    db.collection("分組").doc(ClassID).collection("group")
+                    .get().then(function(results) {
+                        results.forEach(function (doc) {
+                            // 查詢姓名
+                            db.collection("帳號").doc(doc.data().leader)
+                            .get().then(function(a) {
+                                $scope.groups.push({
+                                    id:doc.id,
+                                    leader:doc.data().leader + " " + a.data().Name
+                                })
+                                $scope.$apply(); //重新監聽view
+                            }).catch(function(error) { 
+                                console.log("查詢姓名發生錯誤：", error); 
+                            });
+                        });
+                    }).catch(function(error) { 
+                        console.log("取得各組別發生錯誤：", error); 
+                    });
+
+                    // 點個別小組
+                    $scope.DetailBtn = function(GroupID) {
+                        // 取得小組腦力激盪內容
+
+                        // 預設在頁籤1
+                        $scope.search = 'fkozq65K頁籤：'+1;
+                        // 頁籤控制
+                        $scope.tabs = function(number) {
+                            // 設定filters
+                            $scope.search = 'fkozq65K頁籤：'+number;
+                            // 用findIndex找出要刪除的位置
+                            var indexNum = $scope.tabsCounts.findIndex((element)=>{
+                                return (element.active === true);
+                            });
+                            // 替換class - 原頁面
+                            $scope.tabsCounts[indexNum].num = indexNum+1;
+                            $scope.tabsCounts[indexNum].active = false;
+                            // 替換class - 新頁面
+                            $scope.tabsCounts[number-1].num = number;
+                            $scope.tabsCounts[number-1].active = true;
+
+                            $ionicScrollDelegate.scrollBottom(); //滑到最下面
+                        }
+                        // 取得 - 頁籤數
+                        db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc("頁籤")
+                        .get().then(function(doc) {
+                            if (doc.exists) {
+                                $scope.tabsCounts = [];
+                                for (let index = 1; index <= doc.data().count; index++) {
+                                    if (index==1) {
+                                        $scope.tabsCounts.push({num:index,active:true});
+                                    } else {
+                                        $scope.tabsCounts.push({num:index,active:false});
+                                    }
+                                }
+                                $scope.$apply(); //重新監聽view
+                            } else {
+                                // 初始化分頁
+                                db.collection("腦力激盪").doc(ClassID).collection(GroupID).doc("頁籤")
+                                .set({
+                                    count: 3
+                                })
+                                .then(function() {
+                                    console.log("初始化分頁成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("初始化分頁失敗", error);
+                                });
+                            }
+                        }).catch(function(error) { 
+                            console.log("取得 - 頁籤數發生錯誤：", error); 
+                        });
+
+                        $scope.items = [];
+                        // 取得 - 腦力激盪內容
+                        db.collection("腦力激盪").doc(ClassID).collection(GroupID).orderBy("time","asc")
+                        .get().then(function(results) {
+                            results.forEach(function(doc) {
+                                $scope.items.push(doc.data());
+                                $scope.$apply(); //重新監聽view
+                                console.log("新增: ", doc.data());
+                            });
+                        }).catch(function(error) { 
+                            console.log("取得 - 腦力激盪內容發生錯誤：", error); 
+                        });
+                        // 跳出泡泡
+                        $ionicPopup.show({
+                            title: '討論狀況',
+                            template: 
+                            '<div class="tabs-striped tabs-top tabs-background-light tabs-color-calm">'+
+                                '<div class="tabs" style="width:93%;top:37px;">'+
+                                    '<a class="tab-item" ng-class="{true:'+"'"+'active'+"'"+',false:'+"''"+'}[tabsCount.active]" ng-repeat="tabsCount in tabsCounts" ng-click="tabs(tabsCount.num)">'+
+                                        '{{tabsCount.num}}'+
+                                    '</a>'+
+                                '</div>'+
+                            '</div>'+
+
+                            '<div class="spacer" style="height: 35px;"></div>'+
+
+                            '<div class="list" ng-repeat="item in items | filter:search">'+
+                                '<div class="item">'+
+                                    '<h2>獲讚數：{{item.like.length}}    被採用：{{item.invited}}</h2>'+
+                                    '<h2 class="brainstorming_h2">{{item.StuName}}：<span ng-bind-html="item.msg | linky"></span></h2>'+
+                                '</div>'+
+                            '</div>',
+
+                            scope: $scope,
+                            buttons: [{
+                                text: '關閉',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇關閉');
+                                }
+                            }]
+                        });
+                    };
+
+                } else {
+                    // 提醒
+                    $ionicPopup.alert({
+                        title: '錯誤',
+                        template: '請選擇課程。'
+                    });
+                }
+            };
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+            // window.location.reload();
+        }
+    });
+}])
+
+// ----------------------------------------教師版提案聚焦----------------------------------------
+.controller('root_proposalCtrl', ['$scope', '$stateParams', '$state', '$ionicPopup', '$ionicLoading',
+function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+            console.log("已登入狀態");
+            $scope.cardShow = false;
+
+            // 列出全部課程
+            db.collection("課程")
+            .get().then(function (querySnapshot) {
+                $scope.AllClass = [];
+                querySnapshot.forEach(function (doc) {
+                    $scope.AllClass.push(doc.data());
+                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                });
+                console.log($scope.AllClass);
+            });
+
+            // 選擇課程 - 選擇中
+            $scope.hide = function() {
+                $scope.cardShow = false;
+            };
+
+            // 選擇課程 - 選擇完成
+            $scope.SelectBtn = function(value) {
+                if (value!=undefined) {
+                    var ClassID = value.ClassID;
+                    var StuID = "教師版";
+                    $scope.cardShow = true;
+
+                    $scope.StuPoints = [];
+                    // 取得課程名單
+                    db.collection("課程").doc(ClassID)
+                    .get().then(function(results) {
+                        var ClassStu = results.data().ClassStu;
+                        ClassStu.forEach(function (Stu) {
+                            // 載入總點數
+                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄")
+                            .get().then(function(results) {
+                                if (results.data().Point!=undefined) {
+                                    // 查詢姓名
+                                    db.collection("帳號").doc(Stu)
+                                    .get().then(function(a) {
+                                        $scope.StuPoints.push({
+                                            Name:Stu+' '+a.data().Name,
+                                            Point:pasw(results.data().Point)
+                                        });
+                                        $scope.$apply(); //重新監聽view
+                                    }).catch(function(error) { 
+                                        console.log("查詢姓名發生錯誤：", error); 
+                                    });
+                                }
+                            }).catch(function(error) { 
+                                console.log("載入總點數發生錯誤：", error); 
+                            });
+                        });
+                    }).catch(function(error) { 
+                        console.log("取得課程名單發生錯誤：", error); 
+                    });
+                    
+                    // 發放點數
+                    $scope.AddBtn = function(value) {
+                        $scope.Stus = [];
+                        // 取得學生名單
+                        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入學生中...</p>'});
+                        db.collection("分組").doc(ClassID).collection("student")
+                        .get().then(function(results) {
+                            results.forEach(function (doc) {
+                                var a = results.docs[results.docs.length-1].id;
+                                var b = results.docs[results.docs.length-2].id;
+                                // 查詢姓名
+                                db.collection("帳號").doc(doc.id)
+                                .get().then(function(results) {
+                                    $scope.Stus.push({StuID:doc.id,Name:results.data().Name,Checked:false});
+                                    // 判斷倒數第一or第二筆 關閉轉圈圈
+                                    if (doc.id==a || doc.id==b) {
+                                        $ionicLoading.hide();
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("查詢姓名發生錯誤：", error); 
+                                });
+                            });
+                        }).catch(function(error) { 
+                            console.log("取得未分組名單發生錯誤：", error); 
+                        });
+
+                        $scope.checkStus = [];
+                        // 取得學生名單 - 偵測勾選
+                        $scope.check = function(Stu) {
+                            // 判斷有無在陣列中，無則增加、有則刪除
+                            if ($scope.checkStus.indexOf(Stu) === -1) {
+                                $scope.checkStus.push(Stu);
+                            } else {
+                                $scope.checkStus.splice($scope.checkStus.indexOf(Stu),1);
+                            }
+                            console.log($scope.checkStus);
+                        };
+
+                        // 設定預設值
+                        $scope.AddBtnPopup = [];
+
+                        // 發放點數 - 跳出泡泡
+                        $ionicPopup.show({
+                            title: '發放點數',
+                            template: 
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">點數說明</div>'+
+                                    '<input type="text" ng-model="AddBtnPopup.content" placeholder="輸入說明">'+    
+                                '</label>'+
+
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">點數數量</div>'+
+                                    '<input type="number" ng-model="AddBtnPopup.point" placeholder="輸入數字">'+    
+                                '</label>'+
+                                
+                                '<label class="item item-input item-select">'+
+                                    '<div class="input-label">發放日期</div>'+
+                                    '<input type="date" ng-model="AddBtnPopup.time">'+    
+                                '</label>'+
+                                
+                                '<div ng-repeat="Stu in Stus">'+
+                                    '<ion-checkbox ng-model="Stu.Checked" ng-click="check(Stu.StuID)">{{Stu.StuID}} {{Stu.Name}}</ion-checkbox>'+
+                                '</div>',
+
+                            scope: $scope,
+                            buttons: [{
+                                text: '取消',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇取消');
+                                }
+                            }, {
+                                text: '發放',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇發放');
+                                    // 判斷是否必填未填
+                                    if ($scope.AddBtnPopup.content==undefined||$scope.AddBtnPopup.point==undefined||$scope.AddBtnPopup.time==undefined) {
+                                        console.log("請填寫完整");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請填寫完整。'
+                                        });
+                                    } else if ($scope.checkStus.length==0) {
+                                        console.log("請至少勾一位");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請至少勾一位。'
+                                        });
+                                    } else {
+                                        // 產生此次發放編號
+                                        var now = new Date();
+                                        var pointID =now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
+
+                                        // 加分 - 上傳伺服器
+                                        for (let index = 0; index < $scope.checkStus.length; index++) {
+                                            db.collection("點數").doc(ClassID).collection($scope.checkStus[index]).doc("點數歷程記錄").collection("點數歷程記錄")
+                                            .add({
+                                                content: $scope.AddBtnPopup.content,
+                                                point: paswLock($scope.AddBtnPopup.point),
+                                                check: pointID,
+                                                time: $scope.AddBtnPopup.time
+                                            })
+                                            .then(function(data) {
+                                                console.log("加分 - 上傳伺服器成功");
+                                            })
+                                            .catch(function(error) {
+                                                console.error("加分 - 上傳伺服器失敗：", error);
+                                            });
+                                        }
+                                    }
+                                }
+                            }]
+                        });
+                    };
+
+                } else {
+                    // 提醒
+                    $ionicPopup.alert({
+                        title: '錯誤',
+                        template: '請選擇課程。'
+                    });
+                }
+            };
 
         }else{
             console.log("尚未登入");

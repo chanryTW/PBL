@@ -1,0 +1,29 @@
+<ion-view title="提案聚焦" id="root_proposal">
+  <ion-content padding="true" style="background: url(img/001.png) no-repeat center;background-size:cover;" scroll="true" class="has-header"><div class="maxWidth">
+
+    <label class="item item-input item-select">
+      <div class="input-label">
+        選擇課程
+      </div>
+      <select ng-model="selectClass" ng-change="hide()" ng-options="Class.ClassName for Class in AllClass"></select>
+    </label>
+    <div class="item">
+      <button class="button button-block button-chanry2" ng-click="SelectBtn(selectClass)">載入</button>
+    </div>
+
+    <div ng-show="cardShow" class="card">
+      <div class="item item_padding0 item-text-wrap">
+        <ul class="list">
+          <li ng-repeat="StuPoint in StuPoints | orderBy:'Name'" class="item">
+            {{StuPoint.Name}}
+            <span class="missionPointSpan">
+              <i class="missionPoint"></i>
+              {{StuPoint.Point}}
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div></ion-content>
+</ion-view>
