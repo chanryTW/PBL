@@ -4126,7 +4126,7 @@ function ($scope, $stateParams, $ionicPopup, $state) {
 function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+        if (user.uid==="eTlMITVmGbSStEQ7B7jw9rIl20N2") { //登入成功，取得使用者
             console.log("已登入狀態");
             let originalUser = firebase.auth().currentUser;
 
@@ -4285,7 +4285,7 @@ function ($scope, $stateParams, $state, $ionicLoading) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+        if (user.uid==="eTlMITVmGbSStEQ7B7jw9rIl20N2") { //登入成功，取得使用者
             console.log("已登入狀態");
             $scope.cardShow = false;
             
@@ -4457,7 +4457,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+        if (user.uid==="eTlMITVmGbSStEQ7B7jw9rIl20N2") { //登入成功，取得使用者
             console.log("已登入狀態");
             $scope.cardShow = false;
 
@@ -5170,7 +5170,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+        if (user.uid==="eTlMITVmGbSStEQ7B7jw9rIl20N2") { //登入成功，取得使用者
             console.log("已登入狀態");
             $scope.cardShow = false;
 
@@ -5338,7 +5338,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+        if (user.uid==="eTlMITVmGbSStEQ7B7jw9rIl20N2") { //登入成功，取得使用者
             console.log("已登入狀態");
             $scope.cardShow = false;
 
@@ -5534,7 +5534,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
-        if (user.uid==="rTO1FDz95FaN59B9FtOqyntQZ4J3") { //登入成功，取得使用者
+        if (user.uid==="eTlMITVmGbSStEQ7B7jw9rIl20N2") { //登入成功，取得使用者
             console.log("已登入狀態");
             $scope.cardShow = false;
 
