@@ -861,8 +861,8 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $sce) {
 }])
 
 // ----------------------------------------投票系統頁面----------------------------------------
-.controller('voteCtrl', ['$scope', '$stateParams', '$ionicPopup',
-function ($scope, $stateParams, $ionicPopup) {
+.controller('voteCtrl', ['$scope', '$stateParams', '$ionicPopup', '$state',
+function ($scope, $stateParams, $ionicPopup, $state) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
