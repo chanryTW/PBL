@@ -1257,7 +1257,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                     });
 
                     // 分組學習單匯入
-                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc("pI0idh7L8pufBVT3bnr4").collection("填答結果").where("StuID", "==", StuID)
+                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc("D9fRCoHuIRQov8hryz1K").collection("填答結果").where("StuID", "==", StuID)
                     .get().then(function(results) {
                         if (results.empty) {
                             // 上次未送出
