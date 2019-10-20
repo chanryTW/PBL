@@ -14,12 +14,8 @@
     <div ng-show="cardShow" class="card">
       <div class="item item_padding0 item-text-wrap">
         <ul class="list">
-          <li ng-repeat="StuPoint in StuPoints | orderBy:'Name'" class="item">
-            {{StuPoint.Name}}
-            <span class="missionPointSpan">
-              <i class="missionPoint"></i>
-              {{StuPoint.Point}}
-            </span>
+          <li ng-repeat="group in groups | orderBy:'leader'" class="item" ng-click="DetailBtn(group.id)">
+            【小組 {{$index+1}}】 組長：{{group.leader}}
           </li>
         </ul>
       </div>
