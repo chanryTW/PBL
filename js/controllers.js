@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.2.4";
+var verson = "1.2.5";
 // Firebase Key
 var config = {
 apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -1248,57 +1248,50 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                 } else {
                     console.log("你是組長");
                     $scope.isLeader = true;
-                    // 取得小組名單
-                    db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
-                    .get().then(function(results) {
-                        $scope.members = results.data().members;
-                    }).catch(function(error) { 
-                        console.log("取得小組名單發生錯誤：", error); 
-                    });
-
+                
                     // 分組學習單匯入
-                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc("D9fRCoHuIRQov8hryz1K").collection("填答結果").where("StuID", "==", StuID)
-                    .get().then(function(results) {
-                        if (results.empty) {
-                            // 上次未送出
-                            console.log("上次未送出");
-                        } else {
-                            // 取得上一版資料
-                            console.log("取得上一版資料");
-                            results.forEach(function (doc) {
-                                if (doc.data().response.question1==undefined) {
-                                    $scope.response.question1 = "";
-                                } else {
-                                    $scope.response.question1 = doc.data().response.question1;
-                                }
-                                if (doc.data().response.question2==undefined) {
-                                    $scope.response.question2 = "";
-                                } else {
-                                    $scope.response.question2 = doc.data().response.question2;
-                                }
-                                if (doc.data().response.question3==undefined) {
-                                    $scope.response.question3 = "";
-                                } else {
-                                    $scope.response.question3 = doc.data().response.question3;
-                                }
-                                if (doc.data().response.question4==undefined) {
-                                    $scope.response.question4 = "";
-                                } else {
-                                    $scope.response.question4 = doc.data().response.question4;
-                                }
-                                if (doc.data().response.question5==undefined) {
-                                    $scope.response.question5 = "";
-                                } else {
-                                    $scope.response.question5 = doc.data().response.question5;
-                                }
+                    // db.collection("課程任務").doc(ClassID).collection("任務列表").doc("D9fRCoHuIRQov8hryz1K").collection("填答結果").where("StuID", "==", StuID)
+                    // .get().then(function(results) {
+                    //     if (results.empty) {
+                    //         // 上次未送出
+                    //         console.log("上次未送出");
+                    //     } else {
+                    //         // 取得上一版資料
+                    //         console.log("取得上一版資料");
+                    //         results.forEach(function (doc) {
+                    //             if (doc.data().response.question1==undefined) {
+                    //                 $scope.response.question1 = "";
+                    //             } else {
+                    //                 $scope.response.question1 = doc.data().response.question1;
+                    //             }
+                    //             if (doc.data().response.question2==undefined) {
+                    //                 $scope.response.question2 = "";
+                    //             } else {
+                    //                 $scope.response.question2 = doc.data().response.question2;
+                    //             }
+                    //             if (doc.data().response.question3==undefined) {
+                    //                 $scope.response.question3 = "";
+                    //             } else {
+                    //                 $scope.response.question3 = doc.data().response.question3;
+                    //             }
+                    //             if (doc.data().response.question4==undefined) {
+                    //                 $scope.response.question4 = "";
+                    //             } else {
+                    //                 $scope.response.question4 = doc.data().response.question4;
+                    //             }
+                    //             if (doc.data().response.question5==undefined) {
+                    //                 $scope.response.question5 = "";
+                    //             } else {
+                    //                 $scope.response.question5 = doc.data().response.question5;
+                    //             }
 
-                                $scope.checkProposals = doc.data().response.proposal;
-                                $scope.chooseProposal = doc.data().response.proposal;
-                            });
-                        }
-                    }).catch(function(error) { 
-                        console.log("分組學習單匯入發生錯誤：", error); 
-                    });
+                    //             $scope.checkProposals = doc.data().response.proposal;
+                    //             $scope.chooseProposal = doc.data().response.proposal;
+                    //         });
+                    //     }
+                    // }).catch(function(error) { 
+                    //     console.log("分組學習單匯入發生錯誤：", error); 
+                    // });
                 }
                 
                 // 監聽 - 載入所有任務
@@ -1395,6 +1388,208 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             }).catch(function(error) { 
                 console.log("判斷組長發生錯誤：", error); 
             });
+
+            // 分組評分用 - 取得全部小組名單
+            db.collection("分組").doc(ClassID).collection("group")
+            .get().then(function(results) {
+                $scope.groups = [];
+                results.forEach(function (doc) {
+                    // 排除掉管理員
+                    if (doc.data().leader!="F107193102") {
+                        var members = [];
+                        for (let index = 0; index < doc.data().members.length; index++) {
+                            // 查詢帳號資料
+                            db.collection("帳號").doc(doc.data().members[index])
+                            .get().then(function(results) {
+                                // 第一位是組長
+                                var leaderTrue = false;
+                                if (index == 0) {
+                                    leaderTrue = true;
+                                }
+                                // 獲取組員大頭照
+                                var storage = firebase.storage();
+                                storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                    members.push({
+                                        memberID:doc.data().members[index],
+                                        memberName:results.data().Name,
+                                        memberImg:url,
+                                        leader:leaderTrue
+                                    });
+                                    $scope.$apply(); //重新監聽view
+                                });
+                            }).catch(function(error) { 
+                                console.log("查詢帳號資料發生錯誤：", error); 
+                            });
+                            // 判斷最後一筆
+                            if (index==doc.data().members.length-1) {
+                                $scope.groups.push({
+                                    groupID:doc.id,
+                                    members:members,
+                                    show: false
+                                });
+                                console.log($scope.groups);
+                            }
+                        }
+                    }
+                });
+            }).catch(function(error) { 
+                console.log("評分用 - 取得全部小組名單發生錯誤：", error); 
+            });
+
+            // 分組評分用 - 小組收合
+            $scope.groupShow = function(doc){
+                // 用findIndex找出要修改的位置
+                var indexNum = $scope.groups.findIndex((element)=>{
+                    return (element.$$hashKey === doc.$$hashKey);
+                });
+                // 修改
+                if (indexNum!=-1) {
+                    if ($scope.groups[indexNum].show) {
+                        $scope.groups[indexNum].show = false;
+                    } else {
+                        $scope.groups[indexNum].show = true;
+                    }
+                    console.log("修改顯示成功");
+                }else{
+                    console.log("修改顯示不成功");
+                }
+            };
+
+            // 分組評分用 - 每次點選項，更新結果檔
+            $scope.answerChange = function(missionID,answer,groupID){
+                $scope.answer = answer;
+                // 將小組底色變綠 表示已填 - 用findIndex找出位置
+                var indexNum = $scope.groups.findIndex((element)=>{
+                    return (element.groupID === groupID);
+                });
+                if (indexNum!=-1) {
+                    $scope.groups[indexNum].finished = true;
+                }
+
+                // 判斷是否已有 - 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === missionID);
+                });
+                if (indexNum!=-1) {
+                    // 已有則更新
+                    $scope.response[indexNum].answer = answer;
+                }else{
+                    // 沒有則新增
+                    $scope.response.push({
+                        missionID:missionID,
+                        answer:answer
+                    });
+                }
+                console.log($scope.response);
+            };
+
+            // 組內評分用 - 取得自己小組名單
+            db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+            .get().then(function(doc) {
+                $scope.members = [];
+                var members = [];
+                for (let index = 0; index < doc.data().members.length; index++) {
+                    // 查詢帳號資料
+                    db.collection("帳號").doc(doc.data().members[index])
+                    .get().then(function(results) {
+                        // 第一位是組長
+                        var leaderTrue = false;
+                        if (index == 0) {
+                            leaderTrue = true;
+                        }
+                        // 獲取組員大頭照
+                        var storage = firebase.storage();
+                        storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                            members.push({
+                                memberID:doc.data().members[index],
+                                memberName:results.data().Name,
+                                memberImg:url,
+                                leader:leaderTrue
+                            });
+                            $scope.$apply(); //重新監聽view
+                        });
+                    }).catch(function(error) { 
+                        console.log("查詢帳號資料發生錯誤：", error); 
+                    });
+                    // 判斷最後一筆
+                    if (index==doc.data().members.length-1) {
+                        $scope.members = members;
+                    }
+                }
+            }).catch(function(error) { 
+                console.log("評分用 - 取得全部小組名單發生錯誤：", error); 
+            });
+
+            // 檔案上傳用
+            $scope.fileChanged = function(ele){   
+                //  上傳檔案
+                var storage = firebase.storage();
+                var storageRef = storage.ref();
+                var uploadTask = storageRef.child('mission/'+ClassID+'/'+missionID+'/'+GroupID).put(ele.files[0])
+                .then(function(snapshot) {
+                    // 取得檔案上傳狀態，並用數字顯示
+                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    $ionicLoading.show({ // 開始跑圈圈
+                        template: '已上傳 ' + progress + '%'
+                    });
+                    switch (snapshot.state) {
+                        case firebase.storage.TaskState.PAUSED: 
+                        console.log('上傳暫停');
+                        break;
+                        case firebase.storage.TaskState.RUNNING: 
+                        console.log('上傳中');
+                        break;
+                    }
+                    if (progress==100) {
+                        console.log("上傳成功");
+                        $ionicLoading.hide();
+                    }
+                }, function(error) {
+                    console.log("上傳失敗");
+                    $ionicLoading.hide();
+                    console.log(error);
+                    var alertPopup = $ionicPopup.alert({
+                        title: '上傳失敗',
+                        template: error
+                    });
+                });
+
+                // 更新回傳資料
+                // 判斷是否已有 - 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === missionID);
+                });
+                if (indexNum!=-1) {
+                    // 已有則更新
+                    $scope.response[indexNum].answer = 'mission/'+ClassID+'/'+missionID+'/'+GroupID;
+                }else{
+                    // 沒有則新增
+                    $scope.response.push({
+                        missionID:missionID,
+                        answer:'mission/'+ClassID+'/'+missionID+'/'+GroupID
+                    });
+                }
+                console.log($scope.response);
+            };
+
+            // 其他任務用 - 每次點選項，更新結果檔
+            $scope.answer2Change = function(missionID,answer){
+                // 判斷是否已有 - 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === missionID);
+                });
+                if (indexNum!=-1) {
+                    // 已有則更新
+                    $scope.response[indexNum].answer = answer;
+                }else{
+                    // 沒有則新增
+                    $scope.response.push({
+                        missionID:missionID,
+                        answer:answer
+                    });
+                }
+                console.log($scope.response);
+            };
 
             // 監聽 - 載入小任務進度
             db.collection("點數").doc(ClassID).collection(StuID).doc("小任務進度").collection("小任務進度")
@@ -1826,122 +2021,125 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             };
 
             // 回傳填答結果
-            $scope.response = {};
-            $scope.responseBtn = function(doc,response){
+            $scope.response = [];
+            $scope.responseBtn = function(doc){
                 var missionID = doc.missionID;
-                // 跳出泡泡
-                $ionicPopup.confirm({
-                    title: '存檔送出',
-                    template: '確定要送出嗎?',
-                    subTitle: '注意：送出後無法修改。',
-                    buttons: [{
-                        text: '取消',
-                        type: 'button-default',
-                        onTap: function(e) {
-                            console.log('選擇取消');
-                        }
-                    }, {
-                        text: '確定',
-                        type: 'button-chanry1',
-                        onTap: function(e) {
-                            console.log('選擇送出');
-                            // 上傳伺服器
-                            console.log("回傳",response);
-                            console.log("回傳",$scope.response);
-                            db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
-                            .add({
-                                StuID: StuID,
-                                missionID: missionID,
-                                response: response,
-                                time: new Date()
-                            })
-                            .then(function(data) {
-                                console.log("回傳填答結果成功");
-                                // 清空response
-                                $scope.response = {};
-                                // 標記已完成 - 取得已完成名單
-                                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
-                                .get().then(function(results) {
-                                    // 加分fun
-                                    function addPoint(Stu) {
-                                        // 防作弊 - 檢查是否已加分
-                                        console.log('檢查是否已加分'+Stu);
-                                        db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", missionID)
-                                        .get().then(function(results) {
-                                            if(results.empty) {
-                                                console.log("第一次拿獎勵"); 
-                                                // 加分 - 上傳伺服器
-                                                db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
-                                                .add({
-                                                    content: '完成任務：'+doc.Name,
-                                                    point: paswLock(doc.Point),
-                                                    check: missionID,
-                                                    time: new Date()
-                                                })
-                                                .then(function(data) {
-                                                    console.log("加分 - 上傳伺服器成功");
-                                                })
-                                                .catch(function(error) {
-                                                    console.error("加分 - 上傳伺服器失敗：", error);
-                                                });
-                                            } else {
-                                                console.log("已拿過此獎勵");
-                                                // 系統紀錄 - 通報伺服器
-                                                db.collection("系統記錄").doc(ClassID).collection("資安回報")
-                                                .add({
-                                                    StuID: Stu,
-                                                    Content: '已拿過'+missionID+'獎勵',
-                                                    time: new Date()
-                                                })
-                                                .then(function(data) {
-                                                    console.log("通報伺服器成功");
-                                                })
-                                                .catch(function(error) {
-                                                    console.error("通報伺服器失敗：", error);
-                                                });
-                                            }
-                                        }).catch(function(error) { 
-                                            console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
-                                        });
-                                    }
-
-                                    var a = results.data().finished;
-                                    // 判斷如果是組長限定的任務
-                                    if (doc.LeaderOnly) {
-                                        for(var i=0; i<$scope.members.length; ++i) {
-                                            a.push($scope.members[i]);
-                                            // 加全部組員分
-                                            addPoint($scope.members[i]);
-                                        }
-                                    } else {
-                                        a.push(StuID);
-                                        // 只加自己分
-                                        addPoint(StuID);
-                                    }
-                                    // 標記已完成 - 更新已完成名單
-                                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
-                                    .update({
-                                        finished: a
-                                    })
-                                    .then(function() {
-                                        console.log("更新已完成名單成功");
-                                        // 收合內容
-                                        $scope.missionShow(doc);
-                                        $scope.$apply(); //重新監聽view
-                                    })
-                                    .catch(function(error) {
-                                        console.error("更新已完成名單失敗", error);
-                                    });
-                                }).catch(function(error) { 
-                                    console.log("取得已完成名單發生錯誤：", error); 
-                                });
-                            })
-                            .catch(function(error) {
-                                console.error("回傳填答結果失敗：", error);
-                            });
-                        }
-                    }]
+                // 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === missionID);
                 });
+                // 確定有找到
+                if (indexNum!=-1) {
+                    // 跳出泡泡
+                    $ionicPopup.confirm({
+                        title: '存檔送出',
+                        template: '確定要送出嗎?',
+                        subTitle: '注意：送出後無法修改。',
+                        buttons: [{
+                            text: '取消',
+                            type: 'button-default',
+                            onTap: function(e) {
+                                console.log('選擇取消');
+                            }
+                        }, {
+                            text: '確定',
+                            type: 'button-chanry1',
+                            onTap: function(e) {
+                                console.log('選擇送出');
+                                // 上傳伺服器
+                                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
+                                .add({
+                                    StuID: StuID,
+                                    missionID: missionID,
+                                    response: $scope.response[indexNum].answer,
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("回傳填答結果成功");
+                                    // 標記已完成 - 取得已完成名單
+                                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                                    .get().then(function(results) {
+                                        // 加分fun
+                                        function addPoint(Stu) {
+                                            // 防作弊 - 檢查是否已加分
+                                            console.log('檢查是否已加分'+Stu);
+                                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", missionID)
+                                            .get().then(function(results) {
+                                                if(results.empty) {
+                                                    console.log("第一次拿獎勵"); 
+                                                    // 加分 - 上傳伺服器
+                                                    db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
+                                                    .add({
+                                                        content: '完成任務：'+doc.Name,
+                                                        point: paswLock(doc.Point),
+                                                        check: missionID,
+                                                        time: new Date()
+                                                    })
+                                                    .then(function(data) {
+                                                        console.log("加分 - 上傳伺服器成功");
+                                                    })
+                                                    .catch(function(error) {
+                                                        console.error("加分 - 上傳伺服器失敗：", error);
+                                                    });
+                                                } else {
+                                                    console.log("已拿過此獎勵");
+                                                    // 系統紀錄 - 通報伺服器
+                                                    db.collection("系統記錄").doc(ClassID).collection("資安回報")
+                                                    .add({
+                                                        StuID: Stu,
+                                                        Content: '已拿過'+missionID+'獎勵',
+                                                        time: new Date()
+                                                    })
+                                                    .then(function(data) {
+                                                        console.log("通報伺服器成功");
+                                                    })
+                                                    .catch(function(error) {
+                                                        console.error("通報伺服器失敗：", error);
+                                                    });
+                                                }
+                                            }).catch(function(error) { 
+                                                console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
+                                            });
+                                        }
+
+                                        var a = results.data().finished;
+                                        // 判斷如果是組長限定的任務
+                                        if (doc.LeaderOnly) {
+                                            for(var i=0; i<$scope.members.length; ++i) {
+                                                a.push($scope.members[i]);
+                                                // 加全部組員分
+                                                addPoint($scope.members[i]);
+                                            }
+                                        } else {
+                                            a.push(StuID);
+                                            // 只加自己分
+                                            addPoint(StuID);
+                                        }
+                                        // 標記已完成 - 更新已完成名單
+                                        db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                                        .update({
+                                            finished: a
+                                        })
+                                        .then(function() {
+                                            console.log("更新已完成名單成功");
+                                            // 收合內容
+                                            $scope.missionShow(doc);
+                                            $scope.$apply(); //重新監聽view
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新已完成名單失敗", error);
+                                        });
+                                    }).catch(function(error) { 
+                                        console.log("取得已完成名單發生錯誤：", error); 
+                                    });
+                                })
+                                .catch(function(error) {
+                                    console.error("回傳填答結果失敗：", error);
+                                });
+                            }
+                        }]
+                    });
+                }
             };
 
             
@@ -2176,8 +2374,6 @@ function ($scope, $stateParams, $sce, $state, $ionicScrollDelegate) {
                 })
                 .then(function(data) {
                     console.log("回傳填答結果成功");
-                    // 清空response
-                    $scope.response = [];
                 })
                 .catch(function(error) {
                     console.error("回傳填答結果失敗：", error);
@@ -5745,4 +5941,3 @@ function ($scope, $stateParams, $state) {
         }
     });
 }]);
-

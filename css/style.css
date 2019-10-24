@@ -319,6 +319,38 @@ a{text-decoration:none}
 .button-margin{
     margin: 10px 0px 0px 0px;
 }
+/* 組員顯示控制 */
+.mission-member{
+    width: 16.5vw;
+}
+.mission-img-div{
+    width: 15vw;
+    height: 15vw;
+}
+.mission-leader::after{
+    content: "";
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 1vw;
+    width: 6vw;
+    height: 6vw;
+    z-index: 2;
+    background: url(../svg/medal.svg);
+}
+.mission-member-span{
+    color: #444;
+    padding-bottom: 5px;
+}
+@media screen and (min-width: 768px) { 
+    .mission-img-div{ width: 115.2px; height: 115.2px; margin: 0 15.36px 0 15.36px;}
+    .mission-member{ width: 126.72px; }
+    .mission-leader:after{ left: 7.68px;width: 46.08px;height: 46.08px; }
+}
+/* 完成組員 */
+.group-finished{
+    background-color: #10dc627e;
+}
 
 /* -----------------------------------------------IRS頁面----------------------------------------------- */
 /* 等待開啟文字 */
