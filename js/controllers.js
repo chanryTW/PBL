@@ -1553,23 +1553,6 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                         template: error
                     });
                 });
-
-                // 更新回傳資料
-                // 判斷是否已有 - 用findIndex找出位置
-                var indexNum = $scope.response.findIndex((element)=>{
-                    return (element.missionID === missionID);
-                });
-                if (indexNum!=-1) {
-                    // 已有則更新
-                    $scope.response[indexNum].answer = 'mission/'+ClassID+'/'+missionID+'/'+GroupID;
-                }else{
-                    // 沒有則新增
-                    $scope.response.push({
-                        missionID:missionID,
-                        answer:'mission/'+ClassID+'/'+missionID+'/'+GroupID
-                    });
-                }
-                console.log($scope.response);
             };
 
             // 其他任務用 - 每次點選項，更新結果檔
@@ -2028,121 +2011,117 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                 var indexNum = $scope.response.findIndex((element)=>{
                     return (element.missionID === missionID);
                 });
-                // 確定有找到
-                if (indexNum!=-1) {
-                    // 跳出泡泡
-                    $ionicPopup.confirm({
-                        title: '存檔送出',
-                        template: '確定要送出嗎?',
-                        subTitle: '注意：送出後無法修改。',
-                        buttons: [{
-                            text: '取消',
-                            type: 'button-default',
-                            onTap: function(e) {
-                                console.log('選擇取消');
-                            }
-                        }, {
-                            text: '確定',
-                            type: 'button-chanry1',
-                            onTap: function(e) {
-                                console.log('選擇送出');
-                                // 上傳伺服器
-                                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
-                                .add({
-                                    StuID: StuID,
-                                    missionID: missionID,
-                                    response: $scope.response[indexNum].answer,
-                                    time: new Date()
-                                })
-                                .then(function(data) {
-                                    console.log("回傳填答結果成功");
-                                    // 標記已完成 - 取得已完成名單
-                                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
-                                    .get().then(function(results) {
-                                        // 加分fun
-                                        function addPoint(Stu) {
-                                            // 防作弊 - 檢查是否已加分
-                                            console.log('檢查是否已加分'+Stu);
-                                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", missionID)
-                                            .get().then(function(results) {
-                                                if(results.empty) {
-                                                    console.log("第一次拿獎勵"); 
-                                                    // 加分 - 上傳伺服器
-                                                    db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
-                                                    .add({
-                                                        content: '完成任務：'+doc.Name,
-                                                        point: paswLock(doc.Point),
-                                                        check: missionID,
-                                                        time: new Date()
-                                                    })
-                                                    .then(function(data) {
-                                                        console.log("加分 - 上傳伺服器成功");
-                                                    })
-                                                    .catch(function(error) {
-                                                        console.error("加分 - 上傳伺服器失敗：", error);
-                                                    });
-                                                } else {
-                                                    console.log("已拿過此獎勵");
-                                                    // 系統紀錄 - 通報伺服器
-                                                    db.collection("系統記錄").doc(ClassID).collection("資安回報")
-                                                    .add({
-                                                        StuID: Stu,
-                                                        Content: '已拿過'+missionID+'獎勵',
-                                                        time: new Date()
-                                                    })
-                                                    .then(function(data) {
-                                                        console.log("通報伺服器成功");
-                                                    })
-                                                    .catch(function(error) {
-                                                        console.error("通報伺服器失敗：", error);
-                                                    });
-                                                }
-                                            }).catch(function(error) { 
-                                                console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
-                                            });
-                                        }
-
-                                        var a = results.data().finished;
-                                        // 判斷如果是組長限定的任務
-                                        if (doc.LeaderOnly) {
-                                            for(var i=0; i<$scope.members.length; ++i) {
-                                                a.push($scope.members[i]);
-                                                // 加全部組員分
-                                                addPoint($scope.members[i]);
+                
+                // 跳出泡泡
+                $ionicPopup.confirm({
+                    title: '存檔送出',
+                    template: '確定要送出嗎?',
+                    subTitle: '注意：送出後無法修改。',
+                    buttons: [{
+                        text: '取消',
+                        type: 'button-default',
+                        onTap: function(e) {
+                            console.log('選擇取消');
+                        }
+                    }, {
+                        text: '確定',
+                        type: 'button-chanry1',
+                        onTap: function(e) {
+                            console.log('選擇送出');
+                            // 上傳伺服器
+                            db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID).collection("填答結果")
+                            .add({
+                                StuID: StuID,
+                                missionID: missionID,
+                                response: $scope.response[indexNum].answer,
+                                time: new Date()
+                            })
+                            .then(function(data) {
+                                console.log("回傳填答結果成功");
+                                // 標記已完成 - 取得已完成名單
+                                db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                                .get().then(function(results) {
+                                    // 加分fun
+                                    function addPoint(Stu) {
+                                        // 防作弊 - 檢查是否已加分
+                                        console.log('檢查是否已加分'+Stu);
+                                        db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄").where("check", "==", missionID)
+                                        .get().then(function(results) {
+                                            if(results.empty) {
+                                                console.log("第一次拿獎勵"); 
+                                                // 加分 - 上傳伺服器
+                                                db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
+                                                .add({
+                                                    content: '完成任務：'+doc.Name,
+                                                    point: paswLock(doc.Point),
+                                                    check: missionID,
+                                                    time: new Date()
+                                                })
+                                                .then(function(data) {
+                                                    console.log("加分 - 上傳伺服器成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("加分 - 上傳伺服器失敗：", error);
+                                                });
+                                            } else {
+                                                console.log("已拿過此獎勵");
+                                                // 系統紀錄 - 通報伺服器
+                                                db.collection("系統記錄").doc(ClassID).collection("資安回報")
+                                                .add({
+                                                    StuID: Stu,
+                                                    Content: '已拿過'+missionID+'獎勵',
+                                                    time: new Date()
+                                                })
+                                                .then(function(data) {
+                                                    console.log("通報伺服器成功");
+                                                })
+                                                .catch(function(error) {
+                                                    console.error("通報伺服器失敗：", error);
+                                                });
                                             }
-                                        } else {
-                                            a.push(StuID);
-                                            // 只加自己分
-                                            addPoint(StuID);
-                                        }
-                                        // 標記已完成 - 更新已完成名單
-                                        db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
-                                        .update({
-                                            finished: a
-                                        })
-                                        .then(function() {
-                                            console.log("更新已完成名單成功");
-                                            // 收合內容
-                                            $scope.missionShow(doc);
-                                            $scope.$apply(); //重新監聽view
-                                        })
-                                        .catch(function(error) {
-                                            console.error("更新已完成名單失敗", error);
+                                        }).catch(function(error) { 
+                                            console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
                                         });
-                                    }).catch(function(error) { 
-                                        console.log("取得已完成名單發生錯誤：", error); 
-                                    });
-                                })
-                                .catch(function(error) {
-                                    console.error("回傳填答結果失敗：", error);
-                                });
-                            }
-                        }]
-                    });
-                }
-            };
+                                    }
 
-            
+                                    var a = results.data().finished;
+                                    // 判斷如果是組長限定的任務
+                                    if (doc.LeaderOnly) {
+                                        for(var i=0; i<$scope.members.length; ++i) {
+                                            a.push($scope.members[i]);
+                                            // 加全部組員分
+                                            addPoint($scope.members[i]);
+                                        }
+                                    } else {
+                                        a.push(StuID);
+                                        // 只加自己分
+                                        addPoint(StuID);
+                                    }
+                                    // 標記已完成 - 更新已完成名單
+                                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc(missionID)
+                                    .update({
+                                        finished: a
+                                    })
+                                    .then(function() {
+                                        console.log("更新已完成名單成功");
+                                        // 收合內容
+                                        $scope.missionShow(doc);
+                                        $scope.$apply(); //重新監聽view
+                                    })
+                                    .catch(function(error) {
+                                        console.error("更新已完成名單失敗", error);
+                                    });
+                                }).catch(function(error) { 
+                                    console.log("取得已完成名單發生錯誤：", error); 
+                                });
+                            })
+                            .catch(function(error) {
+                                console.error("回傳填答結果失敗：", error);
+                            });
+                        }
+                    }]
+                });
+            };
 
         }else{
             console.log("尚未登入");
