@@ -1491,8 +1491,8 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             };
 
             // 組內評分用 - 取得自己小組名單
-            db.collection("分組").doc(ClassID).collection("group").doc("PQLRY7r7ioygwLB3vNaD")
-            // db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+            // db.collection("分組").doc(ClassID).collection("group").doc("PQLRY7r7ioygwLB3vNaD")
+            db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
             .get().then(function(doc) {
                 $scope.mission_members = [];
                 var members = [];
