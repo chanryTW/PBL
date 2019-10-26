@@ -385,6 +385,32 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $sce) {
                 // window.location.reload();
             });
 
+            // 監聽 - 點數排行榜
+            $scope.PointTops = [];
+            db.collection("點數").doc(ClassID)
+            .onSnapshot(function(doc) {
+                for (let index = 0; index < doc.data().top.length; index++) {
+                    // 查詢帳號資料
+                    db.collection("帳號").doc(doc.data().top[index].StuID)
+                    .get().then(function(results) {
+                        // 獲取大頭照
+                        var storage = firebase.storage();
+                        storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                            $scope.PointTops.push({
+                                Name:results.data().Name,
+                                Img:url,
+                                Point:doc.data().top[index].Point
+                            });
+                            $scope.$apply(); //重新監聽view
+                        });
+                    }).catch(function(error) { 
+                        console.log("查詢帳號資料發生錯誤：", error); 
+                    });
+                }
+            },function(error) {
+                console.error("讀取點數排行榜發生錯誤：", error);
+            });
+
             // 監聽 - 是否開放分組
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
@@ -5954,9 +5980,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         $scope.StuPoints = $scope.StuPoints.sort(function (a, b) {
                             return a.Point < b.Point ? 1 : -1;
                         });
-                        // 取前三
+                        // 取前五
                         var StuPoints = [];
-                        for (let index = 0; index < 3; index++) {
+                        for (let index = 0; index < 5; index++) {
                             StuPoints.push({
                                 StuID: $scope.StuPoints[index].StuID,
                                 Point: $scope.StuPoints[index].Point
@@ -5976,7 +6002,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                     '更新排行榜成功。<br>'+
                                     '第一名 '+StuPoints[0].StuID+' 共 '+StuPoints[0].Point+'點<br>'+
                                     '第二名 '+StuPoints[1].StuID+' 共 '+StuPoints[1].Point+'點<br>'+
-                                    '第三名 '+StuPoints[2].StuID+' 共 '+StuPoints[2].Point+'點'
+                                    '第三名 '+StuPoints[2].StuID+' 共 '+StuPoints[2].Point+'點<br>'+
+                                    '第四名 '+StuPoints[3].StuID+' 共 '+StuPoints[3].Point+'點<br>'+
+                                    '第五名 '+StuPoints[4].StuID+' 共 '+StuPoints[4].Point+'點'
                             });
                         })
                         .catch(function(error) {
