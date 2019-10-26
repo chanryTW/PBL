@@ -351,6 +351,9 @@ a{text-decoration:none}
 .group-finished{
     background-color: #10dc627e;
 }
+.member-finished{
+    border: 3px solid #10dc627e;
+}
 
 /* -----------------------------------------------IRS頁面----------------------------------------------- */
 /* 等待開啟文字 */

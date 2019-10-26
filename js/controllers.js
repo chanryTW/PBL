@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.2.5";
+var verson = "1.2.6";
 // Firebase Key
 var config = {
 apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -1248,6 +1248,13 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                 } else {
                     console.log("你是組長");
                     $scope.isLeader = true;
+                    // 取得小組名單
+                    db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+                    .get().then(function(results) {
+                        $scope.members = results.data().members;
+                    }).catch(function(error) { 
+                        console.log("取得小組名單發生錯誤：", error); 
+                    });
                 
                     // 分組學習單匯入
                     // db.collection("課程任務").doc(ClassID).collection("任務列表").doc("D9fRCoHuIRQov8hryz1K").collection("填答結果").where("StuID", "==", StuID)
@@ -1484,9 +1491,10 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             };
 
             // 組內評分用 - 取得自己小組名單
-            db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+            db.collection("分組").doc(ClassID).collection("group").doc("PQLRY7r7ioygwLB3vNaD")
+            // db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
             .get().then(function(doc) {
-                $scope.members = [];
+                $scope.mission_members = [];
                 var members = [];
                 for (let index = 0; index < doc.data().members.length; index++) {
                     // 查詢帳號資料
@@ -1497,13 +1505,22 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                         if (index == 0) {
                             leaderTrue = true;
                         }
+                        // 判斷是不是自己
+                        var memberName = "";
+                        if (doc.data().members[index]==StuID) {
+                            memberName = "我";
+                        } else {
+                            memberName = results.data().Name;                            
+                        }
                         // 獲取組員大頭照
                         var storage = firebase.storage();
                         storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
                             members.push({
                                 memberID:doc.data().members[index],
-                                memberName:results.data().Name,
+                                memberName:memberName,
                                 memberImg:url,
+                                show:false,
+                                finished:false,
                                 leader:leaderTrue
                             });
                             $scope.$apply(); //重新監聽view
@@ -1513,19 +1530,74 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                     });
                     // 判斷最後一筆
                     if (index==doc.data().members.length-1) {
-                        $scope.members = members;
+                        $scope.mission_members = members;
                     }
                 }
             }).catch(function(error) { 
                 console.log("評分用 - 取得全部小組名單發生錯誤：", error); 
             });
 
+            // 組內評分用 - 成員收合
+            $scope.memberShow = function(doc){
+                // 用findIndex找出要修改的位置
+                var indexNum = $scope.mission_members.findIndex((element)=>{
+                    return (element.$$hashKey === doc.$$hashKey);
+                });
+                // 修改
+                if (indexNum!=-1) {
+                    if ($scope.mission_members[indexNum].show) {
+                        $scope.mission_members[indexNum].show = false;
+                    } else {
+                        $scope.mission_members[indexNum].show = true;
+                        // 將其他隱藏
+                        for (let index = 0; index < $scope.mission_members.length; index++) {
+                            if (indexNum!=index) {
+                                $scope.mission_members[index].show = false;
+                            }
+                        }
+                    }
+                    console.log("修改顯示成功");
+                }else{
+                    console.log("修改顯示不成功");
+                }
+            };
+
+            // 組內評分用 - 每次點選項，更新結果檔
+            $scope.answer3Change = function(missionID,answer,memberID){
+                $scope.answer3 = answer;
+                // 將小組底色變綠 表示已填 - 用findIndex找出位置
+                var indexNum = $scope.mission_members.findIndex((element)=>{
+                    return (element.memberID === memberID);
+                });
+                if (indexNum!=-1) {
+                    $scope.mission_members[indexNum].finished = true;
+                }
+
+                // 判斷是否已有 - 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === missionID);
+                });
+                if (indexNum!=-1) {
+                    // 已有則更新
+                    $scope.response[indexNum].answer = answer;
+                }else{
+                    // 沒有則新增
+                    $scope.response.push({
+                        missionID:missionID,
+                        answer:answer
+                    });
+                }
+                console.log($scope.response);
+            };
+
             // 檔案上傳用
-            $scope.fileChanged = function(ele){   
+            $scope.fileChanged = function(ele){
+                var This_missionID = "ARuBqgDSkFJDMHH2UCFg";
+
                 //  上傳檔案
                 var storage = firebase.storage();
                 var storageRef = storage.ref();
-                var uploadTask = storageRef.child('mission/'+ClassID+'/'+missionID+'/'+GroupID).put(ele.files[0])
+                var uploadTask = storageRef.child('mission/'+ClassID+'/'+This_missionID+'/'+GroupID).put(ele.files[0])
                 .then(function(snapshot) {
                     // 取得檔案上傳狀態，並用數字顯示
                     var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -1553,6 +1625,22 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                         template: error
                     });
                 });
+                
+                // 判斷是否已有 - 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === This_missionID);
+                });
+                if (indexNum!=-1) {
+                    // 已有則更新
+                    $scope.response[indexNum].answer = "已上傳檔案至伺服器";
+                }else{
+                    // 沒有則新增
+                    $scope.response.push({
+                        missionID:This_missionID,
+                        answer:"已上傳檔案至伺服器"
+                    });
+                }
+                console.log($scope.response);
             };
 
             // 其他任務用 - 每次點選項，更新結果檔
@@ -2083,7 +2171,6 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                             console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
                                         });
                                     }
-
                                     var a = results.data().finished;
                                     // 判斷如果是組長限定的任務
                                     if (doc.LeaderOnly) {
