@@ -386,9 +386,9 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $sce) {
             });
 
             // 監聽 - 點數排行榜
-            $scope.PointTops = [];
             db.collection("點數").doc(ClassID)
             .onSnapshot(function(doc) {
+                $scope.PointTops = [];
                 for (let index = 0; index < doc.data().top.length; index++) {
                     // 查詢帳號資料
                     db.collection("帳號").doc(doc.data().top[index].StuID)
