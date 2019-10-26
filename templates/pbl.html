@@ -21,12 +21,27 @@
         </div>
       </div>
 
-      <div ng-repeat="item in items" class="card">
+      <div class="card">
         <div class="item item-divider">
           下週任務(10/28)：
         </div>
         <div class="item item-text-wrap">
           <div class="row">上台報告小組提案計劃、上傳PPT、對別組報告評分、對組內成員評分、最終版4反思、綜合後測20題（所有上課範圍）</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="item item-divider">
+          點數排行榜：
+        </div>
+        <div class="" style="padding: 0px 16px 0px 16px;">
+          <div class="pbl-member mission-member" ng-repeat="PointTop in PointTops | orderBy:'Point'">
+            <div class="pbl-img-div mission-img-div">
+                <img id="pbl-img" ng-src="{{PointTop.Img}}">
+            </div>
+            <div class="pbl-member-span mission-member-span">{{PointTop.Name}}</div>
+            <div class="pbl-member-span mission-member-span">{{PointTop.Point}}點</div>
+          </div>
         </div>
       </div>
 
