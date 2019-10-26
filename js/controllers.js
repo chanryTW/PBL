@@ -5800,22 +5800,21 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
                             .get().then(function(results) {
                                 var This_point = 0;
-                                var a = results.docs.length;
-                                var count = 0;
+                                var b = results.docs.length;
+                                var countB = 0;
                                 results.forEach(function (doc) {
                                     This_point += pasw(doc.data().point);
-                                    count++;
-
-                                    // 判斷最後一筆
-                                    if (count==a) {
-                                        console.log("最後一筆");
-                                        $ionicLoading.hide();
                                     
+                                    // 判斷最後一筆
+                                    countB++;
+                                    if (countB==b) {
+                                        $ionicLoading.hide();
                                         // 查詢姓名
                                         db.collection("帳號").doc(Stu)
-                                        .get().then(function(a) {
+                                        .get().then(function(doc) {
                                             $scope.StuPoints.push({
-                                                Name:Stu+' '+a.data().Name,
+                                                Name:Stu+' '+doc.data().Name,
+                                                StuID:Stu,
                                                 Point:This_point
                                             });
                                             $scope.$apply(); //重新監聽view
@@ -5827,6 +5826,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                             }).catch(function(error) { 
                                 console.log("載入總點數發生錯誤：", error); 
                             });
+
                         });
                     }).catch(function(error) { 
                         console.log("取得課程名單發生錯誤：", error); 
@@ -5945,6 +5945,46 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                     }
                                 }
                             }]
+                        });
+                    };
+
+                    // 更新排行榜
+                    $scope.update = function() {
+                        // 點數排序
+                        $scope.StuPoints = $scope.StuPoints.sort(function (a, b) {
+                            return a.Point < b.Point ? 1 : -1;
+                        });
+                        // 取前三
+                        var StuPoints = [];
+                        for (let index = 0; index < 3; index++) {
+                            StuPoints.push({
+                                StuID: $scope.StuPoints[index].StuID,
+                                Point: $scope.StuPoints[index].Point
+                            });
+                        }
+                        // 上傳排行榜
+                        db.collection("點數").doc(ClassID)
+                        .set({
+                            top: StuPoints,
+                            UpdateTime: new Date()
+                        })
+                        .then(function(data) {
+                            console.log("更新排行榜成功");
+                            $ionicPopup.alert({
+                                title: '完成',
+                                template: 
+                                    '更新排行榜成功。<br>'+
+                                    '第一名 '+StuPoints[0].StuID+' 共 '+StuPoints[0].Point+'點<br>'+
+                                    '第二名 '+StuPoints[1].StuID+' 共 '+StuPoints[1].Point+'點<br>'+
+                                    '第三名 '+StuPoints[2].StuID+' 共 '+StuPoints[2].Point+'點'
+                            });
+                        })
+                        .catch(function(error) {
+                            console.error("更新排行榜失敗：", error);
+                            $ionicPopup.alert({
+                                title: '錯誤',
+                                template: '更新排行榜失敗。'
+                            });
                         });
                     };
 
