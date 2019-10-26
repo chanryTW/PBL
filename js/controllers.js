@@ -5784,6 +5784,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
 
             // 選擇課程 - 選擇完成
             $scope.SelectBtn = function(value) {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入課程點數中...</p>'});
                 if (value!=undefined) {
                     var ClassID = value.ClassID;
                     var StuID = "教師版";
@@ -5796,21 +5797,51 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         var ClassStu = results.data().ClassStu;
                         ClassStu.forEach(function (Stu) {
                             // 載入總點數
-                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄")
+                            // db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄")
+                            // .get().then(function(results) {
+                            //     if (results.data().Point!=undefined) {
+                            //         // 查詢姓名
+                            //         db.collection("帳號").doc(Stu)
+                            //         .get().then(function(a) {
+                            //             $scope.StuPoints.push({
+                            //                 Name:Stu+' '+a.data().Name,
+                            //                 Point:pasw(results.data().Point)
+                            //             });
+                            //             $scope.$apply(); //重新監聽view
+                            //         }).catch(function(error) { 
+                            //             console.log("查詢姓名發生錯誤：", error); 
+                            //         });
+                            //     }
+                            // }).catch(function(error) { 
+                            //     console.log("載入總點數發生錯誤：", error); 
+                            // });
+                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
                             .get().then(function(results) {
-                                if (results.data().Point!=undefined) {
-                                    // 查詢姓名
-                                    db.collection("帳號").doc(Stu)
-                                    .get().then(function(a) {
-                                        $scope.StuPoints.push({
-                                            Name:Stu+' '+a.data().Name,
-                                            Point:pasw(results.data().Point)
+                                var This_point = 0;
+                                var a = results.docs.length;
+                                var count = 0;
+                                results.forEach(function (doc) {
+                                    This_point += pasw(doc.data().point);
+                                    count++;
+
+                                    // 判斷最後一筆
+                                    if (count==a) {
+                                        console.log("最後一筆");
+                                        $ionicLoading.hide();
+                                    
+                                        // 查詢姓名
+                                        db.collection("帳號").doc(Stu)
+                                        .get().then(function(a) {
+                                            $scope.StuPoints.push({
+                                                Name:Stu+' '+a.data().Name,
+                                                Point:This_point
+                                            });
+                                            $scope.$apply(); //重新監聽view
+                                        }).catch(function(error) { 
+                                            console.log("查詢姓名發生錯誤：", error); 
                                         });
-                                        $scope.$apply(); //重新監聽view
-                                    }).catch(function(error) { 
-                                        console.log("查詢姓名發生錯誤：", error); 
-                                    });
-                                }
+                                    }
+                                });
                             }).catch(function(error) { 
                                 console.log("載入總點數發生錯誤：", error); 
                             });
