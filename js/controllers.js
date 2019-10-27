@@ -1252,8 +1252,8 @@ function ($scope, $stateParams, $ionicPopup, $state) {
 }])
    
 // ----------------------------------------課程任務頁面----------------------------------------
-.controller('missionCtrl', ['$scope', '$stateParams', '$sce', '$state', '$ionicPopup', '$ionicLoading',
-function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
+.controller('missionCtrl', ['$scope', '$stateParams', '$sce', '$state', '$ionicPopup', '$ionicLoading', '$ionicScrollDelegate',
+function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading, $ionicScrollDelegate) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -2219,6 +2219,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                         console.log("更新已完成名單成功");
                                         // 收合內容
                                         $scope.missionShow(doc);
+                                        $ionicScrollDelegate.scrollTop(); //滑到最上面
                                         $scope.$apply(); //重新監聽view
                                     })
                                     .catch(function(error) {
