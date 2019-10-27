@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.2.6";
+var verson = "1.2.7";
 // Firebase Key
 var config = {
 apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -5828,7 +5828,19 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                 var This_point = 0;
                                 var b = results.docs.length;
                                 var countB = 0;
+                                var isRepeat = [];
                                 results.forEach(function (doc) {
+                                    // 判斷是否有重複
+                                    if (isRepeat.indexOf(doc.data().check)!=-1) {
+                                        console.log(Stu+"發現重複");
+                                        $ionicPopup.alert({
+                                            title: Stu+'發現重複',
+                                            template: '編號：'+doc.id
+                                        });
+                                    } else {
+                                        isRepeat.push(doc.data().check);
+                                    }
+                                    // 加總點數
                                     This_point += pasw(doc.data().point);
                                     
                                     // 判斷最後一筆
