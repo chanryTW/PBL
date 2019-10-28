@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.2.5";
+var verson = "1.2.7";
 // Firebase Key
 var config = {
 apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -385,6 +385,32 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $sce) {
                 // window.location.reload();
             });
 
+            // 監聽 - 點數排行榜
+            db.collection("點數").doc(ClassID)
+            .onSnapshot(function(doc) {
+                $scope.PointTops = [];
+                for (let index = 0; index < doc.data().top.length; index++) {
+                    // 查詢帳號資料
+                    db.collection("帳號").doc(doc.data().top[index].StuID)
+                    .get().then(function(results) {
+                        // 獲取大頭照
+                        var storage = firebase.storage();
+                        storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                            $scope.PointTops.push({
+                                Name:results.data().Name,
+                                Img:url,
+                                Point:doc.data().top[index].Point
+                            });
+                            $scope.$apply(); //重新監聽view
+                        });
+                    }).catch(function(error) { 
+                        console.log("查詢帳號資料發生錯誤：", error); 
+                    });
+                }
+            },function(error) {
+                console.error("讀取點數排行榜發生錯誤：", error);
+            });
+
             // 監聽 - 是否開放分組
             db.collection("課程").doc(ClassID)
             .onSnapshot(function(doc) {
@@ -503,20 +529,20 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $sce) {
                 db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", false)
                 .get().then(function(results) {
                     if(results.empty) {
-                        console.log("全班都已分組"); 
+                        console.log("全班都已分組");
+                        $ionicLoading.hide();
                     } else {
                         results.forEach(function (doc) {
                             // 判斷不是自己才加入
                             if (doc.id!=StuID) {
                                 var a = results.docs[results.docs.length-1].id;
-                                var b = results.docs[results.docs.length-2].id;
                                 // 查詢姓名
                                 db.collection("帳號").doc(doc.id)
                                 .get().then(function(results) {
                                     $scope.Stus.push({StuID:doc.id,Name:results.data().Name,Checked:false});
                                     $state.go($state.current, {}, {reload: true}); //重新載入view
                                     // 判斷倒數第一or第二筆 關閉轉圈圈
-                                    if (doc.id==a || doc.id==b) {
+                                    if (doc.id==a) {
                                         $ionicLoading.hide();
                                     }
                                 }).catch(function(error) { 
@@ -1226,8 +1252,8 @@ function ($scope, $stateParams, $ionicPopup, $state) {
 }])
    
 // ----------------------------------------課程任務頁面----------------------------------------
-.controller('missionCtrl', ['$scope', '$stateParams', '$sce', '$state', '$ionicPopup', '$ionicLoading',
-function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
+.controller('missionCtrl', ['$scope', '$stateParams', '$sce', '$state', '$ionicPopup', '$ionicLoading', '$ionicScrollDelegate',
+function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading, $ionicScrollDelegate) {
     var db = firebase.firestore();
     // 驗證登入
     firebase.auth().onAuthStateChanged((user) => {
@@ -1248,6 +1274,13 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                 } else {
                     console.log("你是組長");
                     $scope.isLeader = true;
+                    // 取得小組名單
+                    db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
+                    .get().then(function(results) {
+                        $scope.members = results.data().members;
+                    }).catch(function(error) { 
+                        console.log("取得小組名單發生錯誤：", error); 
+                    });
                 
                     // 分組學習單匯入
                     // db.collection("課程任務").doc(ClassID).collection("任務列表").doc("D9fRCoHuIRQov8hryz1K").collection("填答結果").where("StuID", "==", StuID)
@@ -1484,9 +1517,10 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
             };
 
             // 組內評分用 - 取得自己小組名單
+            // db.collection("分組").doc(ClassID).collection("group").doc("PQLRY7r7ioygwLB3vNaD")
             db.collection("分組").doc(ClassID).collection("group").doc(GroupID)
             .get().then(function(doc) {
-                $scope.members = [];
+                $scope.mission_members = [];
                 var members = [];
                 for (let index = 0; index < doc.data().members.length; index++) {
                     // 查詢帳號資料
@@ -1497,13 +1531,22 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                         if (index == 0) {
                             leaderTrue = true;
                         }
+                        // 判斷是不是自己
+                        var memberName = "";
+                        if (doc.data().members[index]==StuID) {
+                            memberName = "我";
+                        } else {
+                            memberName = results.data().Name;                            
+                        }
                         // 獲取組員大頭照
                         var storage = firebase.storage();
                         storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
                             members.push({
                                 memberID:doc.data().members[index],
-                                memberName:results.data().Name,
+                                memberName:memberName,
                                 memberImg:url,
+                                show:false,
+                                finished:false,
                                 leader:leaderTrue
                             });
                             $scope.$apply(); //重新監聽view
@@ -1513,19 +1556,74 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                     });
                     // 判斷最後一筆
                     if (index==doc.data().members.length-1) {
-                        $scope.members = members;
+                        $scope.mission_members = members;
                     }
                 }
             }).catch(function(error) { 
                 console.log("評分用 - 取得全部小組名單發生錯誤：", error); 
             });
 
+            // 組內評分用 - 成員收合
+            $scope.memberShow = function(doc){
+                // 用findIndex找出要修改的位置
+                var indexNum = $scope.mission_members.findIndex((element)=>{
+                    return (element.$$hashKey === doc.$$hashKey);
+                });
+                // 修改
+                if (indexNum!=-1) {
+                    if ($scope.mission_members[indexNum].show) {
+                        $scope.mission_members[indexNum].show = false;
+                    } else {
+                        $scope.mission_members[indexNum].show = true;
+                        // 將其他隱藏
+                        for (let index = 0; index < $scope.mission_members.length; index++) {
+                            if (indexNum!=index) {
+                                $scope.mission_members[index].show = false;
+                            }
+                        }
+                    }
+                    console.log("修改顯示成功");
+                }else{
+                    console.log("修改顯示不成功");
+                }
+            };
+
+            // 組內評分用 - 每次點選項，更新結果檔
+            $scope.answer3Change = function(missionID,answer,memberID){
+                $scope.answer3 = answer;
+                // 將小組底色變綠 表示已填 - 用findIndex找出位置
+                var indexNum = $scope.mission_members.findIndex((element)=>{
+                    return (element.memberID === memberID);
+                });
+                if (indexNum!=-1) {
+                    $scope.mission_members[indexNum].finished = true;
+                }
+
+                // 判斷是否已有 - 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === missionID);
+                });
+                if (indexNum!=-1) {
+                    // 已有則更新
+                    $scope.response[indexNum].answer = answer;
+                }else{
+                    // 沒有則新增
+                    $scope.response.push({
+                        missionID:missionID,
+                        answer:answer
+                    });
+                }
+                console.log($scope.response);
+            };
+
             // 檔案上傳用
-            $scope.fileChanged = function(ele){   
+            $scope.fileChanged = function(ele){
+                var This_missionID = "ARuBqgDSkFJDMHH2UCFg";
+
                 //  上傳檔案
                 var storage = firebase.storage();
                 var storageRef = storage.ref();
-                var uploadTask = storageRef.child('mission/'+ClassID+'/'+missionID+'/'+GroupID).put(ele.files[0])
+                var uploadTask = storageRef.child('mission/'+ClassID+'/'+This_missionID+'/'+GroupID).put(ele.files[0])
                 .then(function(snapshot) {
                     // 取得檔案上傳狀態，並用數字顯示
                     var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -1553,6 +1651,22 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                         template: error
                     });
                 });
+                
+                // 判斷是否已有 - 用findIndex找出位置
+                var indexNum = $scope.response.findIndex((element)=>{
+                    return (element.missionID === This_missionID);
+                });
+                if (indexNum!=-1) {
+                    // 已有則更新
+                    $scope.response[indexNum].answer = "已上傳檔案至伺服器";
+                }else{
+                    // 沒有則新增
+                    $scope.response.push({
+                        missionID:This_missionID,
+                        answer:"已上傳檔案至伺服器"
+                    });
+                }
+                console.log($scope.response);
             };
 
             // 其他任務用 - 每次點選項，更新結果檔
@@ -2083,7 +2197,6 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                             console.log("防作弊 - 檢查是否已加分發生錯誤：", error); 
                                         });
                                     }
-
                                     var a = results.data().finished;
                                     // 判斷如果是組長限定的任務
                                     if (doc.LeaderOnly) {
@@ -2106,6 +2219,7 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading) {
                                         console.log("更新已完成名單成功");
                                         // 收合內容
                                         $scope.missionShow(doc);
+                                        $ionicScrollDelegate.scrollTop(); //滑到最上面
                                         $scope.$apply(); //重新監聽view
                                     })
                                     .catch(function(error) {
@@ -5697,6 +5811,7 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
 
             // 選擇課程 - 選擇完成
             $scope.SelectBtn = function(value) {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入課程點數中...</p>'});
                 if (value!=undefined) {
                     var ClassID = value.ClassID;
                     var StuID = "教師版";
@@ -5709,24 +5824,48 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                         var ClassStu = results.data().ClassStu;
                         ClassStu.forEach(function (Stu) {
                             // 載入總點數
-                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄")
+                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
                             .get().then(function(results) {
-                                if (results.data().Point!=undefined) {
-                                    // 查詢姓名
-                                    db.collection("帳號").doc(Stu)
-                                    .get().then(function(a) {
-                                        $scope.StuPoints.push({
-                                            Name:Stu+' '+a.data().Name,
-                                            Point:pasw(results.data().Point)
+                                var This_point = 0;
+                                var b = results.docs.length;
+                                var countB = 0;
+                                var isRepeat = [];
+                                results.forEach(function (doc) {
+                                    // 判斷是否有重複
+                                    if (isRepeat.indexOf(doc.data().check)!=-1) {
+                                        console.log(Stu+"發現重複");
+                                        $ionicPopup.alert({
+                                            title: Stu+'發現重複',
+                                            template: '編號：'+doc.id
                                         });
-                                        $scope.$apply(); //重新監聽view
-                                    }).catch(function(error) { 
-                                        console.log("查詢姓名發生錯誤：", error); 
-                                    });
-                                }
+                                    } else {
+                                        isRepeat.push(doc.data().check);
+                                    }
+                                    // 加總點數
+                                    This_point += pasw(doc.data().point);
+                                    
+                                    // 判斷最後一筆
+                                    countB++;
+                                    if (countB==b) {
+                                        $ionicLoading.hide();
+                                        // 查詢姓名
+                                        db.collection("帳號").doc(Stu)
+                                        .get().then(function(doc) {
+                                            $scope.StuPoints.push({
+                                                Name:Stu+' '+doc.data().Name,
+                                                StuID:Stu,
+                                                Point:This_point
+                                            });
+                                            $scope.$apply(); //重新監聽view
+                                        }).catch(function(error) { 
+                                            console.log("查詢姓名發生錯誤：", error); 
+                                        });
+                                    }
+                                });
                             }).catch(function(error) { 
                                 console.log("載入總點數發生錯誤：", error); 
                             });
+
                         });
                     }).catch(function(error) { 
                         console.log("取得課程名單發生錯誤：", error); 
@@ -5845,6 +5984,48 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                     }
                                 }
                             }]
+                        });
+                    };
+
+                    // 更新排行榜
+                    $scope.update = function() {
+                        // 點數排序
+                        $scope.StuPoints = $scope.StuPoints.sort(function (a, b) {
+                            return a.Point < b.Point ? 1 : -1;
+                        });
+                        // 取前五
+                        var StuPoints = [];
+                        for (let index = 0; index < 5; index++) {
+                            StuPoints.push({
+                                StuID: $scope.StuPoints[index].StuID,
+                                Point: $scope.StuPoints[index].Point
+                            });
+                        }
+                        // 上傳排行榜
+                        db.collection("點數").doc(ClassID)
+                        .set({
+                            top: StuPoints,
+                            UpdateTime: new Date()
+                        })
+                        .then(function(data) {
+                            console.log("更新排行榜成功");
+                            $ionicPopup.alert({
+                                title: '完成',
+                                template: 
+                                    '更新排行榜成功。<br>'+
+                                    '第一名 '+StuPoints[0].StuID+' 共 '+StuPoints[0].Point+'點<br>'+
+                                    '第二名 '+StuPoints[1].StuID+' 共 '+StuPoints[1].Point+'點<br>'+
+                                    '第三名 '+StuPoints[2].StuID+' 共 '+StuPoints[2].Point+'點<br>'+
+                                    '第四名 '+StuPoints[3].StuID+' 共 '+StuPoints[3].Point+'點<br>'+
+                                    '第五名 '+StuPoints[4].StuID+' 共 '+StuPoints[4].Point+'點'
+                            });
+                        })
+                        .catch(function(error) {
+                            console.error("更新排行榜失敗：", error);
+                            $ionicPopup.alert({
+                                title: '錯誤',
+                                template: '更新排行榜失敗。'
+                            });
                         });
                     };
 
