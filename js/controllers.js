@@ -2,13 +2,13 @@
 var verson = "1.2.7";
 // Firebase Key
 var config = {
-apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
-authDomain: "co-writing-test.firebaseapp.com",
-databaseURL: "https://co-writing-test.firebaseio.com",
-projectId: "co-writing-test",
-storageBucket: "co-writing-test.appspot.com",
-messagingSenderId: "894137377703",
-appId: "1:894137377703:web:d5584a32c2b21322e98c82"
+    apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
+    authDomain: "co-writing-test.firebaseapp.com",
+    databaseURL: "https://co-writing-test.firebaseio.com",
+    projectId: "co-writing-test",
+    storageBucket: "co-writing-test.appspot.com",
+    messagingSenderId: "894137377703",
+    appId: "1:894137377703:web:d5584a32c2b21322e98c82"
 };
 firebase.initializeApp(config);
 var perf = firebase.performance();
@@ -5096,152 +5096,368 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
                         aLink.dispatchEvent(event);
                     }
                     var items = [];
-                    db.collection("課程任務").doc(ClassID).collection("任務列表").doc("lJ6AcBzlmYQCzXhKpq7f").collection("填答結果")
-                    .get().then(function(results) {
-                        // items.push(["組長","組員","版本","第一題","第二題","第三題","第四題","第五題","提案","時間"]);
-                        items.push(["學號","版本","第一題","第二題","第三題","時間"]);
-                        results.forEach(function (doc) {
-                            // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
-                            var pushMonth = Number(doc.data().time.toDate().getMonth())+1;
-                            if (pushMonth<=9) {
-                                pushMonth = '0'+pushMonth;
-                            }
-                            var pushDate = doc.data().time.toDate().getDate();
-                            if (pushDate<=9) {
-                                pushDate = '0'+pushDate;
-                            }
-                            // 查詢姓名
-                            db.collection("帳號").doc(doc.data().StuID)
-                            .get().then(function(a) {
-                                // 總結送出
-                                items.push([
-                                    doc.data().StuID + a.data().Name,
-                                    "V2",
-                                    doc.data().response.question6,
-                                    doc.data().response.question7,
-                                    doc.data().response.question8,
-                                    doc.data().time.toDate().getUTCFullYear()+'/'+
-                                    pushMonth+'/'+
-                                    pushDate,
-                                ]);
-                                console.log(items);
-                            }).catch(function(error) { 
-                                console.log("查詢姓名發生錯誤：", error); 
-                            });
+                    // 匯出填答結果
+                    // db.collection("課程任務").doc(ClassID).collection("任務列表").doc("Q3Ufw0Ztklnu0hSDUtMe").collection("填答結果")
+                    // .get().then(function(results) {
+                    //     items.push(["學號","組員1","第一題","第二題","第三題","第四題","第五題","第六題","第七題","時間"]);
+                    //     // items.push(["組長","組員","版本","第一題","第二題","第三題","第四題","第五題","提案","時間"]);
+                    //     // items.push(["學號","版本","第一題","第二題","第三題","時間"]);
+                    //     results.forEach(function (doc) {
+                    //         // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
+                    //         var pushMonth = Number(doc.data().time.toDate().getMonth())+1;
+                    //         if (pushMonth<=9) {
+                    //             pushMonth = '0'+pushMonth;
+                    //         }
+                    //         var pushDate = doc.data().time.toDate().getDate();
+                    //         if (pushDate<=9) {
+                    //             pushDate = '0'+pushDate;
+                    //         }
+
+                    //         // 查詢姓名
+                    //         db.collection("帳號").doc(doc.data().StuID)
+                    //         .get().then(function(a) {
+                    //             // 課後學習心得與反思
+                    //             // items.push([
+                    //             //     doc.data().StuID + a.data().Name,
+                    //             //     "V2",
+                    //             //     doc.data().response.question6,
+                    //             //     doc.data().response.question7,
+                    //             //     doc.data().response.question8,
+                    //             //     doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //             //     pushMonth+'/'+
+                    //             //     pushDate,
+                    //             // ]);
+                                
+                    //             // 分組提案計畫評分
+                    //             // items.push([
+                    //             //     doc.data().StuID + a.data().Name,
+                    //             //     "期中前",
+                    //             //     Object.keys(doc.data().response),
+                    //             //     Object.values(doc.data().response)[0].E,
+                    //             //     Object.values(doc.data().response)[1].E,
+                    //             //     Object.values(doc.data().response)[2].E,
+                    //             //     Object.values(doc.data().response)[3].E,
+                    //             //     Object.values(doc.data().response)[4].E,
+                    //             //     Object.values(doc.data().response)[5].E,
+                    //             //     Object.values(doc.data().response)[6].E,
+                    //             //     Object.values(doc.data().response)[7].E,
+                    //             //     Object.values(doc.data().response)[8].E,
+                    //             //     Object.values(doc.data().response)[9].E,
+                    //             //     doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //             //     pushMonth+'/'+
+                    //             //     pushDate,
+                    //             // ]);
+
+                    //             // 組內自評、互評
+                    //             if (Object.keys(doc.data().response)[4]!=undefined) {
+                    //                 items.push([
+                    //                     doc.data().StuID + a.data().Name,
+                    //                     Object.keys(doc.data().response)[0],
+                    //                     Object.values(doc.data().response)[0].A,
+                    //                     Object.values(doc.data().response)[0].B,
+                    //                     Object.values(doc.data().response)[0].C,
+                    //                     Object.values(doc.data().response)[0].D,
+                    //                     Object.values(doc.data().response)[0].E,
+                    //                     Object.values(doc.data().response)[0].F,
+                    //                     Object.values(doc.data().response)[0].G,
+                    //                     Object.keys(doc.data().response)[1],
+                    //                     Object.values(doc.data().response)[1].A,
+                    //                     Object.values(doc.data().response)[1].B,
+                    //                     Object.values(doc.data().response)[1].C,
+                    //                     Object.values(doc.data().response)[1].D,
+                    //                     Object.values(doc.data().response)[1].E,
+                    //                     Object.values(doc.data().response)[1].F,
+                    //                     Object.values(doc.data().response)[1].G,
+                    //                     Object.keys(doc.data().response)[2],
+                    //                     Object.values(doc.data().response)[2].A,
+                    //                     Object.values(doc.data().response)[2].B,
+                    //                     Object.values(doc.data().response)[2].C,
+                    //                     Object.values(doc.data().response)[2].D,
+                    //                     Object.values(doc.data().response)[2].E,
+                    //                     Object.values(doc.data().response)[2].F,
+                    //                     Object.values(doc.data().response)[2].G,
+                    //                     Object.keys(doc.data().response)[3],
+                    //                     Object.values(doc.data().response)[3].A,
+                    //                     Object.values(doc.data().response)[3].B,
+                    //                     Object.values(doc.data().response)[3].C,
+                    //                     Object.values(doc.data().response)[3].D,
+                    //                     Object.values(doc.data().response)[3].E,
+                    //                     Object.values(doc.data().response)[3].F,
+                    //                     Object.values(doc.data().response)[3].G,
+                    //                     Object.keys(doc.data().response)[4],
+                    //                     Object.values(doc.data().response)[4].A,
+                    //                     Object.values(doc.data().response)[4].B,
+                    //                     Object.values(doc.data().response)[4].C,
+                    //                     Object.values(doc.data().response)[4].D,
+                    //                     Object.values(doc.data().response)[4].E,
+                    //                     Object.values(doc.data().response)[4].F,
+                    //                     Object.values(doc.data().response)[4].G,
+                    //                     doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //                     pushMonth+'/'+
+                    //                     pushDate,
+                    //                 ]);
+                    //             } else if(Object.keys(doc.data().response)[3]!=undefined) {
+                    //                 items.push([
+                    //                     doc.data().StuID + a.data().Name,
+                    //                     Object.keys(doc.data().response)[0],
+                    //                     Object.values(doc.data().response)[0].A,
+                    //                     Object.values(doc.data().response)[0].B,
+                    //                     Object.values(doc.data().response)[0].C,
+                    //                     Object.values(doc.data().response)[0].D,
+                    //                     Object.values(doc.data().response)[0].E,
+                    //                     Object.values(doc.data().response)[0].F,
+                    //                     Object.values(doc.data().response)[0].G,
+                    //                     Object.keys(doc.data().response)[1],
+                    //                     Object.values(doc.data().response)[1].A,
+                    //                     Object.values(doc.data().response)[1].B,
+                    //                     Object.values(doc.data().response)[1].C,
+                    //                     Object.values(doc.data().response)[1].D,
+                    //                     Object.values(doc.data().response)[1].E,
+                    //                     Object.values(doc.data().response)[1].F,
+                    //                     Object.values(doc.data().response)[1].G,
+                    //                     Object.keys(doc.data().response)[2],
+                    //                     Object.values(doc.data().response)[2].A,
+                    //                     Object.values(doc.data().response)[2].B,
+                    //                     Object.values(doc.data().response)[2].C,
+                    //                     Object.values(doc.data().response)[2].D,
+                    //                     Object.values(doc.data().response)[2].E,
+                    //                     Object.values(doc.data().response)[2].F,
+                    //                     Object.values(doc.data().response)[2].G,
+                    //                     Object.keys(doc.data().response)[3],
+                    //                     Object.values(doc.data().response)[3].A,
+                    //                     Object.values(doc.data().response)[3].B,
+                    //                     Object.values(doc.data().response)[3].C,
+                    //                     Object.values(doc.data().response)[3].D,
+                    //                     Object.values(doc.data().response)[3].E,
+                    //                     Object.values(doc.data().response)[3].F,
+                    //                     Object.values(doc.data().response)[3].G,
+                    //                     doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //                     pushMonth+'/'+
+                    //                     pushDate,
+                    //                 ]);
+                    //             } else if(Object.keys(doc.data().response)[2]!=undefined) {
+                    //                 items.push([
+                    //                     doc.data().StuID + a.data().Name,
+                    //                     Object.keys(doc.data().response)[0],
+                    //                     Object.values(doc.data().response)[0].A,
+                    //                     Object.values(doc.data().response)[0].B,
+                    //                     Object.values(doc.data().response)[0].C,
+                    //                     Object.values(doc.data().response)[0].D,
+                    //                     Object.values(doc.data().response)[0].E,
+                    //                     Object.values(doc.data().response)[0].F,
+                    //                     Object.values(doc.data().response)[0].G,
+                    //                     Object.keys(doc.data().response)[1],
+                    //                     Object.values(doc.data().response)[1].A,
+                    //                     Object.values(doc.data().response)[1].B,
+                    //                     Object.values(doc.data().response)[1].C,
+                    //                     Object.values(doc.data().response)[1].D,
+                    //                     Object.values(doc.data().response)[1].E,
+                    //                     Object.values(doc.data().response)[1].F,
+                    //                     Object.values(doc.data().response)[1].G,
+                    //                     Object.keys(doc.data().response)[2],
+                    //                     Object.values(doc.data().response)[2].A,
+                    //                     Object.values(doc.data().response)[2].B,
+                    //                     Object.values(doc.data().response)[2].C,
+                    //                     Object.values(doc.data().response)[2].D,
+                    //                     Object.values(doc.data().response)[2].E,
+                    //                     Object.values(doc.data().response)[2].F,
+                    //                     Object.values(doc.data().response)[2].G,
+                    //                     doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //                     pushMonth+'/'+
+                    //                     pushDate,
+                    //                 ]);
+                    //             } else if(Object.keys(doc.data().response)[1]!=undefined) {
+                    //                 items.push([
+                    //                     doc.data().StuID + a.data().Name,
+                    //                     Object.keys(doc.data().response)[0],
+                    //                     Object.values(doc.data().response)[0].A,
+                    //                     Object.values(doc.data().response)[0].B,
+                    //                     Object.values(doc.data().response)[0].C,
+                    //                     Object.values(doc.data().response)[0].D,
+                    //                     Object.values(doc.data().response)[0].E,
+                    //                     Object.values(doc.data().response)[0].F,
+                    //                     Object.values(doc.data().response)[0].G,
+                    //                     Object.keys(doc.data().response)[1],
+                    //                     Object.values(doc.data().response)[1].A,
+                    //                     Object.values(doc.data().response)[1].B,
+                    //                     Object.values(doc.data().response)[1].C,
+                    //                     Object.values(doc.data().response)[1].D,
+                    //                     Object.values(doc.data().response)[1].E,
+                    //                     Object.values(doc.data().response)[1].F,
+                    //                     Object.values(doc.data().response)[1].G,
+                    //                     doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //                     pushMonth+'/'+
+                    //                     pushDate,
+                    //                 ]);
+                    //             }
+                    //             console.log(items);
+                    //         }).catch(function(error) { 
+                    //             console.log("查詢姓名發生錯誤：", error); 
+                    //         });
                             
-                            // var proposal = "";
-                            // 如果有提案才放
-                            // if (doc.data().response.proposal!=undefined) {
-                                // // 列出所有提案
-                                // for (let i = 0; i < doc.data().response.proposal.length; i++) {
-                                //     var brainstorming = "";
-                                //     // 列出所有腦力激盪
-                                //     for (let j = 0; j < doc.data().response.proposal[i].brainstorming.length; j++) {
-                                //         // 先取得小組ID
-                                //         db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
-                                //         .get().then(function(results) {
-                                //             results.forEach(function (doc2) {
-                                //                 // 再用小組ID搜尋腦力激盪名稱
-                                //                 db.collection("腦力激盪").doc(ClassID).collection(doc2.id).doc(doc.data().response.proposal[i].brainstorming[j])
-                                //                 .get().then(function(doc3) {
-                                //                     brainstorming = brainstorming + doc3.data().msg + ",";
-                                //                     // 判斷最後一筆
-                                //                     if (j == doc.data().response.proposal[i].brainstorming.length-1) {
-                                //                         proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
-                                //                         // 判斷最後一筆
-                                //                         if (i == doc.data().response.proposal.length-1) {
-                                //                             proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
-                                //                             // 取得小組成員
-                                //                             db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
-                                //                             .get().then(function(results) {
-                                //                                 results.forEach(function (doc2) {
-                                //                                     // 總結送出
-                                //                                     items.push([
-                                //                                         doc.data().StuID,
-                                //                                         doc2.data().members,
-                                //                                         "V1",
-                                //                                         doc.data().response.question1,
-                                //                                         doc.data().response.question2,
-                                //                                         doc.data().response.question3,
-                                //                                         doc.data().response.question4,
-                                //                                         doc.data().response.question5,
-                                //                                         proposal
-                                //                                     ]);
-                                //                                 }); 
-                                //                             }).catch(function(error) { 
-                                //                                 console.log("取得小組ID發生錯誤：", error); 
-                                //                             }); 
-                                //                         }
-                                //                     }
-                                //                 }).catch(function(error) { 
-                                //                     console.log("用小組ID搜尋腦力激盪名稱發生錯誤：", error); 
-                                //                 });
-                                //             });
-                                //         }).catch(function(error) { 
-                                //             console.log("取得小組ID發生錯誤：", error); 
-                                //         });
-                                //     }
-                                // }
-                            // } else {
-                                // // 取得小組成員
-                                // db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
-                                // .get().then(function(results) {
-                                //     results.forEach(function (doc2) {
-                                //         var members = "";
-                                //         for (let index = 0; index < doc2.data().members.length; index++) {
-                                //             // 查詢姓名
-                                //             // db.collection("帳號").doc(doc2.data().members[index])
-                                //             // .get().then(function(a) {
-                                //             //     members = members + doc2.data().members[index] + a.data().Name + ",";
-                                //             // }).catch(function(error) { 
-                                //             //     console.log("查詢姓名發生錯誤：", error); 
-                                //             // });
-                                //             // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
-                                //             var pushMonth = Number(doc.data().time.toDate().getMonth())+1;
-                                //             if (pushMonth<=9) {
-                                //                 pushMonth = '0'+pushMonth;
-                                //             }
-                                //             var pushDate = doc.data().time.toDate().getDate();
-                                //             if (pushDate<=9) {
-                                //                 pushDate = '0'+pushDate;
-                                //             }
+                    //         // var proposal = "";
+                    //         // // 如果有提案才放
+                    //         // if (doc.data().response.proposal!=undefined) {
+                    //         //     // 列出所有提案
+                    //         //     for (let i = 0; i < doc.data().response.proposal.length; i++) {
+                    //         //         var brainstorming = "";
+                    //         //         // 列出所有腦力激盪
+                    //         //         for (let j = 0; j < doc.data().response.proposal[i].brainstorming.length; j++) {
+                    //         //             // 先取得小組ID
+                    //         //             db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
+                    //         //             .get().then(function(results) {
+                    //         //                 results.forEach(function (doc2) {
+                    //         //                     // 再用小組ID搜尋腦力激盪名稱
+                    //         //                     db.collection("腦力激盪").doc(ClassID).collection(doc2.id).doc(doc.data().response.proposal[i].brainstorming[j])
+                    //         //                     .get().then(function(doc3) {
+                    //         //                         brainstorming = brainstorming + doc3.data().msg + ",";
+                    //         //                         // 判斷最後一筆
+                    //         //                         if (j == doc.data().response.proposal[i].brainstorming.length-1) {
+                    //         //                             proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
+                    //         //                             // 判斷最後一筆
+                    //         //                             if (i == doc.data().response.proposal.length-1) {
+                    //         //                                 proposal = proposal + doc.data().response.proposal[i].ProposalName + ":" +brainstorming;
+                    //         //                                 // 取得小組成員
+                    //         //                                 db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
+                    //         //                                 .get().then(function(results) {
+                    //         //                                     results.forEach(function (doc2) {
+                    //         //                                         // 總結送出
+                    //         //                                         items.push([
+                    //         //                                             doc.data().StuID,
+                    //         //                                             doc2.data().members,
+                    //         //                                             "V1",
+                    //         //                                             doc.data().response.question1,
+                    //         //                                             doc.data().response.question2,
+                    //         //                                             doc.data().response.question3,
+                    //         //                                             doc.data().response.question4,
+                    //         //                                             doc.data().response.question5,
+                    //         //                                             proposal
+                    //         //                                         ]);
+                    //         //                                     }); 
+                    //         //                                 }).catch(function(error) { 
+                    //         //                                     console.log("取得小組ID發生錯誤：", error); 
+                    //         //                                 }); 
+                    //         //                             }
+                    //         //                         }
+                    //         //                     }).catch(function(error) { 
+                    //         //                         console.log("用小組ID搜尋腦力激盪名稱發生錯誤：", error); 
+                    //         //                     });
+                    //         //                 });
+                    //         //             }).catch(function(error) { 
+                    //         //                 console.log("取得小組ID發生錯誤：", error); 
+                    //         //             });
+                    //         //         }
+                    //         //     }
+                    //         // } else {
+                    //             // 取得小組成員
+                    //             // db.collection("分組").doc(ClassID).collection("group").where("leader", "==", doc.data().StuID)
+                    //             // .get().then(function(results) {
+                    //             //     results.forEach(function (doc2) {
+                    //             //         var members = "";
+                    //             //         for (let index = 0; index < doc2.data().members.length; index++) {
+                    //             //             // 查詢姓名
+                    //             //             db.collection("帳號").doc(doc2.data().members[index])
+                    //             //             .get().then(function(a) {
+                    //             //                 members = members + doc2.data().members[index] + a.data().Name + ",";
+                    //             //             }).catch(function(error) { 
+                    //             //                 console.log("查詢姓名發生錯誤：", error); 
+                    //             //             });
+                    //             //             // Month轉換格式為數字(Number) Date判斷補0(if) HTML轉換格式為HTML($sce)
+                    //             //             var pushMonth = Number(doc.data().time.toDate().getMonth())+1;
+                    //             //             if (pushMonth<=9) {
+                    //             //                 pushMonth = '0'+pushMonth;
+                    //             //             }
+                    //             //             var pushDate = doc.data().time.toDate().getDate();
+                    //             //             if (pushDate<=9) {
+                    //             //                 pushDate = '0'+pushDate;
+                    //             //             }
                                             
-                                //             // 判斷最後一筆
-                                //             if (index == doc2.data().members.length-1) {
-                                //                 // 總結送出
-                                //                 items.push([
-                                //                     doc.data().StuID,
-                                //                     members,
-                                //                     "V1",
-                                //                     doc.data().response.question1,
-                                //                     doc.data().response.question2,
-                                //                     doc.data().response.question3,
-                                //                     doc.data().response.question4,
-                                //                     doc.data().response.question5,
-                                //                     proposal,
-                                //                     doc.data().time.toDate().getUTCFullYear()+'/'+
-                                //                     pushMonth+'/'+
-                                //                     pushDate,
-                                //                 ]);
-                                //                 console.log(items);
-                                //             }
+                    //             //             // 判斷最後一筆
+                    //             //             if (index == doc2.data().members.length-1) {
+                    //             //                 // 總結送出
+                    //             //                 items.push([
+                    //             //                     doc.data().StuID,
+                    //             //                     members,
+                    //             //                     "V3",
+                    //             //                     doc.data().response.question1,
+                    //             //                     doc.data().response.question2,
+                    //             //                     doc.data().response.question3,
+                    //             //                     doc.data().response.question4,
+                    //             //                     doc.data().response.question5,
+                    //             //                     proposal,
+                    //             //                     doc.data().time.toDate().getUTCFullYear()+'/'+
+                    //             //                     pushMonth+'/'+
+                    //             //                     pushDate,
+                    //             //                 ]);
+                    //             //                 console.log(items);
+                    //             //             }
+                    //             //         }
+                    //             //     }); 
+                    //             // }).catch(function(error) { 
+                    //             //     console.log("取得小組ID發生錯誤：", error); 
+                    //             // }); 
+                    //         // }
+                    //     });
+                    // }).catch(function(error) { 
+                    //     console.log("匯出資料發生錯誤：", error); 
+                    // });
+
+                    // 匯出腦力激盪 提案聚焦數
+                    // 取得小組成員
+                    db.collection("分組").doc(ClassID).collection("group")
+                    .get().then(function(results) {
+                        items.push(["學號","小組","版本","腦力激盪數量","腦力激盪被採用次數","提案聚焦數量","提案聚焦被採用次數"]);
+                        results.forEach(function (doc) {
+                            for (let index = 0; index < doc.data().members.length; index++) {
+                                // 查詢腦力激盪數 與被採用次數
+                                // db.collection("腦力激盪").doc(ClassID).collection(doc.id).where("StuID", "==", doc.data().members[index])
+                                // .get().then(function(results) {
+                                //     console.log(doc.data().members[index]+'的腦力激盪數：'+results.docs.length);
+                                //     var count = 0;
+                                //     results.forEach(function (doc2) {
+                                //         if (doc2.data().invited==true) {
+                                //             count++;
                                 //         }
-                                //     }); 
+                                //     });
+                                //     console.log(doc.data().members[index]+'的腦力激盪被採用數：'+count);
+                                //     items.push([
+                                //         doc.data().members[index],
+                                //         doc.id,
+                                //         "期中前",
+                                //         results.docs.length,
+                                //         count,
+                                //     ]);
                                 // }).catch(function(error) { 
-                                //     console.log("取得小組ID發生錯誤：", error); 
-                                // }); 
-                            // }
-                        });
-                        
+                                //     console.log("查詢腦力激盪數 與被採用次數發生錯誤：", error); 
+                                // });
+
+                                // 查詢提案聚焦數量
+                                db.collection("提案聚焦").doc(ClassID).collection(doc.id)
+                                .get().then(function(results) {
+                                    console.log(doc.id+'小組的提案聚焦數：'+results.docs.length);
+                                    items.push([
+                                        doc.data().members[index],
+                                        doc.id,
+                                        "期中前",
+                                        results.docs.length
+                                    ]);
+                                }).catch(function(error) { 
+                                    console.log("查詢查詢提案聚焦數量發生錯誤：", error); 
+                                });
+
+                            }
+                        }); 
                     }).catch(function(error) { 
-                        console.log("匯出資料發生錯誤：", error); 
-                    });
+                        console.log("取得小組成員發生錯誤：", error); 
+                    }); 
+
+                    
+
                     // 點按鈕匯出
                     $scope.OutputBtn = function() {
                         var sheet = XLSX.utils.aoa_to_sheet(items);
                         openDownloadDialog(sheet2blob(sheet), '匯出.xlsx');
                     };
-
 
                 } else {
                     // 提醒
