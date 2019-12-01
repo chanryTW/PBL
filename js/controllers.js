@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.2.7";
+var verson = "1.3.0";
 // Firebase Key
 var config = {
     apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -263,6 +263,80 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
                 $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
                 if ($scope.inputMessage!=undefined && $scope.inputMessage!="") {
                     db.collection("留言版").doc(ClassID).collection("messages")
+                    .add({
+                        StuID: StuID,
+                        StuName: StuName,
+                        content: $scope.inputMessage,
+                        time: new Date()
+                    })
+                    .then(function(data) {
+                        console.log("新增留言成功");
+                    })
+                    .catch(function(error) {
+                        console.error("新增留言失敗：", error);
+                    });
+                    $scope.inputMessage = "";
+                }
+                $ionicLoading.hide();
+            };
+
+
+        }else{
+            console.log("尚未登入");
+            $state.go("login");
+            // window.location.reload();
+        }
+    });
+}])
+
+// ----------------------------------------匿名留言版頁面----------------------------------------
+.controller('chatroom2Ctrl', ['$scope', '$stateParams', '$state', '$ionicLoading', '$ionicScrollDelegate',
+function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
+    var db = firebase.firestore();
+    // 驗證登入
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) { //登入成功，取得使用者
+            console.log("已登入狀態");
+            var StuID = user.email.substring(0,user.email.indexOf("@")).toUpperCase();
+            var ClassID = localStorage.getItem("ClassID");
+            var StuName = localStorage.getItem("StuName");
+
+            $scope.messages = [];
+            // 監聽 - 留言版內容
+            db.collection("匿名留言版").doc(ClassID).collection("messages").orderBy("time","asc")
+            .onSnapshot(function(querySnapshot) {
+                querySnapshot.docChanges().forEach(function(change) {
+                    if (change.type === "added") {
+                        // var storage = firebase.storage();
+                        // var storageRef = storage.ref();
+                        // storageRef.child('members/default').getDownloadURL().then(function(url) {
+                            // 放入留言版內容
+                            $scope.messages.push({
+                                messageName:'匿名',
+                                messageImg:'https://firebasestorage.googleapis.com/v0/b/co-writing-test.appspot.com/o/members%2Fdefault?alt=media&token=e511b185-cd79-47e2-b501-e026fd8da387',
+                                messageContent:change.doc.data().content,
+                                time:change.doc.data().time
+                            });
+
+                            $scope.$apply(); //重新監聽view
+                            $ionicScrollDelegate.scrollBottom(); //滑到最下面
+                            $ionicScrollDelegate.resize(); //重新取得範圍
+                        // });
+                    }
+                    if (change.type === "modified") {
+                        console.log("修改: ", change.doc.data());
+                    }
+                    if (change.type === "removed") {
+                        console.log("刪除: ", change.doc.data());
+                    }
+                });
+            });
+
+            // 新增留言
+            $scope.addMessage = function() {
+                $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
+                if ($scope.inputMessage!=undefined && $scope.inputMessage!="") {
+                    db.collection("匿名留言版").doc(ClassID).collection("messages")
                     .add({
                         StuID: StuID,
                         StuName: StuName,
@@ -4556,9 +4630,611 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                 $scope.AllClass = [];
                 querySnapshot.forEach(function (doc) {
                     $scope.AllClass.push(doc.data());
-                    $state.go($state.current, {}, {reload: true}); //重新載入view
+                    $scope.$apply(); //重新監聽view
                 });
             });
+
+            // 選擇課程 - 選擇完成
+            $scope.SelectBtn = function(value) {
+                if (value!=undefined) {
+                    var ClassID = value.ClassID;
+                    var StuID = "教師版";
+                    $scope.cardShow = true;
+
+                    // 分組 - 設定 - 開放學生自行分組
+                    $scope.LockGroupChange = function(ClassID,inviteLock) {
+                        // 更新inviteLock
+                        db.collection("課程").doc(ClassID)
+                        .update({
+                            inviteLock: inviteLock
+                        })
+                        .then(function(data) {
+                            console.log("更新inviteLock成功");
+                        })
+                        .catch(function(error) {
+                            console.error("更新inviteLock失敗：", error);
+                        });
+                    };
+
+                    // 分組 - 設定 - 小組人數上限
+                    $scope.maxMembersChange = function(ClassID,maxMembers) {
+                        // 更新maxMembers
+                        db.collection("課程").doc(ClassID)
+                        .update({
+                            maxMembers: maxMembers
+                        })
+                        .then(function(data) {
+                            console.log("更新maxMembers成功");
+                        })
+                        .catch(function(error) {
+                            console.error("更新maxMembers失敗：", error);
+                        });
+                    };
+
+                    // 分組 - 監聽 - 分組狀態變動及更新
+                    db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", false)
+                    .onSnapshot(function(querySnapshot) {
+                        $scope.thisClass = value;
+                        // 取得分組狀態
+                        $scope.Allgroups = [];
+                        // 未分組的人
+                        var Ngroup = [];
+                        db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", false)
+                        .get().then(function (querySnapshot) {
+                            querySnapshot.forEach(function (doc) {
+                                // 查詢姓名
+                                db.collection("帳號").doc(doc.id)
+                                .get().then(function(results) {
+                                    Ngroup.push(doc.id+results.data().Name);
+                                }).catch(function(error) { 
+                                    console.log("查詢姓名發生錯誤：", error); 
+                                });
+                            });
+                            // 已分組的人
+                            var Ygroup = [];
+                            db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", true)
+                            .get().then(function (querySnapshot) {
+                                querySnapshot.forEach(function (doc) {
+                                    Ygroup.push(doc.id);
+                                });
+                                $scope.Allgroups = [{ClassName:value.ClassName,Ngroup:Ngroup,Ygroup:Ygroup}];
+                                // 繪製環形圖
+                                var dom = document.getElementById("Chart_group");
+                                var myChart = echarts.init(dom);
+                                var app = {};
+                                option = null;
+                                app.title = '環形圖';
+                                option = {
+                                    tooltip: {
+                                        trigger: 'item',
+                                        formatter: "{a} <br/>{b}: {c} ({d}%)"
+                                    },
+                                    legend: {
+                                        orient: 'vertical',
+                                        x: 'left',
+                                        data:['未分組','已分組']
+                                    },
+                                    series: [
+                                        {
+                                            name:'分組狀態',
+                                            type:'pie',
+                                            radius: ['50%', '70%'],
+                                            avoidLabelOverlap: false,
+                                            label: {
+                                                normal: {
+                                                    show: false,
+                                                    position: 'center'
+                                                },
+                                                emphasis: {
+                                                    show: true,
+                                                    textStyle: {
+                                                        fontSize: '15',
+                                                        fontWeight: 'bold'
+                                                    }
+                                                }
+                                            },
+                                            labelLine: {
+                                                normal: {
+                                                    show: false
+                                                }
+                                            },
+                                            data:[
+                                                {value:Ngroup.length, name:'未分組'},
+                                                {value:Ygroup.length, name:'已分組'}
+                                            ]
+                                        }
+                                    ]
+                                };
+                                if (option && typeof option === "object") {
+                                    myChart.setOption(option, true);
+                                }
+
+                                $scope.cardShow = true;
+                                $ionicLoading.hide();
+                                $state.go($state.current, {}, {reload: true}); //重新載入view
+                            });
+                        });
+                    });
+
+                    var data_name = [];
+                    var data_brain = [];
+                    var data_proposal = [];
+                    var data_vote = [];
+                    // 小組討論情形 - 監聽 - 分組狀態變動及更新
+                    db.collection("分組").doc(ClassID).collection("student").where("grouped", "==", false)
+                    .onSnapshot(function(querySnapshot) {
+                        data_name = [];
+                        // 取得小組名單
+                        db.collection("分組").doc(ClassID).collection("group")
+                        .get().then(function (querySnapshot) {
+                            querySnapshot.forEach(function (doc) {
+                                // 取得小組長ID
+                                db.collection("分組").doc(ClassID).collection("group").doc(doc.id)
+                                .get().then(function(results) {
+                                    // 查詢姓名
+                                    db.collection("帳號").doc(results.data().leader)
+                                    .get().then(function(results) {
+                                        data_name.push(results.data().Name+'組');
+                                        Chart_discuss(data_name,data_brain,data_proposal,data_vote);
+                                    });
+                                });
+                            });
+                        });
+                    });
+
+                    // 小組討論情形 - 監聽 - 腦力激盪數
+                    db.collection("腦力激盪").doc(ClassID)
+                    .onSnapshot(function(querySnapshot) {
+                        data_brain = [];
+                        // 取得小組名單
+                        db.collection("分組").doc(ClassID).collection("group")
+                        .get().then(function (querySnapshot) {
+                            querySnapshot.forEach(function (doc) {
+                                // 取得小組腦力激盪數
+                                db.collection("腦力激盪").doc(ClassID).collection(doc.id)
+                                .get().then(function (querySnapshot) {
+                                    data_brain.push(querySnapshot.docs.length-1);
+                                    Chart_discuss(data_name,data_brain,data_proposal,data_vote);
+                                });
+                            });
+                        });
+                    });
+
+                    // 小組討論情形 - 監聽 - 提案聚焦數
+                    db.collection("提案聚焦").doc(ClassID)
+                    .onSnapshot(function(querySnapshot) {
+                        data_proposal = [];
+                        // 取得小組名單
+                        db.collection("分組").doc(ClassID).collection("group")
+                        .get().then(function (querySnapshot) {
+                            querySnapshot.forEach(function (doc) {
+                                // 取得小組提案聚焦數
+                                db.collection("提案聚焦").doc(ClassID).collection(doc.id)
+                                .get().then(function (querySnapshot) {
+                                    data_proposal.push(querySnapshot.docs.length);
+                                    Chart_discuss(data_name,data_brain,data_proposal,data_vote);
+                                });
+                            });
+                        });
+                    });
+
+                    // 小組討論情形 - 監聽 - 投票數
+                    db.collection("投票").doc(ClassID)
+                    .onSnapshot(function(querySnapshot) {
+                        data_vote = [];
+                        // 取得小組名單
+                        db.collection("分組").doc(ClassID).collection("group")
+                        .get().then(function (querySnapshot) {
+                            querySnapshot.forEach(function (doc) {
+                                // 取得小組投票數
+                                db.collection("投票").doc(ClassID).collection(doc.id)
+                                .get().then(function (querySnapshot) {
+                                    data_vote.push(querySnapshot.docs.length);
+                                    Chart_discuss(data_name,data_brain,data_proposal,data_vote);
+                                });
+                            });
+                        });
+                    });
+
+                    // 小組討論情形 - 繪製直方圖
+                    var Chart_discuss = function(data_name,data_brain,data_proposal,data_vote) {
+                        var myChart = echarts.init(document.getElementById("Chart_discuss"));
+                        var app = {};
+                        option = null;
+                        option = {
+                            tooltip : {
+                                trigger: 'axis'
+                            },
+                            legend: {
+                                data:['腦力激盪數','提案聚焦數','投票數']
+                            },
+                            toolbox: {
+                                show : true
+                            },
+                            calculable : true,
+                            xAxis : [
+                                {
+                                    type : 'category',
+                                    data : data_name
+                                }
+                            ],
+                            yAxis : [
+                                {
+                                    type : 'value'
+                                }
+                            ],
+                            series : [
+                                {
+                                    name:'腦力激盪數',
+                                    type:'bar',
+                                    data:data_brain,
+                                    markPoint : {
+                                        data : [
+                                            {type : 'max', name: '最大值'},
+                                            {type : 'min', name: '最小值'}
+                                        ]
+                                    },
+                                    markLine : {
+                                        data : [
+                                            {type : 'average', name: '平均值'}
+                                        ]
+                                    }
+                                },
+                                {
+                                    name:'提案聚焦數',
+                                    type:'bar',
+                                    data:data_proposal,
+                                    markPoint : {
+                                        data : [
+                                            {type : 'max', name: '最大值'},
+                                            {type : 'min', name: '最小值'}
+                                        ]
+                                    },
+                                    markLine : {
+                                        data : [
+                                            {type : 'average', name: '平均值'}
+                                        ]
+                                    }
+                                },
+                                {
+                                    name:'投票數',
+                                    type:'bar',
+                                    data:data_vote,
+                                    markPoint : {
+                                        data : [
+                                            {type : 'max', name: '最大值'},
+                                            {type : 'min', name: '最小值'}
+                                        ]
+                                    },
+                                    markLine : {
+                                        data : [
+                                            {type : 'average', name : '平均值'}
+                                        ]
+                                    }
+                                }
+                            ]
+                        };
+                        if (option && typeof option === "object") {
+                            myChart.setOption(option, true);
+                        }
+                    };
+                    
+                    // 點數排行榜 - 監聽
+                    db.collection("點數").doc(ClassID)
+                    .onSnapshot(function(doc) {
+                        $scope.PointTops = [];
+                        for (let index = 0; index < doc.data().top.length; index++) {
+                            // 查詢帳號資料
+                            db.collection("帳號").doc(doc.data().top[index].StuID)
+                            .get().then(function(results) {
+                                // 獲取大頭照
+                                var storage = firebase.storage();
+                                storage.ref().child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                    $scope.PointTops.push({
+                                        Name:results.data().Name,
+                                        Img:url,
+                                        Point:doc.data().top[index].Point
+                                    });
+                                    $scope.$apply(); //重新監聽view
+                                });
+                            }).catch(function(error) { 
+                                console.log("查詢帳號資料發生錯誤：", error); 
+                            });
+                        }
+                    },function(error) {
+                        console.error("讀取點數排行榜發生錯誤：", error);
+                    });
+
+                    $scope.StuPoints = [];
+                    // 點數排行榜 - 取得點數名單
+                    db.collection("課程").doc(ClassID)
+                    .get().then(function(results) {
+                        var ClassStu = results.data().ClassStu;
+                        ClassStu.forEach(function (Stu) {
+                            // 載入總點數
+                            db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄")
+                            .get().then(function(results) {
+                                var This_point = 0;
+                                var b = results.docs.length;
+                                var countB = 0;
+                                var isRepeat = [];
+                                results.forEach(function (doc) {
+                                    // 判斷是否有重複
+                                    if (isRepeat.indexOf(doc.data().check)!=-1) {
+                                        console.log(Stu+"發現重複");
+                                        $ionicPopup.alert({
+                                            title: Stu+'發現重複',
+                                            template: '編號：'+doc.id
+                                        });
+                                    } else {
+                                        isRepeat.push(doc.data().check);
+                                    }
+                                    // 加總點數
+                                    This_point += pasw(doc.data().point);
+                                    
+                                    // 判斷最後一筆
+                                    countB++;
+                                    if (countB==b) {
+                                        $ionicLoading.hide();
+                                        // 查詢姓名
+                                        db.collection("帳號").doc(Stu)
+                                        .get().then(function(doc) {
+                                            $scope.StuPoints.push({
+                                                Name:Stu+' '+doc.data().Name,
+                                                StuID:Stu,
+                                                Point:This_point
+                                            });
+                                            $scope.$apply(); //重新監聽view
+                                        }).catch(function(error) { 
+                                            console.log("查詢姓名發生錯誤：", error); 
+                                        });
+                                    }
+                                });
+                            }).catch(function(error) { 
+                                console.log("載入總點數發生錯誤：", error); 
+                            });
+
+                        });
+                    }).catch(function(error) { 
+                        console.log("取得課程名單發生錯誤：", error); 
+                    });
+
+                    // 點數排行榜 - 發放點數
+                    $scope.AddBtn = function(value) {
+                        $scope.Stus = [];
+                        // 取得學生名單
+                        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>載入學生中...</p>'});
+                        db.collection("分組").doc(ClassID).collection("student")
+                        .get().then(function(results) {
+                            results.forEach(function (doc) {
+                                var a = results.docs[results.docs.length-1].id;
+                                var b = results.docs[results.docs.length-2].id;
+                                // 查詢姓名
+                                db.collection("帳號").doc(doc.id)
+                                .get().then(function(results) {
+                                    $scope.Stus.push({StuID:doc.id,Name:results.data().Name,Checked:false});
+                                    // 判斷倒數第一or第二筆 關閉轉圈圈
+                                    if (doc.id==a || doc.id==b) {
+                                        $ionicLoading.hide();
+                                    }
+                                }).catch(function(error) { 
+                                    console.log("查詢姓名發生錯誤：", error); 
+                                });
+                            });
+                        }).catch(function(error) { 
+                            console.log("取得未分組名單發生錯誤：", error); 
+                        });
+
+                        $scope.checkStus = [];
+                        // 取得學生名單 - 偵測勾選
+                        $scope.check = function(Stu) {
+                            // 判斷有無在陣列中，無則增加、有則刪除
+                            if ($scope.checkStus.indexOf(Stu) === -1) {
+                                $scope.checkStus.push(Stu);
+                            } else {
+                                $scope.checkStus.splice($scope.checkStus.indexOf(Stu),1);
+                            }
+                            console.log($scope.checkStus);
+                        };
+
+                        // 設定預設值
+                        $scope.AddBtnPopup = [];
+
+                        // 發放點數 - 跳出泡泡
+                        $ionicPopup.show({
+                            title: '發放點數',
+                            template: 
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">點數說明</div>'+
+                                    '<input type="text" ng-model="AddBtnPopup.content" placeholder="輸入說明">'+    
+                                '</label>'+
+
+                                '<label class="item item-input item-input">'+
+                                    '<div class="input-label">點數數量</div>'+
+                                    '<input type="number" ng-model="AddBtnPopup.point" placeholder="輸入數字">'+    
+                                '</label>'+
+                                
+                                '<label class="item item-input item-select">'+
+                                    '<div class="input-label">發放日期</div>'+
+                                    '<input type="date" ng-model="AddBtnPopup.time">'+    
+                                '</label>'+
+                                
+                                '<div ng-repeat="Stu in Stus">'+
+                                    '<ion-checkbox ng-model="Stu.Checked" ng-click="check(Stu.StuID)">{{Stu.StuID}} {{Stu.Name}}</ion-checkbox>'+
+                                '</div>',
+
+                            scope: $scope,
+                            buttons: [{
+                                text: '取消',
+                                type: 'button-default',
+                                onTap: function(e) {
+                                    console.log('選擇取消');
+                                }
+                            }, {
+                                text: '發放',
+                                type: 'button-chanry1',
+                                onTap: function(e) {
+                                    console.log('選擇發放');
+                                    // 判斷是否必填未填
+                                    if ($scope.AddBtnPopup.content==undefined||$scope.AddBtnPopup.point==undefined||$scope.AddBtnPopup.time==undefined) {
+                                        console.log("請填寫完整");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請填寫完整。'
+                                        });
+                                    } else if ($scope.checkStus.length==0) {
+                                        console.log("請至少勾一位");
+                                        $ionicPopup.alert({
+                                            title: '錯誤',
+                                            template: '請至少勾一位。'
+                                        });
+                                    } else {
+                                        // 產生此次發放編號
+                                        var now = new Date();
+                                        var pointID =now.getFullYear().toString()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+now.getMilliseconds();
+
+                                        // 加分 - 上傳伺服器
+                                        for (let index = 0; index < $scope.checkStus.length; index++) {
+                                            db.collection("點數").doc(ClassID).collection($scope.checkStus[index]).doc("點數歷程記錄").collection("點數歷程記錄")
+                                            .add({
+                                                content: $scope.AddBtnPopup.content,
+                                                point: paswLock($scope.AddBtnPopup.point),
+                                                check: pointID,
+                                                time: $scope.AddBtnPopup.time
+                                            })
+                                            .then(function(data) {
+                                                console.log("加分 - 上傳伺服器成功");
+                                            })
+                                            .catch(function(error) {
+                                                console.error("加分 - 上傳伺服器失敗：", error);
+                                            });
+                                        }
+                                    }
+                                }
+                            }]
+                        });
+                    };
+
+                    // 點數排行榜 - 更新排行榜
+                    $scope.update = function() {
+                        // 點數排序
+                        $scope.StuPoints = $scope.StuPoints.sort(function (a, b) {
+                            return a.Point < b.Point ? 1 : -1;
+                        });
+                        // 取前五
+                        var StuPoints = [];
+                        for (let index = 0; index < 5; index++) {
+                            StuPoints.push({
+                                StuID: $scope.StuPoints[index].StuID,
+                                Point: $scope.StuPoints[index].Point
+                            });
+                        }
+                        // 上傳排行榜
+                        db.collection("點數").doc(ClassID)
+                        .set({
+                            top: StuPoints,
+                            UpdateTime: new Date()
+                        })
+                        .then(function(data) {
+                            console.log("更新排行榜成功");
+                            $ionicPopup.alert({
+                                title: '完成',
+                                template: 
+                                    '更新排行榜成功。<br>'+
+                                    '第一名 '+StuPoints[0].StuID+' 共 '+StuPoints[0].Point+'點<br>'+
+                                    '第二名 '+StuPoints[1].StuID+' 共 '+StuPoints[1].Point+'點<br>'+
+                                    '第三名 '+StuPoints[2].StuID+' 共 '+StuPoints[2].Point+'點<br>'+
+                                    '第四名 '+StuPoints[3].StuID+' 共 '+StuPoints[3].Point+'點<br>'+
+                                    '第五名 '+StuPoints[4].StuID+' 共 '+StuPoints[4].Point+'點'
+                            });
+                        })
+                        .catch(function(error) {
+                            console.error("更新排行榜失敗：", error);
+                            $ionicPopup.alert({
+                                title: '錯誤',
+                                template: '更新排行榜失敗。'
+                            });
+                        });
+                    };
+
+                    $scope.messages = [];
+                    // 班級留言版 - 監聽
+                    db.collection("留言版").doc(ClassID).collection("messages").orderBy("time","asc")
+                    .onSnapshot(function(querySnapshot) {
+                        querySnapshot.docChanges().forEach(function(change) {
+                            if (change.type === "added") {
+                                // 查詢圖片檔名
+                                db.collection("帳號").doc(change.doc.data().StuID)
+                                .get().then(function(results) {
+                                    var storage = firebase.storage();
+                                    var storageRef = storage.ref();
+                                    storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                        // 放入留言版內容
+                                        $scope.messages.push({
+                                            messageName:change.doc.data().StuID + ' ' + change.doc.data().StuName,
+                                            messageImg:url,
+                                            messageContent:change.doc.data().content,
+                                            time:change.doc.data().time
+                                        });
+
+                                        $scope.$apply(); //重新監聽view
+                                        // 滑至最底
+                                        var objDiv = document.getElementById("scroll_doc");
+                                        objDiv.scrollTop = objDiv.scrollHeight;
+                                    })
+                                }).catch(function(error) { 
+                                    console.log("查詢圖片檔名發生錯誤：", error); 
+                                });
+                            }
+                            if (change.type === "modified") {
+                                console.log("修改: ", change.doc.data());
+                            }
+                            if (change.type === "removed") {
+                                console.log("刪除: ", change.doc.data());
+                            }
+                        });
+                    });
+
+                    $scope.messages2 = [];
+                    // 班級匿名留言版 - 監聽
+                    db.collection("匿名留言版").doc(ClassID).collection("messages").orderBy("time","asc")
+                    .onSnapshot(function(querySnapshot) {
+                        querySnapshot.docChanges().forEach(function(change) {
+                            if (change.type === "added") {
+                                // var storage = firebase.storage();
+                                // var storageRef = storage.ref();
+                                // storageRef.child('members/default').getDownloadURL().then(function(url) {
+                                    // 放入留言版內容
+                                    $scope.messages2.push({
+                                        messageName:'匿名',
+                                        messageImg:'https://firebasestorage.googleapis.com/v0/b/co-writing-test.appspot.com/o/members%2Fdefault?alt=media&token=e511b185-cd79-47e2-b501-e026fd8da387',
+                                        messageContent:change.doc.data().content,
+                                        time:change.doc.data().time
+                                    });
+
+                                    $scope.$apply(); //重新監聽view
+                                    // 滑至最底
+                                    var objDiv = document.getElementById("scroll_doc");
+                                    objDiv.scrollTop = objDiv.scrollHeight;
+                                // });
+                            }
+                            if (change.type === "modified") {
+                                console.log("修改: ", change.doc.data());
+                            }
+                            if (change.type === "removed") {
+                                console.log("刪除: ", change.doc.data());
+                            }
+                        });
+                    });
+
+                } else {
+                    // 提醒
+                    $ionicPopup.alert({
+                        title: '錯誤',
+                        template: '請選擇課程。'
+                    });
+                }
+            };
 
         }else{
             console.log("非管理員");
@@ -4625,7 +5301,7 @@ function ($scope, $stateParams, $state, $ionicLoading) {
                         });
                         $scope.Allgroups = [{ClassName:ClassName,Ngroup:Ngroup,Ygroup:Ygroup}];
                         // 繪製環形圖
-                        var dom = document.getElementById("container");
+                        var dom = document.getElementById("Chart_group");
                         var myChart = echarts.init(dom);
                         var app = {};
                         option = null;

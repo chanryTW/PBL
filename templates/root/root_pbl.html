@@ -1,16 +1,22 @@
 <ion-view title="教師版首頁" hide-back-button="true" id="root_pbl">
-  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true"><div class="maxWidth">
+  <ion-content padding="false" style="background: url(img/001.png) no-repeat center;background-size:cover;" class="has-header" scroll="true">
     
-    <div class="card">
+    <div class="card card-height col-md-4">
       <div class="item item-divider">
         教師用後台：
       </div>
-      <div class="item item-text-wrap" id="co-writing_content">
-        功能待補...
+      <label class="item item-input item-select">
+        <div class="input-label">
+          選擇課程
+        </div>
+        <select ng-model="selectClass" ng-change="hide()" ng-options="Class.ClassName for Class in AllClass"></select>
+      </label>
+      <div class="item">
+        <button class="button button-block button-chanry2" ng-click="SelectBtn(selectClass)">載入</button>
       </div>
     </div>
-
-    <div class="card">
+    
+    <div class="card card-height col-sm-6 col-md-4">
       <div class="item item-divider">創立課程：</div>
       <div class="list list-inset">
         <label class="item item-input item-stacked-label">
@@ -26,6 +32,110 @@
         <button id="page7_savebtn3" class="button button-block button-chanry1" ng-click="addClass()">創立</button>
       </div>
     </div>
+
+    <div ng-show="cardShow" class="card card-height col-sm-6 col-md-4">
+      <div class="item item-divider">
+        【呼叫老師】
+      </div>
+      <div class="item item-text-wrap" id="co-writing_content">
+        呼叫紀錄
+      </div>
+    </div>
+
+    <div ng-show="cardShow" class="card card-height col-sm-12 col-md-8">
+      <div class="item item-divider">
+        【小組討論情形】
+      </div>
+      <h4 style="padding-left:15px;"></h4>
+      <div id="Chart_discuss" style="width:1000px; height:400px; "></div>
+    </div>
+
+    <div ng-show="cardShow" class="card card-height col-sm-12 col-md-4" style="height: 447px; overflow: scroll;">
+      <div class="item item-divider">
+        【分組】
+      </div>
+      <ion-toggle ng-model="thisClass.inviteLock" ng-checked="thisClass.inviteLock" ng-change="LockGroupChange(thisClass.ClassID,thisClass.inviteLock)">開放學生自行分組</ion-toggle>
+      <label class="item item-input">
+        <div class="input-label">
+          小組人數上限
+        </div>
+        <input type="number" ng-model="thisClass.maxMembers" ng-change="maxMembersChange(thisClass.ClassID,thisClass.maxMembers)">
+      </label>
+      <div ng-repeat="Allgroup in Allgroups">
+        <h4 style="padding-left:15px;"><b>未分組名單：</b></h4>
+        <p style="padding-left:5px;">{{Allgroup.Ngroup}}</p>
+        <h4 style="text-align: center;">已分組：{{Allgroup.Ygroup.length}} 尚未分組：{{Allgroup.Ngroup.length}}</h4>
+      </div>
+      <canvas id="Chart_group"></canvas>
+    </div>
+
+    <div ng-show="cardShow" class="card card-height col-sm-12 col-md-6 col-lg-6">
+      <div class="item item-divider">
+        【點數排行】
+      </div>
+      <div class="row" style="padding: 0px 16px 0px 16px;">
+        <div class="col pbl-member mission-member" ng-repeat="PointTop in PointTops | orderBy:'Point'">
+          <div class="pbl-img-div mission-img-div">
+              <img id="pbl-img" ng-src="{{PointTop.Img}}">
+          </div>
+          <div class="pbl-member-span mission-member-span">{{PointTop.Name}}</div>
+          <div class="pbl-member-span mission-member-span">{{PointTop.Point}}點</div>
+        </div>
+      </div>
+
+      <div class="row" style="padding: 0px 16px 0px 16px;">
+        <div class="col"">
+          <button class="button button-block button-chanry1" ng-click="AddBtn(selectClass)">發放</button>
+        </div>
+        <div class="col">
+          <button class="button button-block button-chanry2" ng-click="update()">更新</button>
+        </div>
+      </div>
+    </div>
+
+    <div ng-show="cardShow" class="card card-height col-sm-6 col-md-3 col-lg-3" style="height: 330.188px;">
+      <div class="item item-divider">
+        【班級留言版】
+      </div>
+      <div id="scroll_doc" class="item item-text-wrap" style="height: 261px; overflow: scroll; overflow-x:hidden;">
+        <div ng-repeat="message in messages | orderBy:'time'">
+          <div id="brainstorming_item" class="item">
+            <div class="item item-avatar itemMessage">
+                <img id="imgMessage" ng-src="{{message.messageImg}}">
+                <h2>{{message.messageName}}</h2>
+                <p ng-bind-html="message.messageContent | linky"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <label class="item-input-wrapper">
+        <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && addMessage()" ng-model="inputMessage" type="text" placeholder="輸入文字（限200字內）..." maxlength="200">
+      </label>
+    </div>
+
+    <div ng-show="cardShow" class="card card-height col-sm-6 col-md-3 col-lg-3" style="height: 330.188px;">
+      <div class="item item-divider">
+        【班級留言版（匿名）】
+      </div>
+      <div id="scroll_doc" class="item item-text-wrap" style="height: 261px; overflow: scroll; overflow-x:hidden;">
+        <div ng-repeat="message in messages2 | orderBy:'time'">
+          <div id="brainstorming_item" class="item">
+            <div class="item item-avatar itemMessage">
+                <img id="imgMessage" ng-src="{{message.messageImg}}">
+                <h2>{{message.messageName}}</h2>
+                <p ng-bind-html="message.messageContent | linky"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <label class="item-input-wrapper">
+        <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && addMessage()" ng-model="inputMessage" type="text" placeholder="輸入文字（限200字內）..." maxlength="200">
+      </label>
+    </div>
+
+    <div class="spacer" style="height: 50px;"></div>
     
-  </div></ion-content>
+  </ion-content>
 </ion-view>

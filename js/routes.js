@@ -42,6 +42,16 @@ angular.module('app.routes', [])
     }
   })
 
+  .state('menu.chatroom2', {
+    url: '/chatroom2',
+    views: {
+      'side-menu21': {
+        templateUrl: 'templates/chatroom2.html',
+        controller: 'chatroom2Ctrl'
+      }
+    }
+  })
+
   .state('menu.vote', {
     url: '/vote',
     views: {
