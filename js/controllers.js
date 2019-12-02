@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.3.0";
+var verson = "1.3.1";
 // Firebase Key
 var config = {
     apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -4765,19 +4765,22 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                     .onSnapshot(function(querySnapshot) {
                         data_name = [];
                         // 取得小組名單
-                        db.collection("分組").doc(ClassID).collection("group")
+                        db.collection("分組").doc(ClassID).collection("group").orderBy("leader","asc")
                         .get().then(function (querySnapshot) {
                             querySnapshot.forEach(function (doc) {
-                                // 取得小組長ID
-                                db.collection("分組").doc(ClassID).collection("group").doc(doc.id)
-                                .get().then(function(results) {
+                                data_name.push(doc.data().leader);
+
+                                // 判斷最後一筆
+                                if (querySnapshot.docs[querySnapshot.docs.length-1].id==doc.id) {
                                     // 查詢姓名
-                                    db.collection("帳號").doc(results.data().leader)
-                                    .get().then(function(results) {
-                                        data_name.push(results.data().Name+'組');
-                                        Chart_discuss(data_name,data_brain,data_proposal,data_vote);
-                                    });
-                                });
+                                    for (let index = 0; index < data_name.length; index++) {
+                                        db.collection("帳號").doc(data_name[index])
+                                        .get().then(function(results) {
+                                            data_name[index] = results.data().Name+'組';
+                                            Chart_discuss(data_name,data_brain,data_proposal,data_vote);
+                                        });
+                                    }
+                                }
                             });
                         });
                     });
@@ -4787,7 +4790,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                     .onSnapshot(function(querySnapshot) {
                         data_brain = [];
                         // 取得小組名單
-                        db.collection("分組").doc(ClassID).collection("group")
+                        db.collection("分組").doc(ClassID).collection("group").orderBy("leader","asc")
                         .get().then(function (querySnapshot) {
                             querySnapshot.forEach(function (doc) {
                                 // 取得小組腦力激盪數
@@ -4805,7 +4808,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                     .onSnapshot(function(querySnapshot) {
                         data_proposal = [];
                         // 取得小組名單
-                        db.collection("分組").doc(ClassID).collection("group")
+                        db.collection("分組").doc(ClassID).collection("group").orderBy("leader","asc")
                         .get().then(function (querySnapshot) {
                             querySnapshot.forEach(function (doc) {
                                 // 取得小組提案聚焦數
@@ -4823,7 +4826,7 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                     .onSnapshot(function(querySnapshot) {
                         data_vote = [];
                         // 取得小組名單
-                        db.collection("分組").doc(ClassID).collection("group")
+                        db.collection("分組").doc(ClassID).collection("group").orderBy("leader","asc")
                         .get().then(function (querySnapshot) {
                             querySnapshot.forEach(function (doc) {
                                 // 取得小組投票數
