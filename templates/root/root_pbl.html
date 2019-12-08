@@ -110,7 +110,7 @@
       </div>
 
       <label class="item-input-wrapper">
-        <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && addMessage()" ng-model="inputMessage" type="text" placeholder="輸入文字（限200字內）..." maxlength="200">
+        <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && addMessage(1,inputMessage)" ng-model="inputMessage" type="text" placeholder="輸入文字（限200字內）..." maxlength="200">
       </label>
     </div>
 
@@ -118,7 +118,7 @@
       <div class="item item-divider">
         【班級留言版（匿名）】
       </div>
-      <div id="scroll_doc" class="item item-text-wrap" style="height: 261px; overflow: scroll; overflow-x:hidden;">
+      <div id="scroll_doc2" class="item item-text-wrap" style="height: 261px; overflow: scroll; overflow-x:hidden;">
         <div ng-repeat="message in messages2 | orderBy:'time'">
           <div id="brainstorming_item" class="item">
             <div class="item item-avatar itemMessage">
@@ -131,7 +131,7 @@
       </div>
 
       <label class="item-input-wrapper">
-        <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && addMessage()" ng-model="inputMessage" type="text" placeholder="輸入文字（限200字內）..." maxlength="200">
+        <input class="brainstorming_input" ng-keydown="$event.keyCode === 13 && addMessage(2,inputMessage2)" ng-model="inputMessage2" type="text" placeholder="輸入文字（限200字內）..." maxlength="200">
       </label>
     </div>
 
