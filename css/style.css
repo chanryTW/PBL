@@ -71,6 +71,7 @@ a{text-decoration:none}
 /* -----------------------------------------------選擇課程頁面----------------------------------------------- */
 .class_block{
     display: inline-block;
+    vertical-align: top;
     position: relative;
     width: 40vw;
     height: 40vw;
@@ -102,12 +103,13 @@ a{text-decoration:none}
 .button-text{
     color: #ffffff;
     font-size: 5vw;
-    line-height: 40vw;
+    line-height: 7vw;
     text-align: center;
+    margin-top: 17vw;
 }
 @media screen and (min-width: 768px) { 
     .class_block{ width: 307.2px; height: 307.2px; }
-    .button-text{ font-size: 38.4px; line-height: 307px;}
+    .button-text{ font-size: 38.4px; line-height: 53.76px; margin-top: 130.56px;}
     .class_blockLock::after{font-size: 76.8px; line-height: 115.2px;}
 }
 

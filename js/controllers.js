@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.3.1";
+var verson = "1.3.3";
 // Firebase Key
 var config = {
     apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -307,21 +307,34 @@ function ($scope, $stateParams, $state, $ionicLoading, $ionicScrollDelegate) {
             .onSnapshot(function(querySnapshot) {
                 querySnapshot.docChanges().forEach(function(change) {
                     if (change.type === "added") {
-                        // var storage = firebase.storage();
-                        // var storageRef = storage.ref();
-                        // storageRef.child('members/default').getDownloadURL().then(function(url) {
-                            // 放入留言版內容
-                            $scope.messages.push({
-                                messageName:'匿名',
-                                messageImg:'https://firebasestorage.googleapis.com/v0/b/co-writing-test.appspot.com/o/members%2Fdefault?alt=media&token=e511b185-cd79-47e2-b501-e026fd8da387',
-                                messageContent:change.doc.data().content,
-                                time:change.doc.data().time
-                            });
+                        // 查詢圖片檔名
+                        db.collection("帳號").doc(change.doc.data().StuID)
+                        .get().then(function(results) {
+                            var storage = firebase.storage();
+                            var storageRef = storage.ref();
+                            storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                var messageName = "匿名";
+                                var messageImg = "https://firebasestorage.googleapis.com/v0/b/co-writing-test.appspot.com/o/members%2Fdefault?alt=media&token=e511b185-cd79-47e2-b501-e026fd8da387";
+                                // 判斷是否是老師
+                                if (change.doc.data().StuID=="ROOT") {
+                                    messageName = change.doc.data().StuID + ' ' + change.doc.data().StuName;
+                                    messageImg = url;
+                                }
+                                // 放入留言版內容
+                                $scope.messages.push({
+                                    messageName:messageName,
+                                    messageImg:messageImg,
+                                    messageContent:change.doc.data().content,
+                                    time:change.doc.data().time
+                                });
 
-                            $scope.$apply(); //重新監聽view
-                            $ionicScrollDelegate.scrollBottom(); //滑到最下面
-                            $ionicScrollDelegate.resize(); //重新取得範圍
-                        // });
+                                $scope.$apply(); //重新監聽view
+                                $ionicScrollDelegate.scrollBottom(); //滑到最下面
+                                $ionicScrollDelegate.resize(); //重新取得範圍
+                            });
+                        }).catch(function(error) { 
+                            console.log("查詢圖片檔名發生錯誤：", error); 
+                        });
                     }
                     if (change.type === "modified") {
                         console.log("修改: ", change.doc.data());
@@ -1311,6 +1324,17 @@ function ($scope, $stateParams, $ionicPopup, $state) {
                                 .catch(function(error) {
                                     console.error("新增投票失敗：", error);
                                 });
+                                // 更新教師主控台
+                                db.collection("投票").doc(ClassID)
+                                .set({
+                                    update: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("更新教師主控台成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("更新教師主控台失敗：", error);
+                                });
                             }
                         }
                     }]
@@ -2193,13 +2217,19 @@ function ($scope, $stateParams, $sce, $state, $ionicPopup, $ionicLoading, $ionic
 
             // 回傳填答結果
             $scope.response = [];
-            $scope.responseBtn = function(doc){
+            $scope.responseBtn = function(doc,PosRes){
                 var missionID = doc.missionID;
                 // 用findIndex找出位置
                 var indexNum = $scope.response.findIndex((element)=>{
                     return (element.missionID === missionID);
                 });
-                
+
+                console.log("判斷是否有提案匯入"+PosRes);
+                // 判斷是否有提案匯入
+                if (PosRes!=undefined) {
+                    $scope.response[indexNum].answer.POS = PosRes;
+                }
+
                 // 跳出泡泡
                 $ionicPopup.confirm({
                     title: '存檔送出',
@@ -2921,6 +2951,17 @@ function ($scope, $stateParams, $state, $ionicScrollDelegate, $ionicLoading, $io
                             });
                         }).catch(function(error) { 
                             console.log("更新小任務 自己腦力激盪次數發生錯誤：", error); 
+                        });
+                        // 更新教師主控台
+                        db.collection("腦力激盪").doc(ClassID)
+                        .set({
+                            update: new Date()
+                        })
+                        .then(function(data) {
+                            console.log("更新教師主控台成功");
+                        })
+                        .catch(function(error) {
+                            console.error("更新教師主控台失敗：", error);
                         });
                     })
                     .catch(function(error) {
@@ -3693,6 +3734,17 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                                 console.error("標記提案失敗：", error);
                                             });
                                         });
+                                        // 更新教師主控台
+                                        db.collection("提案聚焦").doc(ClassID)
+                                        .set({
+                                            update: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新教師主控台成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新教師主控台失敗：", error);
+                                        });
                                     })
                                     .catch(function(error) {
                                         console.error("新增提案失敗：", error);
@@ -3943,6 +3995,17 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading, $ionicScroll
                                             .catch(function(error) {
                                                 console.error("標記提案失敗：", error);
                                             });
+                                        });
+                                        // 更新教師主控台
+                                        db.collection("腦力激盪").doc(ClassID)
+                                        .set({
+                                            update: new Date()
+                                        })
+                                        .then(function(data) {
+                                            console.log("更新教師主控台成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("更新教師主控台失敗：", error);
                                         });
                                     }).catch(function(error) {
                                         console.error("刪除提案聚焦失敗：", error);
@@ -5204,22 +5267,35 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                     .onSnapshot(function(querySnapshot) {
                         querySnapshot.docChanges().forEach(function(change) {
                             if (change.type === "added") {
-                                // var storage = firebase.storage();
-                                // var storageRef = storage.ref();
-                                // storageRef.child('members/default').getDownloadURL().then(function(url) {
-                                    // 放入留言版內容
-                                    $scope.messages2.push({
-                                        messageName:'匿名',
-                                        messageImg:'https://firebasestorage.googleapis.com/v0/b/co-writing-test.appspot.com/o/members%2Fdefault?alt=media&token=e511b185-cd79-47e2-b501-e026fd8da387',
-                                        messageContent:change.doc.data().content,
-                                        time:change.doc.data().time
-                                    });
+                                // 查詢圖片檔名
+                                db.collection("帳號").doc(change.doc.data().StuID)
+                                .get().then(function(results) {
+                                    var storage = firebase.storage();
+                                    var storageRef = storage.ref();
+                                    storageRef.child('members/'+results.data().Img).getDownloadURL().then(function(url) {
+                                        var messageName = "匿名";
+                                        var messageImg = "https://firebasestorage.googleapis.com/v0/b/co-writing-test.appspot.com/o/members%2Fdefault?alt=media&token=e511b185-cd79-47e2-b501-e026fd8da387";
+                                        // 判斷是否是老師
+                                        if (change.doc.data().StuID=="ROOT") {
+                                            messageName = change.doc.data().StuID + ' ' + change.doc.data().StuName;
+                                            messageImg = url;
+                                        }
+                                        // 放入留言版內容
+                                        $scope.messages2.push({
+                                            messageName:messageName,
+                                            messageImg:messageImg,
+                                            messageContent:change.doc.data().content,
+                                            time:change.doc.data().time
+                                        });
 
-                                    $scope.$apply(); //重新監聽view
-                                    // 滑至最底
-                                    var objDiv = document.getElementById("scroll_doc");
-                                    objDiv.scrollTop = objDiv.scrollHeight;
-                                // });
+                                        $scope.$apply(); //重新監聽view
+                                        // 滑至最底
+                                        var objDiv = document.getElementById("scroll_doc2");
+                                        objDiv.scrollTop = objDiv.scrollHeight;
+                                    });
+                                }).catch(function(error) { 
+                                    console.log("查詢圖片檔名發生錯誤：", error); 
+                                });
                             }
                             if (change.type === "modified") {
                                 console.log("修改: ", change.doc.data());
@@ -5229,6 +5305,50 @@ function ($scope, $stateParams, $ionicPopup, $ionicLoading, $state) {
                             }
                         });
                     });
+
+                    // 班級匿名留言版 - 新增留言
+                    $scope.addMessage = function(Nun,content) {
+                        $ionicLoading.show({template:'<ion-spinner icon="lines" class="spinner-calm"></ion-spinner><p>新增中...</p>'});
+                        console.log("1");
+                        // 判斷是否是在匿名版
+                        if (Nun==2) {
+                            if (content!=undefined && content!="") {
+                                db.collection("匿名留言版").doc(ClassID).collection("messages")
+                                .add({
+                                    StuID: "ROOT",
+                                    StuName: "劉勇志 老師",
+                                    content: content,
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("新增留言成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("新增留言失敗：", error);
+                                });
+                                $scope.inputMessage2 = "";
+                            }
+                        } else if(Nun==1) {
+                            console.log("2"+content);
+                            if (content!=undefined && content!="") {
+                                db.collection("留言版").doc(ClassID).collection("messages")
+                                .add({
+                                    StuID: "ROOT",
+                                    StuName: "劉勇志 老師",
+                                    content: content,
+                                    time: new Date()
+                                })
+                                .then(function(data) {
+                                    console.log("新增留言成功");
+                                })
+                                .catch(function(error) {
+                                    console.error("新增留言失敗：", error);
+                                });
+                                $scope.inputMessage = "";
+                            }
+                        }
+                        $ionicLoading.hide();
+                    };
 
                 } else {
                     // 提醒
@@ -6083,52 +6203,52 @@ function ($scope, $stateParams, $state, $ionicPopup, $sce) {
 
                     // 匯出腦力激盪 提案聚焦數
                     // 取得小組成員
-                    db.collection("分組").doc(ClassID).collection("group")
-                    .get().then(function(results) {
-                        items.push(["學號","小組","版本","腦力激盪數量","腦力激盪被採用次數","提案聚焦數量","提案聚焦被採用次數"]);
-                        results.forEach(function (doc) {
-                            for (let index = 0; index < doc.data().members.length; index++) {
-                                // 查詢腦力激盪數 與被採用次數
-                                // db.collection("腦力激盪").doc(ClassID).collection(doc.id).where("StuID", "==", doc.data().members[index])
-                                // .get().then(function(results) {
-                                //     console.log(doc.data().members[index]+'的腦力激盪數：'+results.docs.length);
-                                //     var count = 0;
-                                //     results.forEach(function (doc2) {
-                                //         if (doc2.data().invited==true) {
-                                //             count++;
-                                //         }
-                                //     });
-                                //     console.log(doc.data().members[index]+'的腦力激盪被採用數：'+count);
-                                //     items.push([
-                                //         doc.data().members[index],
-                                //         doc.id,
-                                //         "期中前",
-                                //         results.docs.length,
-                                //         count,
-                                //     ]);
-                                // }).catch(function(error) { 
-                                //     console.log("查詢腦力激盪數 與被採用次數發生錯誤：", error); 
-                                // });
+                    // db.collection("分組").doc(ClassID).collection("group")
+                    // .get().then(function(results) {
+                    //     items.push(["學號","小組","版本","腦力激盪數量","腦力激盪被採用次數","提案聚焦數量","提案聚焦被採用次數"]);
+                    //     results.forEach(function (doc) {
+                    //         for (let index = 0; index < doc.data().members.length; index++) {
+                    //             // 查詢腦力激盪數 與被採用次數
+                    //             // db.collection("腦力激盪").doc(ClassID).collection(doc.id).where("StuID", "==", doc.data().members[index])
+                    //             // .get().then(function(results) {
+                    //             //     console.log(doc.data().members[index]+'的腦力激盪數：'+results.docs.length);
+                    //             //     var count = 0;
+                    //             //     results.forEach(function (doc2) {
+                    //             //         if (doc2.data().invited==true) {
+                    //             //             count++;
+                    //             //         }
+                    //             //     });
+                    //             //     console.log(doc.data().members[index]+'的腦力激盪被採用數：'+count);
+                    //             //     items.push([
+                    //             //         doc.data().members[index],
+                    //             //         doc.id,
+                    //             //         "期中前",
+                    //             //         results.docs.length,
+                    //             //         count,
+                    //             //     ]);
+                    //             // }).catch(function(error) { 
+                    //             //     console.log("查詢腦力激盪數 與被採用次數發生錯誤：", error); 
+                    //             // });
 
-                                // 查詢提案聚焦數量
-                                db.collection("提案聚焦").doc(ClassID).collection(doc.id)
-                                .get().then(function(results) {
-                                    console.log(doc.id+'小組的提案聚焦數：'+results.docs.length);
-                                    items.push([
-                                        doc.data().members[index],
-                                        doc.id,
-                                        "期中前",
-                                        results.docs.length
-                                    ]);
-                                }).catch(function(error) { 
-                                    console.log("查詢查詢提案聚焦數量發生錯誤：", error); 
-                                });
+                    //             // 查詢提案聚焦數量
+                    //             db.collection("提案聚焦").doc(ClassID).collection(doc.id)
+                    //             .get().then(function(results) {
+                    //                 console.log(doc.id+'小組的提案聚焦數：'+results.docs.length);
+                    //                 items.push([
+                    //                     doc.data().members[index],
+                    //                     doc.id,
+                    //                     "期中前",
+                    //                     results.docs.length
+                    //                 ]);
+                    //             }).catch(function(error) { 
+                    //                 console.log("查詢查詢提案聚焦數量發生錯誤：", error); 
+                    //             });
 
-                            }
-                        }); 
-                    }).catch(function(error) { 
-                        console.log("取得小組成員發生錯誤：", error); 
-                    }); 
+                    //         }
+                    //     }); 
+                    // }).catch(function(error) { 
+                    //     console.log("取得小組成員發生錯誤：", error); 
+                    // }); 
 
                     
 

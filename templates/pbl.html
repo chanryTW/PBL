@@ -7,7 +7,7 @@
         <div class="pbl-member-span">{{member.memberName}}</div>
       </div>
 
-      <div ng-repeat="item in items" class="card">
+      <!-- <div ng-repeat="item in items" class="card">
         <div class="item item-divider">
           成績查詢：
         </div>
@@ -19,14 +19,23 @@
           </div>
           <p>計算：期中30%+期末30%+平時40%(點數+討論)</p>
         </div>
+      </div> -->
+
+      <div class="card">
+        <div class="item item-divider">
+          本週任務(12/09)：
+        </div>
+        <div class="item item-text-wrap">
+          <div class="row">ch11 社群運算與行動運算 11.1~11.3，上課1節、PBL討論2節、填學習單</div>
+        </div>
       </div>
 
       <div class="card">
         <div class="item item-divider">
-          下週任務(11/04)：
+          下週任務(12/16)：
         </div>
         <div class="item item-text-wrap">
-          <div class="row">期中考（上機考）考試地點預計3401、填寫PBL問卷</div>
+          <div class="row">ch11 社群運算與行動運算 11.4~11.7，上課1節、PBL討論2節、填學習單</div>
         </div>
       </div>
 
@@ -47,7 +56,7 @@
 
       <div ng-repeat="item in items" class="card">
         <div class="item item-divider">
-          【{{item.ClassName}}】課程說明：
+          【{{item.ClassName}}】平台之戰—創造你的新市場與新價值：
         </div>
         <div class="item item-text-wrap" bind-html-compile="item.ClassContent"></div>
       </div>
