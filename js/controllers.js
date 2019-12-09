@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.3.3";
+var verson = "1.3.4";
 // Firebase Key
 var config = {
     apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
@@ -6852,6 +6852,15 @@ function ($scope, $stateParams, $state, $ionicPopup, $ionicLoading) {
                                         $ionicPopup.alert({
                                             title: Stu+'發現重複',
                                             template: '編號：'+doc.id
+                                        });
+                                        // 自動刪除
+                                        db.collection("點數").doc(ClassID).collection(Stu).doc("點數歷程記錄").collection("點數歷程記錄").doc(doc.id)
+                                        .delete()
+                                        .then(function(data) {
+                                            console.log(doc.id+"刪除成功");
+                                        })
+                                        .catch(function(error) {
+                                            console.error("刪除失敗：", error);
                                         });
                                     } else {
                                         isRepeat.push(doc.data().check);
