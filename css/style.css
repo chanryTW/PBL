@@ -763,6 +763,17 @@ img-crop canvas{
     transform: translate(-50%);
     box-sizing: border-box;
 }
+/* QR Code */
+.QRCode{
+  position: relative;
+  left:50%;
+  transform: translate(-50%);
+
+  width: 60vw;
+}
+@media screen and (min-width: 1200px) { 
+  .QRCode{ width:720px;}
+}
 
 /* -----------------------------------------------教師版分組狀態頁面----------------------------------------------- */
 /* 環形圖 */
