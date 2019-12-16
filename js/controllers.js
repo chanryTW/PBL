@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-var verson = "1.3.4";
+var verson = "1.3.5";
 // Firebase Key
 var config = {
     apiKey: "AIzaSyDOFKfb0GTeIYj-lvq8NRn3S3RrJQbZM_I",
